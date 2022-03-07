@@ -1,6 +1,9 @@
-[submodule "LGMP"]
-	path = LGMP
-	url = https://github.com/gnif/LGMP.git
-[submodule "libtrf"]
-	path = libtrf
+[submodule "repos/libtrf"]
+	path = repos/libtrf
 	url = https://github.com/telescope-proj/libtrf.git
+[submodule "repos/LGMP"]
+	path = repos/LGMP
+	url = https://github.com/gnif/LGMP.git
+[submodule "repos/LookingGlass"]
+	path = repos/LookingGlass
+	url = https://github.com/gnif/LookingGlass.git
