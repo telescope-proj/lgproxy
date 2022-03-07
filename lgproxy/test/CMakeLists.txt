@@ -6,7 +6,7 @@ set(SERVER test-server.c)
 set(CLIENT test-client.c)
 
 get_filename_component(PROJECT_TOP "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
-add_subdirectory("${PROJECT_TOP}/lgmp" "${CMAKE_BINARY_DIR}/lgmp")
+add_subdirectory("../../LGMP/lgmp" "../../LGMP/lgmp")
 
 
 add_executable(test-server ${SERVER})
