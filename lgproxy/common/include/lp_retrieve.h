@@ -25,6 +25,14 @@ int lpInitLgmpClient(PLPContext ctx);
  * @param ctx           Context to use
  * @return 0 on success, negative error code on error
  */
-int lpInitSession(PLPContext ctx);
+int lpClientInitSession(PLPContext ctx);
 
+/**
+ * @brief Get Frame from shared memory
+ * 
+ * @param ctx           Context to use
+ * @param out           Frame retrieved from LookingGlass
+ * @return 0 on success, negative error code on error
+ */
+int lpGetFrame(PLPContext ctx, KVMFRFrame *out);
 #endif
