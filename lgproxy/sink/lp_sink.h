@@ -13,14 +13,10 @@
 #include "lp_log.h"
 #include <signal.h>
 #include <sys/mman.h>
-#include "lp_trf.h"
+#include "lp_trf_client.h"
+#include "lp_write.h"
 
-/**
- * @brief Allocates Memory for lpAllocContext
- * 
- * @return PLPContext
- */
-PLPContext lpAllocContext();
+
 
 
 #endif

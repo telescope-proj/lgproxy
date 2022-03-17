@@ -7,16 +7,16 @@ PLPContext lpAllocContext(){
 }
 
 void lpDestroyContext(PLPContext ctx){
-    if (ctx->lgmp_client)
+    if (ctx->lp_client.lgmp_client)
     {
-        lgmpClientFree(ctx->lgmp_client);
+        lgmpClientFree(&ctx->lp_client.lgmp_client);
     }
-    if (ctx->lgmp_host)
+    if (ctx->lp_host.lgmp_host)
     {
-        lgmpHostFree(ctx->lgmp_host);
+        lgmpHostFree(&ctx->lp_host.lgmp_host);
     }
-    trfDestroyContext(ctx->client_ctx);
-    trfDestroyContext(ctx->server_ctx);
+    trfDestroyContext(ctx->lp_client.client_ctx);
+    trfDestroyContext(ctx->lp_host.server_ctx);
 
     munmap(ctx->ram, ctx->ram_size);
     close(ctx->shmFile);

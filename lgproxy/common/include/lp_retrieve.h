@@ -7,11 +7,13 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <math.h>
+
 #include "lp_log.h"
-#include "client/include/app.h"
 #include "lgmp/client.h"
 #include "lp_types.h"
 #include "common/KVMFR.h"
+#include "common/framebuffer.h"
 
 /**
  * @param ctx               Context to use
@@ -34,5 +36,5 @@ int lpClientInitSession(PLPContext ctx);
  * @param out           Frame retrieved from LookingGlass
  * @return 0 on success, negative error code on error
  */
-int lpGetFrame(PLPContext ctx, KVMFRFrame *out);
+int lpGetFrame(PLPContext ctx, KVMFRFrame **out, FrameBuffer **fb);
 #endif

@@ -5,49 +5,80 @@ get_filename_component(PROJECT_TOP "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
 
 add_definitions(-DLP_LOG_USE_COLOR)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx")
+
 include_directories(
     "${PROJECT_SOURCE_DIR}/include"
     "${PROJECT_TOP}/repos/LGMP/lgmp/include"
     "${PROJECT_TOP}/repos/libtrf/libtrf/include"
+    "${PROJECT_TOP}/repos/LookingGlass"
     "${PROJECT_TOP}/repos/LookingGlass/common/include"
 )
-
 
 add_subdirectory("${PROJECT_TOP}/repos/LGMP/lgmp" 
                 "${CMAKE_BINARY_DIR}/libs/lgmp")
 add_subdirectory("${PROJECT_TOP}/repos/libtrf/libtrf" 
                 "${CMAKE_BINARY_DIR}/libs/libtrf")
-add_subdirectory("${PROJECT_TOP}/repos/LookingGlass/common")
+add_subdirectory("${PROJECT_TOP}/repos/LookingGlass/common"
+                "${CMAKE_BINARY_DIR}/libs/LookingGlass/common")   
 
-set(HOST host/host.c)
-set(CLIENT client/client.c)
+add_compile_options(
+"-Wall"
+"-Werror"
+"-Wfatal-errors"
+"-ffast-math"
+"-fdata-sections"
+"-ffunction-sections"
+#"$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
+"-O0;-g3;-ggdb"
+) 
 
-add_executable(host ${HOST})
-target_link_libraries(host trf lgmp)
-set_property(TARGET host PROPERTY C_STANDARD 99)
+execute_process(
+    COMMAND bash -c "cp -r ${PROJECT_TOP}/repos/libtrf/libtrf/conf ./build"
+)
 
-set_target_properties(host PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")
 
-add_executable(client ${CLIENT})
+set(LP_COMMON
+    common/src/lp_log.c
+    common/src/lp_retrieve.c
+    common/src/lp_trf_client.c
+    common/src/lp_trf_server.c
+    common/src/lp_types.c
+    common/src/lp_write.c
+)
 
-target_link_libraries(client trf lgmp)
-set_property(TARGET client PROPERTY C_STANDARD 99)
+set(SOURCE 
+    ${LP_COMMON}
+    source/lp_source.c
+)
+set(SINK 
+    ${LP_COMMON}
+    sink/lp_sink.c
+)
 
-set_target_properties(client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")
+add_executable(source ${SOURCE})
+target_link_libraries(source trf lgmp m lg_common)
+set_property(TARGET source PROPERTY C_STANDARD 99)
 
-target_include_directories(lgproxy
-                            INTERFACE
-                                "./common/include"
-                            PRIVATE
-                                src
-)               
+set_target_properties(source PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")
 
-target_include_directories(client INTERFACE
+add_executable(sink ${SINK})
+
+target_link_libraries(sink trf lgmp m lg_common)
+set_property(TARGET sink PROPERTY C_STANDARD 99)
+
+set_target_properties(sink PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")       
+
+target_include_directories(sink PUBLIC
+                            "${PROJECT_TOP}/sink"
                             "${PROJECT_TOP}/repos/lgmp/lgmp"
                             "${PROJECT_TOP}/repos/libtrf/libtrf"
-                            "${PROJECT_TOP}/repos/LookingGlass/common/include")
-target_include_directories(host INTERFACE 
+                            "${PROJECT_TOP}/repos/LookingGlass/common/include"
+                            "${PROJECT_TOP}/lgproxy/common/include")
+target_include_directories(source PUBLIC 
+                            "${PROJECT_TOP}/source"
                             "${PROJECT_TOP}/repos/lgmp/lgmp"
                             "${PROJECT_TOP}/repos/libtrf/libtrf"
-                            "${PROJECT_TOP}/repos/LookingGlass/common/include")
+                            "${PROJECT_TOP}/repos/LookingGlass/common/include"
+                            "${PROJECT_TOP}/lgproxy/common/include")
 

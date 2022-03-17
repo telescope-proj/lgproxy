@@ -14,7 +14,7 @@ int lpInitLgmpClient(PLPContext ctx)
         ret = -errno;
         goto out;
     }
-    if(truncate(fd, ctx->ram_size) != 0){
+    if(ftruncate(fd, ctx->ram_size) != 0){
         lp__log_error("Unable to truncate shm file: %s", strerror(errno));
         goto close_fd;
     }
@@ -28,7 +28,7 @@ int lpInitLgmpClient(PLPContext ctx)
         goto close_fd;
     }
     LGMP_STATUS status;
-    while ((status = lgmpClientInit(ctx->ram,ctx->ram_size, ctx->lgmp_client)) 
+    while ((status = lgmpClientInit(ctx->ram,ctx->ram_size, &ctx->lp_client.lgmp_client)) 
             != LGMP_OK)
     {
         lp__log_error("LGMP Client Init failure; %s\n", 
@@ -38,7 +38,9 @@ int lpInitLgmpClient(PLPContext ctx)
     
     trfSleep(200); // Wait for host to update
     ctx->shmFile = fd;
-    ctx->formatValid = false;
+    ctx->format_valid = false;
+
+    return 0;
 
 unmap:
     munmap(ctx->ram,ctx->ram_size);
@@ -58,12 +60,13 @@ int lpClientInitSession(PLPContext ctx)
     uint32_t udataSize;
     KVMFR *udata;
     int waitCount = 0;
-
-    int retry = 0; //! Change to use states 
-    while (retry < 20)
+ 
+    for (int retry = 0; retry < 20; retry++)
     {
-        status = lgmpClientSessionInit(ctx->lgmp_client, &udataSize, 
+        status = lgmpClientSessionInit(ctx->lp_client.lgmp_client, &udataSize, 
                                        (uint8_t **) &udata);
+        lp__log_trace("lgmpClientSessionInit: %s", lgmpStatusString(status));
+
         switch (status)
         {
             case LGMP_OK:
@@ -73,10 +76,8 @@ int lpClientInitSession(PLPContext ctx)
                 lp__log_debug("Incompatible LGMP Version"
                     "The host application is not compatible with this client"
                     "Please download and install the matching version");
-                while(retry < 20 && lgmpClientSessionInit(ctx->lgmp_client, 
-                            &udataSize, (uint8_t **) &udata) != LGMP_OK){
-                                trfSleep(1000);
-                            }
+                trfSleep(1000);
+                continue;
                 if(retry >= 20){
                     ctx->state = LP_STATE_STOP;
                     lp__log_debug("Incompatible LGMP Versions between" 
@@ -118,13 +119,19 @@ int lpClientInitSession(PLPContext ctx)
             lp__log_error("Unable to initialize session");
             return -1;
         }
+        else
+        {
+            break;
+        }
     }
+
     while (ctx->state == LP_STATE_RUNNING)
     {
-        status = lgmpClientSubscribe(ctx->lgmp_client, LGMP_Q_FRAME, 
-                                     ctx->client_q);
+        status = lgmpClientSubscribe(ctx->lp_client.lgmp_client, LGMP_Q_FRAME, 
+                                    &ctx->lp_client.client_q);
         if (status == LGMP_OK)
         {
+            lp__log_trace("lgmpClientSubscribed: %s", lgmpStatusString(status));
             break;
         }
         if (status == LGMP_ERR_NO_SUCH_QUEUE)
@@ -139,7 +146,7 @@ int lpClientInitSession(PLPContext ctx)
     return 0;
 }
 
-int lpGetFrame(PLPContext ctx, KVMFRFrame *out)
+int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
 {
     if (!ctx || !out){
         return - EINVAL;
@@ -149,7 +156,6 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame *out)
 
     uint32_t          frameSerial = 0;
     uint32_t          formatVer   = 0;
-    size_t            dataSize    = 0;
 
     if (ctx->state != LP_STATE_RUNNING)
     {
@@ -157,8 +163,28 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame *out)
     }
     
     LGMPMessage msg;
-    if((status = lgmpClientProcess(ctx->client_q, &msg)) != LGMP_OK)
+    while((status = lgmpClientProcess(ctx->lp_client.client_q, &msg)) != LGMP_OK)
     {
+        if (status == LGMP_ERR_QUEUE_EMPTY)
+        {
+            struct timespec req =
+            {
+            .tv_sec  = 0,
+            .tv_nsec = 1000
+            };
+
+            struct timespec rem;
+            while(nanosleep(&req, &rem) < 0)
+            {
+            if (errno != -EINTR)
+            {
+                lp__log_error("nanosleep failed");
+                break;
+            }
+            req = rem;
+            }
+            continue;
+        }
         if (status == LGMP_ERR_INVALID_SESSION)
         {
             ctx->state = LP_STATE_RESTART;
@@ -172,13 +198,36 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame *out)
         }
     }
     KVMFRFrame * frame = (KVMFRFrame *)msg.mem;
-    if (frame->frameSerial == frameSerial && ctx->formatValid)
+    if (frame->frameSerial == frameSerial && ctx->format_valid)
     {
-        lgmpClientMessageDone(ctx->client_q);
+        lgmpClientMessageDone(ctx->lp_client.client_q);
+    }
+    
+    if (frame)
+    {
+        lp__log_trace("------------ Frame Received ------------");
+        lp__log_trace("Frame height: %d\t", frame->height);
+        lp__log_trace("Frame width: %d\t", frame->width);
+        lp__log_trace("Frame real height: %d\t", frame->realHeight);
+        lp__log_trace("----------------------------------------");
     }
     
     frameSerial = frame->frameSerial;
-    out = frame;
+    *out = frame;
+    
+    if (ctx->format_valid && frame->formatVer != formatVer)
+    {
+        if (frame->realHeight != frame->height)
+        {
+            const int needed = ((frame->realHeight * frame->pitch * 2) 
+                            / 1048576.0f) + 10.0f;
+            const int size = (int)powf(2.0f, ceilf(logf(needed) / logf(2.0f)));
+
+            lp__log_warn("IVSHMEM too small, screen truncated");
+            lp__log_warn("Recommend increase size to %d MiB", size);
+        }
+    }
+    *fb = (FrameBuffer *)(((uint8_t*)frame) + frame->offset);
     return 0;
 }
 
