@@ -17,6 +17,8 @@
 #include "common/KVMFR.h"
 #include "common/framebuffer.h"
 
+LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx);
+
 /**
  * @brief Initialize LGMP Host for receiving data from libtrf
  * 
@@ -31,7 +33,26 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display);
  * 
  * @param ctx               PLPContext to use
  * @param display           Display data to write
- * @return 0 on success, negative error code on error
+ * @return 0 on success, negative error code on failure
  */
 int lpRequestFrame(PLPContext ctx, PTRFDisplay disp);
+
+/**
+ * @brief Update host cursor position on the client
+ * 
+ * @param ctx        Context to use
+ * @param cur        Cursor data
+ * @return 0 on success, negative error code on failure
+ */
+int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor *cur);
+
+/**
+ * @brief Post Update to LGMP Client
+ * 
+ * @param ctx       Context to use
+ * @param flags     Cursor Flags
+ * @param mem       PLGMPMemory where cursor data is stored
+ * @return 0 on success, negative error code on failure
+ */
+int lpPostCursor(PLPContext ctx ,uint32_t flags, PLGMPMemory mem);
 #endif

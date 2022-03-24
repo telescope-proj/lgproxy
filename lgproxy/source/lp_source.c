@@ -1,12 +1,27 @@
 #include "lp_source.h"
 
+
+#define USAGEGUIDE "LGProxy Source Usage Guide\n \
+-h\tAddress to allow connections from (set to '0.0.0.0' to allow from all)\n \
+-p\tPort to listen to for incoming NCP connections\n \
+-f\tSHM file to read data from Looking Glass Host\n \
+-s\tSize to allocate for SHM File in Bytes\n\n"
+
+volatile int8_t flag = 0;
+
+void exitHandler(int dummy)
+{
+    if (flag == 1)
+    {
+        lp__log_info("Force quitting...");
+        exit(0);
+    }
+    flag = 1;
+}
+
 int main(int argc, char ** argv)
 {
-
-    // lp__log_set_level(LP__LOG_ERROR);
-    // trf__log_set_level(TRF__LOG_ERROR);
-
-    // PTRFContext ctx = trfAllocContext();
+    signal(SIGINT, exitHandler);
     PLPContext ctx = lpAllocContext();
     if (!ctx)
         return ENOMEM;
@@ -31,11 +46,59 @@ int main(int argc, char ** argv)
             case 's':
                 ctx->ram_size = (uint32_t) atoi(optarg);
                 break;
+            default:
             case '?':
                 lp__log_fatal("Invalid argument -%c", optopt);
+                printf(USAGEGUIDE);
                 return EINVAL;
         }
     }
+
+
+    if (!host || !port || !ctx->shm || ctx->ram_size == 0)
+    {
+        printf(USAGEGUIDE);
+        return EINVAL;
+    }
+
+    char* loglevel = getenv("LP_LOG_LEVEL");
+    if (!loglevel)
+    {
+        lp__log_set_level(LP__LOG_FATAL);
+        trf__log_set_level(TRF__LOG_FATAL);
+    }
+    else
+    {
+        int temp = atoi(loglevel);
+        switch (temp)
+        {
+        case 1:
+            lp__log_set_level(LP__LOG_TRACE);
+            trf__log_set_level(TRF__LOG_TRACE);
+            break;
+        case 2:
+            lp__log_set_level(LP__LOG_DEBUG);
+            trf__log_set_level(TRF__LOG_TRACE);
+            break;
+        case 3:
+            lp__log_set_level(LP__LOG_INFO);
+            trf__log_set_level(TRF__LOG_INFO);
+            break;
+        case 4:
+            lp__log_set_level(LP__LOG_WARN);
+            trf__log_set_level(TRF__LOG_WARN);
+            break;
+        case 5:
+            lp__log_set_level(LP__LOG_ERROR);
+            trf__log_set_level(TRF__LOG_ERROR);
+            break;
+        default:
+            lp__log_set_level(LP__LOG_FATAL);
+            trf__log_set_level(TRF__LOG_FATAL);
+            break;
+        }
+    }
+
 
     if (!host || !port)
     {
@@ -83,13 +146,16 @@ int main(int argc, char ** argv)
     }
 
     KVMFRFrame * metadata = NULL; 
-
-
+    KVMFRCursor * cursor = NULL;
     FrameBuffer * fb = NULL;
+    LGMP_STATUS status;
     // Get the first frame from the host so we have metadata
 
     while (1)
     {
+        if (flag)
+            goto destroy_ctx;
+        
         ret = lpGetFrame(ctx, &metadata, &fb);
         if ((ret == -EAGAIN))
         {
@@ -122,6 +188,9 @@ int main(int argc, char ** argv)
     uint64_t processed;
     TrfMsg__MessageWrapper *msg = NULL;
     while (1){
+        if (flag)
+            goto destroy_ctx;
+        
         ret = trfGetMessageAuto(ctx->lp_client.client_ctx, TRFM_SET_DISP, 
                 &processed, (void **) &msg);
 
@@ -164,7 +233,8 @@ int main(int argc, char ** argv)
         return -1;
     }
 
-    req_disp->fb_addr = ctx->ram;
+    req_disp->mem.ptr = ctx->ram;
+    // req_disp->fb_addr = ctx->ram;
     ret = trfRegDisplayCustom(ctx->lp_client.client_ctx, req_disp, 
                               ctx->ram_size, 
                               framebuffer_get_data(fb) - (uint8_t *) ctx->ram, 
@@ -187,7 +257,7 @@ int main(int argc, char ** argv)
     ssize_t dispBytes = trfGetDisplayBytes(req_disp);
     if (dispBytes < 0)
     {
-        lp__log_error("Unable to get frame size");
+        lp__log_error("Unable to get frame size: %d", dispBytes);
         return -1;
     }
 
@@ -197,9 +267,14 @@ int main(int argc, char ** argv)
         return -1;
     }
 
-
     while (1)
     {
+        if (flag)
+        {
+            lp__log_error("Destroying CTX");
+            goto destroy_ctx;
+        }
+        
         ret = trfGetMessageAuto(ctx->lp_client.client_ctx, 
                     ~(TRFM_CLIENT_F_REQ | TRFM_KEEP_ALIVE), &processed, 
                     (void **) &msg);
@@ -217,10 +292,10 @@ int main(int argc, char ** argv)
         if (processed == TRFM_CLIENT_F_REQ)
         {
             // Check if address of fb has changed
-            if (framebuffer_get_data(fb) != req_disp->fb_addr)
+            if (framebuffer_get_data(fb) != req_disp->mem.ptr)
             {
                 req_disp->fb_offset = framebuffer_get_data(fb) 
-                                      - req_disp->fb_addr;
+                                      - (uint8_t *) req_disp->mem.ptr;
             }
 
             struct timespec ts, te;
@@ -237,6 +312,21 @@ int main(int argc, char ** argv)
             // Get new frame from Looking Glass
             while (1)
             {
+                if (flag)
+                    goto destroy_ctx;
+
+                if (lpgetCursor(ctx, &cursor) < 0)
+                {
+                    lp__log_error("Unable to get cursor position");
+                    return -1;
+                }
+
+                if (cursor)
+                {
+                    lp__log_trace("Mouse position \n\tX --> %d\n\tY--> %d",
+                        cursor->x, cursor->y);
+                }
+
                 ret = lpGetFrame(ctx, &metadata, &fb);
                 if (ret == -EAGAIN)
                 {
@@ -293,7 +383,8 @@ int main(int argc, char ** argv)
 
             struct fi_cq_data_entry de;
             struct fi_cq_err_entry err = {0};
-            ret = trfGetSendProgress(ctx->lp_client.client_ctx, &de, &err, 1);
+            ret = trfGetSendProgress(ctx->lp_client.client_ctx, &de, &err, 1, 
+                    ctx->lp_client.client_ctx->opts);
             if (ret <= 0)
             {
                 lp__log_error("Error: %s", fi_strerror(err.err));
@@ -321,6 +412,7 @@ int main(int argc, char ** argv)
             // disconnected peer (which results in a wait until the timeout).
             ctx->lp_host.server_ctx->disconnected = 1;
             printf("Client requested a disconnect\n");
+            goto destroy_ctx;
             break;
         }
         else
@@ -333,6 +425,12 @@ int main(int argc, char ** argv)
 
 
 destroy_ctx:
+    lp__log_debug("disconnected?: %d", ctx->lp_client.client_ctx->disconnected);
+    status = lgmpClientUnsubscribe(&ctx->lp_client.client_q);
+    if (status != LGMP_OK)
+    {
+        lp__log_error("Unable to unsubscribe from host");
+    }
     lpDestroyContext(ctx);
     return ret;
 }

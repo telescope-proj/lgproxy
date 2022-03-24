@@ -1,6 +1,8 @@
 #ifndef _LP_TYPES_H
 #define _LP_TYPES_H
 
+#include "lp_log.h"
+
 #include <stdio.h>
 #include "lgmp/client.h"
 #include "lgmp/host.h"
@@ -12,6 +14,10 @@
 #include "trf.h"
 #include <sys/mman.h>
 
+
+#define POINTER_SHAPE_BUFFERS 3
+#define MAX_POINTER_SIZE (sizeof(KVMFRCursor) + (512 * 512 * 4))
+
 enum LP_STATE {
     LP_STATE_RUNNING,
     LP_STATE_INVALID,
@@ -19,19 +25,33 @@ enum LP_STATE {
     LP_STATE_RESTART
 };
 
+typedef enum LG_RendererCursor
+{
+    LG_CURSOR_COLOR,
+    LG_CURSOR_MONOCHROME,
+    LG_CURSOR_MASKED_COLOR
+} LG_RendererCursor;
+
+
 typedef struct {
     PLGMPClient             lgmp_client;
     PLGMPClientQueue        client_q;
+    PLGMPClientQueue        pointer_q;
     PTRFContext             client_ctx;
 } LPClient;
 
 typedef struct {
     PLGMPHost               lgmp_host;
     PLGMPHostQueue          host_q;
+    PLGMPHostQueue          pointer_q;
     PLGMPMemory             frame_memory[LGMP_Q_FRAME_LEN];
-    uint64_t                aaaaa;
+    PLGMPMemory             pointer_memory[LGMP_Q_POINTER_LEN];
+    PLGMPMemory             pointershape_memory[POINTER_SHAPE_BUFFERS];
+    PLGMPMemory             pointer_shape;
+    bool                    pointer_shape_valid;
     PTRFContext             server_ctx;
     unsigned int            frame_index;
+    unsigned int            pointer_index;
 } LPHost;
 
 struct LPContext {
@@ -47,6 +67,15 @@ struct LPContext {
 
 
 #define PLPContext struct LPContext *
+
+/**
+ * @brief Poll for a message, decoding it if the message has been received.
+ * 
+ * @param ctx   Context to use.
+ * @param msg   Message pointer to be set when a message has been received.
+ * @return      0 on success, negative error code on failure.
+ */
+int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg);
 
 /**
  * @brief Allocates Memory for lpAllocContext

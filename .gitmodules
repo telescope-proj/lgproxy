@@ -7,3 +7,4 @@
 [submodule "repos/LookingGlass"]
 	path = repos/LookingGlass
 	url = https://github.com/telescope-proj/LookingGlass.git
+	branch = client-dxtc

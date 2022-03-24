@@ -29,10 +29,7 @@ jobs:
       run: git clone https://github.com/ofiwg/libfabric.git
         && cd ./libfabric
         && sudo ./autogen.sh
-        && ./configure --prefix=/opt/libfabric 
-          --enable-only
-          --enable-tcp=yes
-          --enable-rxm=yes 
+        && ./configure --prefix=/opt/libfabric
         && make -j $(nproc) 
         && sudo make install
         && sudo cp -r include/. /usr/include

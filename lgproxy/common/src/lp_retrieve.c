@@ -143,6 +143,27 @@ int lpClientInitSession(PLPContext ctx)
         ctx->state = LP_STATE_STOP;
         break;
     }
+
+    while (ctx->state == LP_STATE_RUNNING)
+    {
+        status = lgmpClientSubscribe(ctx->lp_client.lgmp_client, LGMP_Q_POINTER,
+                &ctx->lp_client.pointer_q);
+        {
+            if (status == LGMP_OK)
+            {
+                break;
+            }
+            if (status == LGMP_ERR_NO_SUCH_QUEUE)
+            {
+                usleep(100);
+                continue;
+            }
+            lp__log_error("Unable to subscribe to pointer queue: %s", 
+                            lgmpStatusString(status));
+            ctx->state = LP_STATE_STOP;
+            break;
+        }
+    }
     return 0;
 }
 
@@ -242,5 +263,63 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     }
     *fb = (FrameBuffer *)(((uint8_t*)frame) + frame->offset);
     lgmpClientMessageDone(ctx->lp_client.client_q);
+    return 0;
+}
+
+int lpgetCursor(PLPContext ctx, KVMFRCursor **out)
+{
+    LGMP_STATUS status;
+    KVMFRCursor * cursor = NULL;
+    LGMPMessage msg;
+    int cursorSize = 0;
+
+    while (ctx->state == LP_STATE_RUNNING)
+    {
+        status = lgmpClientProcess(ctx->lp_client.pointer_q, &msg);
+        if (status == LGMP_OK)
+        {
+            break;
+        }
+        if (status == LGMP_ERR_QUEUE_EMPTY) // No change in cursor position
+        {
+            cursor = NULL;
+            return 0;
+        }
+        if (status == LGMP_ERR_QUEUE_TIMEOUT)
+        {
+            status = lgmpClientSubscribe(ctx->lp_client.lgmp_client, 
+                LGMP_Q_POINTER, &ctx->lp_client.pointer_q);
+            if (status != LGMP_OK)
+            {
+                lp__log_error("Unable to resubscribe to pointer queue");
+                return -1;
+            }
+            continue;
+        }
+        if (status == LGMP_ERR_INVALID_SESSION)
+        {
+            lp__log_error("Invalid Session");
+            return -1;
+        }
+        else{
+            lp__log_error("lgmpClientProcess Failed: %s", 
+                lgmpStatusString(status));
+            lgmpClientMessageDone(ctx->lp_client.pointer_q);
+            return -1;
+        }
+    }
+    KVMFRCursor *tmpCur = (KVMFRCursor *)msg.mem;
+    const int sizeNeeded = sizeof(tmpCur) + 
+        (msg.udata & CURSOR_FLAG_SHAPE ? 
+            tmpCur->height * tmpCur->pitch : 0);
+    
+    if (cursor && sizeNeeded > cursorSize)
+    {
+        free(cursor);
+        cursor = NULL;
+    }
+    
+    lgmpClientMessageDone(ctx->lp_client.pointer_q);
+    *out = tmpCur;
     return 0;
 }

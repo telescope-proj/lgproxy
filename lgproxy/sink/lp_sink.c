@@ -1,10 +1,28 @@
 #include "lp_sink.h"
 
 
-int main(int argc, char ** argv){
-    
-    // lp__log_set_level(LP__LOG_ERROR);
-    // trf__log_set_level(TRF__LOG_ERROR);
+#define USAGEGUIDE "LGProxy Sink Usage Guide\n \
+-h\tHost to connect to\n \
+-p\tPort to connect to on the host for the NCP Channel\n \
+-f\tSHM file to write data into\n \
+-s\tSize to allocate for SHM File in Bytes\n\n"
+
+
+volatile int8_t flag = 0;
+
+void exitHandler(int dummy)
+{
+    if (flag == 1)
+    {
+        lp__log_info("Force quitting...");
+        exit(0);
+    }
+    flag = 1;
+}
+
+int main(int argc, char ** argv)
+{
+    signal(SIGINT, exitHandler);    
     PLPContext ctx = lpAllocContext();
     if (!ctx) {
         return - EINVAL;
@@ -32,11 +50,59 @@ int main(int argc, char ** argv){
             case 's':
                 ctx->ram_size = (uint32_t) atoi(optarg);
                 break;
+            default:
             case '?':
                 lp__log_fatal("Invalid argument -%c", optopt);
+                printf(USAGEGUIDE);
                 return EINVAL;
         }
     }
+
+
+    if (!host || !port || !ctx->shm || ctx->ram_size == 0)
+    {
+        printf(USAGEGUIDE);
+        return EINVAL;
+    }
+
+    char* loglevel = getenv("LP_LOG_LEVEL");
+    if (!loglevel)
+    {
+        lp__log_set_level(LP__LOG_FATAL);
+        trf__log_set_level(TRF__LOG_FATAL);
+    }
+    else
+    {
+        int temp = atoi(loglevel);
+        switch (temp)
+        {
+        case 1:
+            lp__log_set_level(LP__LOG_TRACE);
+            trf__log_set_level(TRF__LOG_TRACE);
+            break;
+        case 2:
+            lp__log_set_level(LP__LOG_DEBUG);
+            trf__log_set_level(TRF__LOG_TRACE);
+            break;
+        case 3:
+            lp__log_set_level(LP__LOG_INFO);
+            trf__log_set_level(TRF__LOG_INFO);
+            break;
+        case 4:
+            lp__log_set_level(LP__LOG_WARN);
+            trf__log_set_level(TRF__LOG_WARN);
+            break;
+        case 5:
+            lp__log_set_level(LP__LOG_ERROR);
+            trf__log_set_level(TRF__LOG_ERROR);
+            break;
+        default:
+            lp__log_set_level(LP__LOG_FATAL);
+            trf__log_set_level(TRF__LOG_FATAL);
+            break;
+        }
+    }
+
 
     if ((ret = lpTrfClientInit(ctx, host, port)) < 0)
     {
@@ -80,7 +146,7 @@ int main(int argc, char ** argv){
         return -1;
     }
 
-    displays->fb_addr = ctx->ram;
+    displays->mem.ptr = ctx->ram;
     ret = trfRegDisplayCustom(ctx->lp_client.client_ctx, displays, 
                               ctx->ram_size, 0, FI_WRITE | FI_REMOTE_WRITE);
     if (ret < 0)
@@ -98,10 +164,14 @@ int main(int argc, char ** argv){
     printf( "\"Frame\",\"Size\",\"Request (ms)\",\"Frame Time (ms)\""
             ",\"Speed (Gbit/s)\",\"Framerate (Hz)\"\n");
     struct timespec tstart, tend;
-    int ctr = 0;
+    int ctr     = 0;
+    int retries = 0;
 
     while (1)
     {
+        if (flag)
+            goto destroy_ctx;
+
         LGMP_STATUS status;
         status = lgmpHostProcess(ctx->lp_host.lgmp_host);
         if (status != LGMP_OK && status != LGMP_ERR_QUEUE_EMPTY)
@@ -112,15 +182,26 @@ int main(int argc, char ** argv){
 
         if (!lgmpHostQueueHasSubs(ctx->lp_host.host_q))
         {
-            lp__log_debug("Waiting.....");
-            trfSleep(100);
+            retries > 100 ? trfSleep(100) : trfSleep(1);
+            retries++;
             ctr++;
             if (ctr % 10 == 0)
             {
-                trfSendKeepAlive(ctx->lp_client.client_ctx);
+                ret = trfSendKeepAlive(ctx->lp_client.client_ctx);
+                if (ret < 0)
+                {
+                    lp__log_error("Connection error");
+                    if (ret == -ETIMEDOUT || ret == -EPIPE)
+                        ctx->lp_client.client_ctx->disconnected = 1;
+                        
+                    goto destroy_ctx;
+                }
+                lp__log_trace("Sending Keep Alive");
             }
             continue;
         }
+
+        retries = 0;
 
         // Update the offset where LGMP has stored the actual framebuffer data
         ret = lpRequestFrame(ctx, displays);
@@ -146,35 +227,40 @@ int main(int argc, char ** argv){
 
         while (1)
         {
-            
-            lp__log_trace("LGMP Status: %s", lgmpStatusString(status));
-            struct fi_cq_data_entry de;
-            struct fi_cq_err_entry err;
-            ret = trfGetRecvProgress(ctx->lp_client.client_ctx, &de, &err, 1);
-            if (ret < 0)
+            if (flag)
+                goto destroy_ctx;
+
+            status = lpKeepLGMPSessionAlive(ctx);
+            if (status != LGMP_OK)
             {
-                printf("Unable to get receive progress: error %s\n", 
-                    strerror(-ret));
                 return -1;
             }
-            ret = trfMsgUnpack(&msg, 
-                    trfMsgGetPackedLength(ctx->lp_client.client_ctx->xfer.fabric->msg_ptr),
-                    trfMsgGetPayload(ctx->lp_client.client_ctx->xfer.fabric->msg_ptr));
+        
+            ret = lpPollMsg(ctx, &msg);
+            if (ret == -EAGAIN)
+            {
+                trfSleep(ctx->lp_client.client_ctx->opts->fab_poll_rate);
+                continue;
+            }
+
             if (ret < 0)
             {
-                printf("Unable to unpack: %s\n", 
-                    strerror(-ret));
+                lp__log_error("Unable to poll CQ: %s", fi_strerror(-ret));
                 return -1;
             }
+
             uint64_t ifmt = trfPBToInternal(msg->wdata_case);
             if (ifmt == TRFM_KEEP_ALIVE)
             {
                 lp__log_debug("Waiting for new data...");
                 trf__ProtoFree(msg);
-                ret = fi_recv(ctx->lp_client.client_ctx->xfer.fabric->ep, 
-                    ctx->lp_client.client_ctx->xfer.fabric->msg_ptr, 
+                struct TRFMem msgmem = \
+                        ctx->lp_client.client_ctx->xfer.fabric->msg_mem;
+
+                ret = fi_recv(ctx->lp_client.client_ctx->xfer.fabric->ep,
+                    trfMemPtr(&msgmem),
                     ctx->lp_client.client_ctx->opts->fab_rcv_bufsize,
-                    fi_mr_desc(ctx->lp_client.client_ctx->xfer.fabric->msg_mr), 
+                    trfMemFabricDesc(&msgmem), 
                     ctx->lp_client.client_ctx->xfer.fabric->peer_addr, NULL);
                 if (ret < 0)
                 {

@@ -37,4 +37,13 @@ int lpClientInitSession(PLPContext ctx);
  * @return 0 on success, negative error code on error
  */
 int lpGetFrame(PLPContext ctx, KVMFRFrame **out, FrameBuffer **fb);
+
+/**
+ * @brief Get the Cursor object
+ * 
+ * @param ctx       Context to use
+ * @param out       Cursor from Looking Glass Host if there is no change in cursor postion it out will be set to NULL
+ * @return 0 on success, negative error code on failure
+ */
+int lpgetCursor(PLPContext ctx, KVMFRCursor **out);
 #endif

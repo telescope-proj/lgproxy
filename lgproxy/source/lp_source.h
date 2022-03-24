@@ -14,6 +14,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <pthread.h>
+#include <signal.h>
 #include "common/framebuffer.h"
 
 #endif

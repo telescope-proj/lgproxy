@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "lp_types.h"
 #include "trf.h"
