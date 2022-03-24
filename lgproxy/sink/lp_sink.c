@@ -2,6 +2,9 @@
 
 
 int main(int argc, char ** argv){
+    
+    // lp__log_set_level(LP__LOG_ERROR);
+    // trf__log_set_level(TRF__LOG_ERROR);
     PLPContext ctx = lpAllocContext();
     if (!ctx) {
         return - EINVAL;
@@ -9,6 +12,8 @@ int main(int argc, char ** argv){
     int ret = 0;
     char * host = NULL;
     char * port = NULL;
+
+    TrfMsg__MessageWrapper * msg = NULL;
 
     int o;
     while ((o = getopt(argc, argv, "h:p:f:s:")) != -1)
@@ -62,27 +67,6 @@ int main(int argc, char ** argv){
         printf("---------------------------------------------\n");
     }
 
-    if ((ret = trfSendClientReq(ctx->lp_client.client_ctx, displays)) < 0)
-    {
-        printf("Unable to send display request");
-        return -1;
-    }
-
-    displays->fb_addr = trfAllocAligned(trfGetDisplayBytes(displays), 2097152);
-    if (!displays->fb_addr)
-    {
-        lp__log_error("Unable to allocate memory for display");
-        return -1;
-
-    }
-
-    ret = trfRegDisplaySink(ctx->lp_client.client_ctx, displays);
-    if (ret < 0)
-    {
-        printf("Unable to register display sink: error %s\n", strerror(ret));
-        return -1;
-    }
-
     if (lpInitHost(ctx, displays) < 0)
     {
         lp__log_error("Unable to initialize lgmp host");
@@ -90,17 +74,63 @@ int main(int argc, char ** argv){
         goto destroy_ctx;
     }
 
+    if ((ret = trfSendClientReq(ctx->lp_client.client_ctx, displays)) < 0)
+    {
+        printf("Unable to send display request");
+        return -1;
+    }
+
+    displays->fb_addr = ctx->ram;
+    ret = trfRegDisplayCustom(ctx->lp_client.client_ctx, displays, 
+                              ctx->ram_size, 0, FI_WRITE | FI_REMOTE_WRITE);
+    if (ret < 0)
+    {
+        lp__log_error("Unable to register SHM buffer: %s",
+                      fi_strerror(abs(ret)));
+        return -1;
+    }
+
     #define timespecdiff(_start, _end) \
     (((_end).tv_sec - (_start).tv_sec) * 1000000000 + \
     ((_end).tv_nsec - (_start).tv_nsec))
 
-    // Request 100 frames from the first display in the list
+    
     printf( "\"Frame\",\"Size\",\"Request (ms)\",\"Frame Time (ms)\""
             ",\"Speed (Gbit/s)\",\"Framerate (Hz)\"\n");
     struct timespec tstart, tend;
+    int ctr = 0;
 
-    for (int f = 0; f < 100; f++)
+    while (1)
     {
+        LGMP_STATUS status;
+        status = lgmpHostProcess(ctx->lp_host.lgmp_host);
+        if (status != LGMP_OK && status != LGMP_ERR_QUEUE_EMPTY)
+        {
+            lp__log_error("lgmpHostProcess failed: %s", lgmpStatusString(status));
+            return -1;
+        }
+
+        if (!lgmpHostQueueHasSubs(ctx->lp_host.host_q))
+        {
+            lp__log_debug("Waiting.....");
+            trfSleep(100);
+            ctr++;
+            if (ctr % 10 == 0)
+            {
+                trfSendKeepAlive(ctx->lp_client.client_ctx);
+            }
+            continue;
+        }
+
+        // Update the offset where LGMP has stored the actual framebuffer data
+        ret = lpRequestFrame(ctx, displays);
+        if (ret < 0)
+        {
+            lp__log_error("Unable to request frame: %d", ret);
+            ret = -1;
+            goto destroy_ctx;
+        }
+        
         // Post a frame receive request. This will inform the server that the
         // client is ready to receive a frame, but the frame will not be ready
         // until the server sends an acknowledgement.
@@ -113,27 +143,61 @@ int main(int argc, char ** argv){
         }
         clock_gettime(CLOCK_MONOTONIC, &tend);
         double tsd1 = timespecdiff(tstart, tend) / 1000000.0;
-        struct fi_cq_data_entry de;
-        struct fi_cq_err_entry err;
-        ret = trfGetRecvProgress(ctx->lp_client.client_ctx, &de, &err, 1);
-        if (ret < 0)
+
+        while (1)
         {
-            printf("Unable to get receive progress: error %s\n", 
-                   strerror(-ret));
-            return -1;
+            
+            lp__log_trace("LGMP Status: %s", lgmpStatusString(status));
+            struct fi_cq_data_entry de;
+            struct fi_cq_err_entry err;
+            ret = trfGetRecvProgress(ctx->lp_client.client_ctx, &de, &err, 1);
+            if (ret < 0)
+            {
+                printf("Unable to get receive progress: error %s\n", 
+                    strerror(-ret));
+                return -1;
+            }
+            ret = trfMsgUnpack(&msg, 
+                    trfMsgGetPackedLength(ctx->lp_client.client_ctx->xfer.fabric->msg_ptr),
+                    trfMsgGetPayload(ctx->lp_client.client_ctx->xfer.fabric->msg_ptr));
+            if (ret < 0)
+            {
+                printf("Unable to unpack: %s\n", 
+                    strerror(-ret));
+                return -1;
+            }
+            uint64_t ifmt = trfPBToInternal(msg->wdata_case);
+            if (ifmt == TRFM_KEEP_ALIVE)
+            {
+                lp__log_debug("Waiting for new data...");
+                trf__ProtoFree(msg);
+                ret = fi_recv(ctx->lp_client.client_ctx->xfer.fabric->ep, 
+                    ctx->lp_client.client_ctx->xfer.fabric->msg_ptr, 
+                    ctx->lp_client.client_ctx->opts->fab_rcv_bufsize,
+                    fi_mr_desc(ctx->lp_client.client_ctx->xfer.fabric->msg_mr), 
+                    ctx->lp_client.client_ctx->xfer.fabric->peer_addr, NULL);
+                if (ret < 0)
+                {
+                    lp__log_error("Unable to receive message");
+                }
+            }
+            else if (ifmt == TRFM_SERVER_ACK_F_REQ)
+            {
+                lp__log_debug("Acknowledgement received...");
+                break;
+            }
+            else
+            {
+                lp__log_debug("Invalid message type %d", ifmt);
+                break;
+            }
         }
+
         clock_gettime(CLOCK_MONOTONIC, &tend);
         double tsd2 = timespecdiff(tstart, tend) / 1000000.0;
 
-        if(!lpWriteFrame(ctx,displays))
-        {
-            lp__log_error("Unable to write frame data");
-            ret = -1;
-            goto destroy_ctx;
-        }
-        
-        printf("%d,%ld,%f,%f,%f,%f\n",
-               f, trfGetDisplayBytes(displays), tsd1, tsd2, 
+        printf("%ld,%f,%f,%f,%f\n",
+               trfGetDisplayBytes(displays), tsd1, tsd2, 
                ((double) trfGetDisplayBytes(displays)) / tsd2 / 1e5,
                1000.0 / tsd2);
         displays->frame_cntr++;

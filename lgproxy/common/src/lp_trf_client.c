@@ -14,7 +14,7 @@ int lpTrfClientInit(PLPContext ctx, char * host, char * port){
         lp__log_error("Unable to Initialize Client");
         goto destroy_client;
     }
-    
+
     trf__log_debug("Client Initialized");
     
     return 0;

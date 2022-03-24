@@ -170,7 +170,7 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
             struct timespec req =
             {
             .tv_sec  = 0,
-            .tv_nsec = 1000
+            .tv_nsec = 10000
             };
 
             struct timespec rem;
@@ -183,11 +183,23 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
             }
             req = rem;
             }
-            continue;
+            return -EAGAIN;
         }
         if (status == LGMP_ERR_INVALID_SESSION)
         {
             ctx->state = LP_STATE_RESTART;
+        }
+        if (status == LGMP_ERR_QUEUE_TIMEOUT)
+        {
+            status = lgmpClientSubscribe(ctx->lp_client.lgmp_client, 
+                            LGMP_Q_FRAME, 
+                            &ctx->lp_client.client_q);
+            if (status != LGMP_OK)
+            {
+                ctx->state = LP_STATE_RESTART;
+                return -1;
+            }
+            continue;
         }
         else
         {
@@ -200,6 +212,7 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     KVMFRFrame * frame = (KVMFRFrame *)msg.mem;
     if (frame->frameSerial == frameSerial && ctx->format_valid)
     {
+        lp__log_error("Repeated Frame");
         lgmpClientMessageDone(ctx->lp_client.client_q);
     }
     
@@ -228,6 +241,6 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
         }
     }
     *fb = (FrameBuffer *)(((uint8_t*)frame) + frame->offset);
+    lgmpClientMessageDone(ctx->lp_client.client_q);
     return 0;
 }
-

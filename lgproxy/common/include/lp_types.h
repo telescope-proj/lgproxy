@@ -6,6 +6,7 @@
 #include "lgmp/host.h"
 #include "lgmp/lgmp.h"
 #include "common/KVMFR.h"
+#include "common/time.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include "trf.h"
@@ -28,6 +29,7 @@ typedef struct {
     PLGMPHost               lgmp_host;
     PLGMPHostQueue          host_q;
     PLGMPMemory             frame_memory[LGMP_Q_FRAME_LEN];
+    uint64_t                aaaaa;
     PTRFContext             server_ctx;
     unsigned int            frame_index;
 } LPHost;
@@ -39,10 +41,8 @@ struct LPContext {
     uint32_t                ram_size;
     bool                    format_valid;
     int                     shmFile;
-    union{
-        LPClient            lp_client;
-        LPHost              lp_host;
-    };
+    LPClient                lp_client;
+    LPHost                  lp_host;
 };
 
 

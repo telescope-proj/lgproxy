@@ -15,9 +15,18 @@ void lpDestroyContext(PLPContext ctx){
     {
         lgmpHostFree(&ctx->lp_host.lgmp_host);
     }
-    trfDestroyContext(ctx->lp_client.client_ctx);
-    trfDestroyContext(ctx->lp_host.server_ctx);
+    if (ctx->lp_client.client_ctx)
+    {
+        trfDestroyContext(ctx->lp_client.client_ctx);
+    }
+    if (ctx->lp_host.server_ctx)
+    {
+        trfDestroyContext(ctx->lp_host.server_ctx);
+    }
 
     munmap(ctx->ram, ctx->ram_size);
-    close(ctx->shmFile);
+    if (ctx->shmFile)
+    {
+        close(ctx->shmFile);
+    }
 }

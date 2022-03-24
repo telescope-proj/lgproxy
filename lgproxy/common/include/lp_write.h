@@ -31,8 +31,7 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display);
  * 
  * @param ctx               PLPContext to use
  * @param display           Display data to write
- * @return true on succes, false on error
+ * @return 0 on success, negative error code on error
  */
-bool lpWriteFrame(PLPContext ctx, PTRFDisplay display);
-
+int lpRequestFrame(PLPContext ctx, PTRFDisplay disp);
 #endif
