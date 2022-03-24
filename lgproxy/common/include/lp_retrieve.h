@@ -36,5 +36,5 @@ int lpClientInitSession(PLPContext ctx);
  * @param out           Frame retrieved from LookingGlass
  * @return 0 on success, negative error code on error
  */
-int lpGetFrame(PLPContext ctx, KVMFRFrame *out, FrameBuffer *fb);
+int lpGetFrame(PLPContext ctx, KVMFRFrame **out, FrameBuffer **fb);
 #endif

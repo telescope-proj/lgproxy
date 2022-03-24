@@ -2,6 +2,10 @@
 
 int main(int argc, char ** argv)
 {
+
+    // lp__log_set_level(LP__LOG_ERROR);
+    // trf__log_set_level(TRF__LOG_ERROR);
+
     // PTRFContext ctx = trfAllocContext();
     PLPContext ctx = lpAllocContext();
     if (!ctx)
@@ -23,8 +27,10 @@ int main(int argc, char ** argv)
                 break;
             case 'f':
                 ctx->shm = optarg;
+                break;
             case 's':
                 ctx->ram_size = (uint32_t) atoi(optarg);
+                break;
             case '?':
                 lp__log_fatal("Invalid argument -%c", optopt);
                 return EINVAL;
@@ -46,7 +52,7 @@ int main(int argc, char ** argv)
         goto destroy_ctx;
     }
 
-    if((ret = trfNCAccept(ctx->server_ctx, &ctx->client_ctx)) < 0)
+    if((ret = trfNCAccept(ctx->lp_host.server_ctx, &ctx->lp_client.client_ctx)) < 0)
     {
         lp__log_error("Unable to Accept Client Connection");
         ret = -1;
@@ -76,31 +82,26 @@ int main(int argc, char ** argv)
         goto destroy_ctx;
     }
 
-    KVMFRFrame * metadata = calloc(1, sizeof(struct KVMFRFrame)); 
-    if (!metadata)
-    {
-        lp__log_error("Unable to allocate memory");
-        ret = -ENOMEM;
-        goto destroy_ctx;
-    }
+    KVMFRFrame * metadata = NULL; 
 
 
-    FrameBuffer * fb = calloc(1, 4UL);
-    if (!fb)
-    {
-        lp__log_error("Unable to allocate memory");
-        free(metadata);
-        ret = -ENOMEM;
-        goto destroy_ctx;
-    }
-
+    FrameBuffer * fb = NULL;
     // Get the first frame from the host so we have metadata
 
-    if ((ret = lpGetFrame(ctx, metadata, fb)) < 0)
+    while (1)
     {
-        lp__log_error("unable to get framedata");
-        ret = -1;
-        goto destroy_ctx;
+        ret = lpGetFrame(ctx, &metadata, &fb);
+        if ((ret == -EAGAIN))
+        {
+            continue;
+        }
+        else if (ret < 0 && (ret != -EAGAIN))
+        {
+            lp__log_error("unable to get framedata");
+            ret = -1;
+            goto destroy_ctx;
+        }
+        break;
     }
     displays->id        =   0;
     displays->name      =   "Looking Glass Display";
@@ -110,7 +111,7 @@ int main(int argc, char ** argv)
     displays->format    =  lpLGToTrfFormat(metadata->type);
     displays->rate      =   0;
     
-    ret = trfBindDisplayList(ctx->client_ctx, displays); //Bind display list to client context
+    ret = trfBindDisplayList(ctx->lp_client.client_ctx, displays); //Bind display list to client context
     if (ret < 0)
     {
         trf__log_error("Unable to bind display list");
@@ -121,7 +122,7 @@ int main(int argc, char ** argv)
     uint64_t processed;
     TrfMsg__MessageWrapper *msg = NULL;
     while (1){
-        ret = trfGetMessageAuto(ctx->client_ctx, TRFM_SET_DISP, 
+        ret = trfGetMessageAuto(ctx->lp_client.client_ctx, TRFM_SET_DISP, 
                 &processed, (void **) &msg);
 
         if (ret > 0)
@@ -140,7 +141,7 @@ int main(int argc, char ** argv)
 
     lp__log_trace("Client requested display");
     
-    ret = trfGetMessageAuto(ctx->client_ctx, 0, &processed, (void **) &msg);
+    ret = trfGetMessageAuto(ctx->lp_client.client_ctx, 0, &processed, (void **) &msg);
     if (ret < 0)
     {
         printf("unable to get poll messages: %d\n", ret);
@@ -163,6 +164,170 @@ int main(int argc, char ** argv)
         return -1;
     }
 
+    req_disp->fb_addr = ctx->ram;
+    ret = trfRegDisplayCustom(ctx->lp_client.client_ctx, req_disp, 
+                              ctx->ram_size, 
+                              framebuffer_get_data(fb) - (uint8_t *) ctx->ram, 
+                              FI_READ);
+    if (ret < 0)
+    {
+        lp__log_error("Unable to register framebuffer memory for RDMA: %s",
+                      fi_strerror((int) abs(ret)));
+        return -1;
+    }
+
+    uint32_t disp_id = req_disp->id;
+    ret = trfAckClientReq(ctx->lp_client.client_ctx, &disp_id, 1);
+    if (ret < 0)
+    {
+        printf("unable to acknowledge request: %d\n", ret);
+        return -1;
+    }
+
+    ssize_t dispBytes = trfGetDisplayBytes(req_disp);
+    if (dispBytes < 0)
+    {
+        lp__log_error("Unable to get frame size");
+        return -1;
+    }
+
+    if (!framebuffer_wait(fb, dispBytes))
+    {
+        lp__log_error("Wait timedout");
+        return -1;
+    }
+
+
+    while (1)
+    {
+        ret = trfGetMessageAuto(ctx->lp_client.client_ctx, 
+                    ~(TRFM_CLIENT_F_REQ | TRFM_KEEP_ALIVE), &processed, 
+                    (void **) &msg);
+        if (ret < 0)
+        {
+            printf("unable to get poll messages: %d\n", ret);
+            return -1;
+        }
+        if (processed == TRFM_KEEP_ALIVE)
+        {
+            lp__log_debug("Received keep alive...");
+            trf__ProtoFree(msg);
+            continue;
+        }
+        if (processed == TRFM_CLIENT_F_REQ)
+        {
+            // Check if address of fb has changed
+            if (framebuffer_get_data(fb) != req_disp->fb_addr)
+            {
+                req_disp->fb_offset = framebuffer_get_data(fb) 
+                                      - req_disp->fb_addr;
+            }
+
+            struct timespec ts, te;
+            ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+            if (ret < 0)
+            {
+                trf__log_error("System clock error: %s", strerror(errno));
+                return -errno;
+            }
+            trf__GetDelay(&ts, &te, 1000);
+
+            trf__log_debug("Waiting for new frame data...");
+
+            // Get new frame from Looking Glass
+            while (1)
+            {
+                ret = lpGetFrame(ctx, &metadata, &fb);
+                if (ret == -EAGAIN)
+                {
+                    if (trf__HasPassed(CLOCK_MONOTONIC, &te))
+                    {
+                        lp__log_debug("Sending keep alive...");
+                        ret = trfSendKeepAlive(ctx->lp_client.client_ctx);
+                        if (ret < 0)
+                        {
+                            lp__log_debug("Error sending keep alive: %s", fi_strerror(abs(ret)));
+                            return ret;
+                        }
+                        ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+                        if (ret < 0)
+                        {
+                            trf__log_error("System clock error: %s", strerror(errno));
+                            return -errno;
+                        }
+                        trf__GetDelay(&ts, &te, 1000);
+                        lp__log_debug("Sent keep alive");
+                    }
+                    continue;
+                }
+                else if (ret < 0 && ret != -EAGAIN)
+                {
+                    lp__log_error("unable to get framedata: %d", ret);
+                    ret = -1;
+                    goto destroy_ctx;
+                }
+                framebuffer_wait(fb, trfGetDisplayBytes(displays));
+                if (msg->client_f_req->frame_cntr == metadata->frameSerial)
+                {
+                    ret = lgmpClientMessageDone(ctx->lp_client.client_q);
+                    if (ret != LGMP_OK)
+                    {
+                        lp__log_error("lgmpClientMessageDone: %s", lgmpStatusString(ret));
+                    }
+                    lp__log_debug("Repeated frame");
+                    continue;
+                }
+                lp__log_debug("Got frame from LG");
+                break;
+            }
+        
+            // Handle the frame request
+            ret = trfSendFrame(ctx->lp_client.client_ctx, displays, 
+                               msg->client_f_req->addr, 
+                               msg->client_f_req->rkey);
+            if (ret < 0)
+            {
+                printf("unable to send frame: %d\n", ret);
+                return -1;
+            }
+
+            struct fi_cq_data_entry de;
+            struct fi_cq_err_entry err = {0};
+            ret = trfGetSendProgress(ctx->lp_client.client_ctx, &de, &err, 1);
+            if (ret <= 0)
+            {
+                lp__log_error("Error: %s", fi_strerror(err.err));
+                break;
+            }
+
+            //Post receive message to LGMP
+            ret = lgmpClientMessageDone(ctx->lp_client.client_q);
+            if (ret != LGMP_OK && ret != LGMP_ERR_QUEUE_EMPTY)
+            {
+                lp__log_debug("lgmpClientMessageDone: %s", lgmpStatusString(ret));
+            }
+
+            req_disp->frame_cntr++;
+            ret = trfAckFrameReq(ctx->lp_client.client_ctx, req_disp);
+            if (ret < 0)
+            {
+                printf("Unable to send Ack: %s\n", fi_strerror(ret));
+            }
+        }
+        else if (processed == TRFM_DISCONNECT)
+        {
+            // If the peer initiates a disconnect, setting this flag will ensure
+            // that a disconnect message is not sent back to an already
+            // disconnected peer (which results in a wait until the timeout).
+            ctx->lp_host.server_ctx->disconnected = 1;
+            printf("Client requested a disconnect\n");
+            break;
+        }
+        else
+        {
+            printf("Wrong message type...\n");
+        }
+    }
 
     return 0;
 

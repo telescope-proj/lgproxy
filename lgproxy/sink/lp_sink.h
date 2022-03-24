@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <sys/mman.h>
 #include "lp_trf_client.h"
+#include "lp_write.h"
 
 
 

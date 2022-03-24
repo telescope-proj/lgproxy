@@ -5,10 +5,13 @@ get_filename_component(PROJECT_TOP "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
 
 add_definitions(-DLP_LOG_USE_COLOR)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx")
+
 include_directories(
     "${PROJECT_SOURCE_DIR}/include"
     "${PROJECT_TOP}/repos/LGMP/lgmp/include"
     "${PROJECT_TOP}/repos/libtrf/libtrf/include"
+    "${PROJECT_TOP}/repos/LookingGlass"
     "${PROJECT_TOP}/repos/LookingGlass/common/include"
 )
 
@@ -16,10 +19,24 @@ add_subdirectory("${PROJECT_TOP}/repos/LGMP/lgmp"
                 "${CMAKE_BINARY_DIR}/libs/lgmp")
 add_subdirectory("${PROJECT_TOP}/repos/libtrf/libtrf" 
                 "${CMAKE_BINARY_DIR}/libs/libtrf")
-# add_subdirectory("${PROJECT_TOP}/repos/LookingGlass/common"
-#                  "${CMAKE_BINARY_DIR}/libs/LookingGlass/common")
-file(COPY "${PROJECT_TOP}/repos/LookingGlass/module/kvmfr.h"
-     DESTINATION "${CMAKE_BINARY_DIR}/libs/LookingGlass/common/include/module/kvmfr.h")
+add_subdirectory("${PROJECT_TOP}/repos/LookingGlass/common"
+                "${CMAKE_BINARY_DIR}/libs/LookingGlass/common")   
+
+add_compile_options(
+"-Wall"
+"-Werror"
+"-Wfatal-errors"
+"-ffast-math"
+"-fdata-sections"
+"-ffunction-sections"
+#"$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
+"-O0;-g3;-ggdb"
+) 
+
+execute_process(
+    COMMAND bash -c "cp -r ${PROJECT_TOP}/repos/libtrf/libtrf/conf ./build"
+)
+
 
 set(LP_COMMON
     common/src/lp_log.c
@@ -27,6 +44,7 @@ set(LP_COMMON
     common/src/lp_trf_client.c
     common/src/lp_trf_server.c
     common/src/lp_types.c
+    common/src/lp_write.c
 )
 
 set(SOURCE 
@@ -39,14 +57,14 @@ set(SINK
 )
 
 add_executable(source ${SOURCE})
-target_link_libraries(source trf lgmp m)
+target_link_libraries(source trf lgmp m lg_common)
 set_property(TARGET source PROPERTY C_STANDARD 99)
 
 set_target_properties(source PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")
 
 add_executable(sink ${SINK})
 
-target_link_libraries(sink trf lgmp m)
+target_link_libraries(sink trf lgmp m lg_common)
 set_property(TARGET sink PROPERTY C_STANDARD 99)
 
 set_target_properties(sink PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")       

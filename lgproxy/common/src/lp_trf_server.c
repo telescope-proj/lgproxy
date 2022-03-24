@@ -4,20 +4,22 @@
 int lpTrfServerInit(PLPContext ctx, char * host, char * port){
     int ret = 0;
 
-    ctx->server_ctx = trfAllocContext(); //Initialize Server Context
-    if (!ctx->server_ctx){
+    ctx->lp_host.server_ctx = trfAllocContext(); //Initialize Server Context
+    if (!ctx->lp_host.server_ctx){
         lp__log_error("Unable to allocate server context");
         return -ENOMEM;
     }
 
-    if((ret = trfNCServerInit(ctx->server_ctx, host, port)) < 0)
+    if((ret = trfNCServerInit(ctx->lp_host.server_ctx, host, port)) < 0)
     {
         lp__log_error("Unable to Initialize Server");
         goto destroy_server;
     }
 
+    return 0;
+
 destroy_server:
-    trfDestroyContext(ctx->server_ctx);
+    trfDestroyContext(ctx->lp_host.server_ctx);
     return ret;
 }
 

@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include "lgmp/client.h"
 #include "lgmp/host.h"
+#include "lgmp/lgmp.h"
 #include "common/KVMFR.h"
+#include "common/time.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include "trf.h"
@@ -17,20 +19,32 @@ enum LP_STATE {
     LP_STATE_RESTART
 };
 
-struct LPContext {
+typedef struct {
     PLGMPClient             lgmp_client;
-    PLGMPHost               lgmp_host;
     PLGMPClientQueue        client_q;
-    PLGMPHostQueue          host_q;
-    PTRFContext             server_ctx;
     PTRFContext             client_ctx;
+} LPClient;
+
+typedef struct {
+    PLGMPHost               lgmp_host;
+    PLGMPHostQueue          host_q;
+    PLGMPMemory             frame_memory[LGMP_Q_FRAME_LEN];
+    uint64_t                aaaaa;
+    PTRFContext             server_ctx;
+    unsigned int            frame_index;
+} LPHost;
+
+struct LPContext {
     enum LP_STATE           state;
     const char *            shm;
     void *                  ram;
     uint32_t                ram_size;
-    bool                    formatValid;
+    bool                    format_valid;
     int                     shmFile;
+    LPClient                lp_client;
+    LPHost                  lp_host;
 };
+
 
 #define PLPContext struct LPContext *
 
