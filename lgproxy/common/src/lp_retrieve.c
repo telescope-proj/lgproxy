@@ -230,6 +230,8 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
             return -1;
         }
     }
+
+    lp__log_trace("Frame offset: %lu", (uintptr_t) msg.mem - (uintptr_t) ctx->ram);
     KVMFRFrame * frame = (KVMFRFrame *)msg.mem;
     if (frame->frameSerial == frameSerial && ctx->format_valid)
     {
@@ -249,6 +251,13 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     frameSerial = frame->frameSerial;
     *out = frame;
     
+    lp__log_trace("-----------------------------------------");
+    //uint8_t *index = framebuffer_get_data((FrameBuffer *) ((uint8_t *) frame + frame->offset));
+    lp__log_trace("First 50 Bytes");
+    lp__log_trace("Frame Format: %d", lpLGToTrfFormat(frame->type));
+    size_t ff = ((uint8_t *) frame - (uint8_t *) ctx->ram) + frame->offset;
+    lp__log_trace("ff: %lu, fi->offset: %lu", ff, frame->offset);
+
     if (ctx->format_valid && frame->formatVer != formatVer)
     {
         if (frame->realHeight != frame->height)
@@ -266,7 +275,7 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     return 0;
 }
 
-int lpgetCursor(PLPContext ctx, KVMFRCursor **out)
+int lpgetCursor(PLPContext ctx, KVMFRCursor **out, uint32_t *size)
 {
     LGMP_STATUS status;
     KVMFRCursor * cursor = NULL;
@@ -282,7 +291,7 @@ int lpgetCursor(PLPContext ctx, KVMFRCursor **out)
         }
         if (status == LGMP_ERR_QUEUE_EMPTY) // No change in cursor position
         {
-            cursor = NULL;
+            // cursor = NULL;
             return 0;
         }
         if (status == LGMP_ERR_QUEUE_TIMEOUT)
@@ -308,7 +317,7 @@ int lpgetCursor(PLPContext ctx, KVMFRCursor **out)
             return -1;
         }
     }
-    KVMFRCursor *tmpCur = (KVMFRCursor *)msg.mem;
+    KVMFRCursor *tmpCur = (KVMFRCursor *) msg.mem;
     const int sizeNeeded = sizeof(tmpCur) + 
         (msg.udata & CURSOR_FLAG_SHAPE ? 
             tmpCur->height * tmpCur->pitch : 0);
@@ -318,8 +327,29 @@ int lpgetCursor(PLPContext ctx, KVMFRCursor **out)
         free(cursor);
         cursor = NULL;
     }
+    if (!cursor)
+    {
+        cursor = malloc(sizeNeeded);
+        if (!cursor)
+        {
+            lp__log_error("Unable to allocate memory for pointer data");
+            return -1;
+        }
+        cursorSize = sizeNeeded;
+    }
     
+    memcpy(cursor, msg.mem, sizeNeeded);
+
     lgmpClientMessageDone(ctx->lp_client.pointer_q);
-    *out = tmpCur;
+    *out = cursor;
+    *size = cursorSize;
     return 0;
+}
+
+bool captureGetPointerBuffer(PLPContext ctx, void ** data, uint32_t * size)
+{
+  PLGMPMemory mem = ctx->lp_host.cursor_shape[ctx->lp_host.cursor_shape_index];
+  *data = (uint8_t*)lgmpHostMemPtr(mem) + sizeof(KVMFRCursor);
+  *size = MAX_POINTER_SIZE - sizeof(KVMFRCursor);
+  return true;
 }

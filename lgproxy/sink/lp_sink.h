@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
-#include <signal.h>
+#include <pthread.h>
 
 #include "lp_types.h"
 #include "trf.h"
@@ -16,8 +16,14 @@
 #include <sys/mman.h>
 #include "lp_trf_client.h"
 #include "lp_write.h"
+#include "lp_msg.pb-c.h"
 
-
+/**
+ * @brief Handle Cursor Data
+ * 
+ * @param arg           PLPContext
+ */
+void * lpCursorThread(void * arg);
 
 
 #endif

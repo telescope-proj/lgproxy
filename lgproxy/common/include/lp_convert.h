@@ -1,3 +1,6 @@
+#ifndef _LP_CONVERT_H
+#define _LP_CONVERT_H
+
 #include "common/types.h"
 #include "trf_def.h"
 
@@ -39,3 +42,5 @@ static inline uint64_t lpTrftoLGFormat(int trf_type)
             return FRAME_TYPE_INVALID;
     }
 }
+
+#endif

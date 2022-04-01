@@ -45,6 +45,7 @@ set(LP_COMMON
     common/src/lp_trf_server.c
     common/src/lp_types.c
     common/src/lp_write.c
+    common/src/lp_msg.pb-c.c
 )
 
 set(SOURCE 
@@ -57,14 +58,14 @@ set(SINK
 )
 
 add_executable(source ${SOURCE})
-target_link_libraries(source trf lgmp m lg_common)
+target_link_libraries(source trf lgmp m lg_common protobuf-c)
 set_property(TARGET source PROPERTY C_STANDARD 99)
 
 set_target_properties(source PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")
 
 add_executable(sink ${SINK})
 
-target_link_libraries(sink trf lgmp m lg_common)
+target_link_libraries(sink trf lgmp m lg_common protobuf-c)
 set_property(TARGET sink PROPERTY C_STANDARD 99)
 
 set_target_properties(sink PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")       

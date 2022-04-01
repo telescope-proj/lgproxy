@@ -14,6 +14,7 @@
 #include "lp_types.h"
 #include "common/KVMFR.h"
 #include "common/framebuffer.h"
+#include "lp_convert.h"
 
 /**
  * @param ctx               Context to use
@@ -45,5 +46,5 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame **out, FrameBuffer **fb);
  * @param out       Cursor from Looking Glass Host if there is no change in cursor postion it out will be set to NULL
  * @return 0 on success, negative error code on failure
  */
-int lpgetCursor(PLPContext ctx, KVMFRCursor **out);
+int lpgetCursor(PLPContext ctx, KVMFRCursor **out, uint32_t *size);
 #endif

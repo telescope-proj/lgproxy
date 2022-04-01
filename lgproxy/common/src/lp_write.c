@@ -195,13 +195,13 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
     for(int i = 0; i < POINTER_SHAPE_BUFFERS; ++i)
     {
         if ((status = lgmpHostMemAlloc(ctx->lp_host.lgmp_host, 
-            MAX_POINTER_SIZE, &ctx->lp_host.pointershape_memory[i])) != LGMP_OK)
+            MAX_POINTER_SIZE, &ctx->lp_host.cursor_shape[i])) != LGMP_OK)
         {
         lp__log_error("lgmpHostMemAlloc Failed (Pointer Shapes): %s", 
                 lgmpStatusString(status));
         goto close_fd;
         }
-        memset(lgmpHostMemPtr(ctx->lp_host.pointershape_memory[i]), 
+        memset(lgmpHostMemPtr(ctx->lp_host.cursor_shape[i]), 
                 0, MAX_POINTER_SIZE);
     }
 
@@ -302,21 +302,19 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
     lp__log_trace("Display size: %d x %d", fi->width, fi->height);
     lp__log_trace("Display Type: %d", lpTrftoLGFormat(disp->format));
 
-    uint8_t *tmp = (uint8_t *)fi + fi->offset;
-    for (int i = 0; i < 32; i++)
-    {
-        printf("%hhx", tmp[i]);
-    }
-    printf("\n");
+    disp->fb_offset = ((uint8_t *) fi - (uint8_t *) ctx->ram) + fi->offset
+                       + FrameBufferStructSize;
+    lp__log_trace("Absolute memory position: %p. Relative offset: %lu", 
+                  ((uintptr_t) fi + fi->offset), disp->fb_offset);
+                
 
-    disp->fb_offset = ((uint8_t *) fi - (uint8_t *) ctx->ram) + fi->offset;
     if ((status = lgmpHostQueuePost(ctx->lp_host.host_q, 0, 
             ctx->lp_host.frame_memory[ctx->lp_host.frame_index])) != LGMP_OK)
     {
         lp__log_error("Unable to post queue: %s", lgmpStatusString(status));
         return true;
     }
-    lp__log_debug("Frame offset: %lu", disp->fb_offset);
+    lp__log_debug("Display offset: %lu", disp->fb_offset);
     return 0;
 } 
 

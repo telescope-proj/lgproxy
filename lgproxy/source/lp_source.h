@@ -16,5 +16,13 @@
 #include <pthread.h>
 #include <signal.h>
 #include "common/framebuffer.h"
+#include "lp_msg.pb-c.h"
+
+/**
+ * @brief  Get the current cursor position and update the client side
+ * @param  arg      PTRFContext to use for the connections
+ * 
+ */
+void * lpHandleCursorPos(void * arg);
 
 #endif

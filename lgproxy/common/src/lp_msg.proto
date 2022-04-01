@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package lpMsg;
+/*  @brief Cursor data update
+    If the display source contains a cursor, the cursor position information
+    should be sent separately. To update the cursor shape, the values 
+    width and height should be set to non-zero values, with tex_fmt and
+    bytes being set to the cursor data type and data respectively.
+*/
+message CursorData {
+    uint32 dgid                 = 1;    // Display group ID
+    uint32 x                    = 2;    // Cursor X position
+    uint32 y                    = 3;    // Cursor Y position
+    uint32 hpx                  = 4;    // Cursor X hotspot
+    uint32 hpy                  = 5;    // Cursor Y hotspot
+    uint32 width                = 6;    // Cursor image width
+    uint32 height               = 7;    // Cursor image height
+    uint32 tex_fmt              = 8;    // Cursor image format
+    bytes  data                 = 9;    // Raw image data
+    uint32 pitch                = 10;   // row length in bytes of the shape
+}
+
+
+message MessageWrapper {
+    oneof wdata {
+        CursorData cursor_data      = 1;            
+    }
+}

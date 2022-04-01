@@ -18,6 +18,12 @@
 #define POINTER_SHAPE_BUFFERS 3
 #define MAX_POINTER_SIZE (sizeof(KVMFRCursor) + (512 * 512 * 4))
 
+enum T_STATE {
+    T_RUNNING,
+    T_ERR,
+    T_STOPPED
+};
+
 enum LP_STATE {
     LP_STATE_RUNNING,
     LP_STATE_INVALID,
@@ -38,6 +44,8 @@ typedef struct {
     PLGMPClientQueue        client_q;
     PLGMPClientQueue        pointer_q;
     PTRFContext             client_ctx;
+    PTRFContext             sub_channel;
+    enum T_STATE            thread_flags;
 } LPClient;
 
 typedef struct {
@@ -46,10 +54,13 @@ typedef struct {
     PLGMPHostQueue          pointer_q;
     PLGMPMemory             frame_memory[LGMP_Q_FRAME_LEN];
     PLGMPMemory             pointer_memory[LGMP_Q_POINTER_LEN];
-    PLGMPMemory             pointershape_memory[POINTER_SHAPE_BUFFERS];
+    PLGMPMemory             cursor_shape[POINTER_SHAPE_BUFFERS];
     PLGMPMemory             pointer_shape;
+    unsigned                cursor_shape_index;
     bool                    pointer_shape_valid;
     PTRFContext             server_ctx;
+    PTRFContext             sub_channel;
+    enum T_STATE            thread_flags;
     unsigned int            frame_index;
     unsigned int            pointer_index;
 } LPHost;

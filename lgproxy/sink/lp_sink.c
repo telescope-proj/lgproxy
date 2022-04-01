@@ -31,6 +31,9 @@ int main(int argc, char ** argv)
     char * host = NULL;
     char * port = NULL;
 
+    pthread_t sub_channel;
+    bool sub_started = 0;
+
     TrfMsg__MessageWrapper * msg = NULL;
 
     int o;
@@ -156,11 +159,32 @@ int main(int argc, char ** argv)
         return -1;
     }
 
+    // Create a new subchannel for mouse cursor
+    lp__log_trace("Creating subchannel");
+    ctx->lp_client.sub_channel = NULL;
+    ret = trfCreateSubchannel(ctx->lp_client.client_ctx, 
+            &ctx->lp_client.sub_channel, 10);
+    if (ret < 0)
+    {
+        lp__log_error("Unable to create subchannel");
+        goto destroy_ctx;
+    }
+
+    // Create new thread to use
+    ret = pthread_create(&sub_channel, NULL, lpCursorThread ,ctx);
+    if (ret < 0)
+    {
+        lp__log_error("Unable to create thread for cursor");
+        goto destroy_ctx;
+    }
+
+    sub_started = 1;
+    lp__log_trace("Subchannel has been created");
+    
     #define timespecdiff(_start, _end) \
     (((_end).tv_sec - (_start).tv_sec) * 1000000000 + \
     ((_end).tv_nsec - (_start).tv_nsec))
 
-    
     printf( "\"Frame\",\"Size\",\"Request (ms)\",\"Frame Time (ms)\""
             ",\"Speed (Gbit/s)\",\"Framerate (Hz)\"\n");
     struct timespec tstart, tend;
@@ -292,6 +316,91 @@ int main(int argc, char ** argv)
     
 
 destroy_ctx:
+    ctx->lp_client.thread_flags = T_STOPPED;
+    uint64_t *tret;
+    if (sub_started)
+    {
+        pthread_join(sub_channel, (void*) &tret);
+    }
+    if (tret)
+    {
+        lp__log_error("Thread exited unsuccessfully");
+    }
     lpDestroyContext(ctx);
     return ret;
+}
+
+void * lpCursorThread(void * arg)
+{
+    lp__log_trace("Started Cursor thread");
+    PLPContext ctx = (PLPContext) arg;
+    intptr_t ret = 0;
+    size_t psize = trf__GetPageSize();
+    void * mem = trfAllocAligned(psize, psize);
+    if (!mem)
+    {
+        lp__log_trace("Unable to allocate memory");
+        ret = -ENOMEM;
+        goto destroy_ctx;
+    }
+    KVMFRCursor *cursor = (KVMFRCursor *) mem;
+    LpMsg__MessageWrapper wrapper;
+
+    ret = trfRegInternalMsgBuf(ctx->lp_client.sub_channel, mem, psize);
+    if (ret < 0)
+    {
+        lp__log_trace("Unable to register internal buffer");
+        goto destroy_ctx;
+    }
+
+    struct TRFMem *mr = &ctx->lp_client.sub_channel->xfer.fabric->msg_mem;
+    void * buf = trfMemPtr(mem);
+    while(1)
+    {
+        if (ctx->lp_client.thread_flags == T_STOPPED) // Parent request to stop thread
+        {
+            break;
+        }
+        ret = trfFabricRecv(ctx->lp_client.sub_channel, mr, trfMemPtr(mr),
+            psize, 
+            ctx->lp_client.sub_channel->xfer.fabric->peer_addr,
+            ctx->lp_client.sub_channel->opts);
+        if (ret < 0)
+        {
+            lp__log_error("Unable to receive cursor data: %d", fi_strerror(ret));
+            goto destroy_ctx;
+        }
+
+        int s = trfMsgGetPackedLength(ctx->lp_client.sub_channel->xfer.fabric->msg_mem.ptr);
+        ret = trfMsgUnpackProtobuf((ProtobufCMessage **) &wrapper, 
+                                   (const ProtobufCMessageDescriptor *) 
+                                   &lp_msg__message_wrapper__descriptor, s, buf);
+        if (ret < 0)
+        {
+            lp__log_error("Unable to decode message");
+            ctx->lp_client.thread_flags = T_ERR;
+            goto destroy_ctx;
+        }
+
+        if (cursor)
+        {
+            lp__log_trace("Cursor X--> %d\t Y--> %d", cursor->x, cursor->y);
+        }
+
+        if (lpUpdateCursorPos(ctx,cursor) < 0)
+        {
+            ctx->lp_client.thread_flags = T_ERR;
+            lp__log_error("Unable to send cursor position to Looking Glass");
+            goto destroy_ctx;
+        }
+
+    }
+
+destroy_ctx:
+    // lpDestroyContext(ctx);
+    trfDestroyContext(ctx->lp_client.sub_channel);
+    lp__log_error("Thread exited");
+    if (ctx->lp_client.thread_flags != T_ERR)
+        ctx->lp_client.thread_flags = T_STOPPED;
+    return (void *) ret;
 }
