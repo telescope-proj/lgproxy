@@ -196,6 +196,15 @@ int main(int argc, char ** argv)
         if (flag)
             goto destroy_ctx;
 
+        if (ctx->lp_client.thread_flags == T_ERR)
+        {
+            uint64_t *tret;
+            pthread_join(sub_channel, (void*) &tret);
+            lp__log_error("Subchannel has exited with an error: %s", 
+                    fi_strerror(abs((uint64_t) tret)));
+            goto destroy_ctx;
+        }
+
         LGMP_STATUS status;
         status = lgmpHostProcess(ctx->lp_host.lgmp_host);
         if (status != LGMP_OK && status != LGMP_ERR_QUEUE_EMPTY)
@@ -253,6 +262,15 @@ int main(int argc, char ** argv)
         {
             if (flag)
                 goto destroy_ctx;
+
+            if (ctx->lp_client.thread_flags == T_ERR)
+            {
+                uint64_t *tret;
+                pthread_join(sub_channel, (void*) &tret);
+                lp__log_error("Subchannel has exited with an error: %s", 
+                        fi_strerror(abs((uint64_t) tret)));
+                goto destroy_ctx;
+            }
 
             status = lpKeepLGMPSessionAlive(ctx);
             if (status != LGMP_OK)
@@ -336,17 +354,24 @@ void * lpCursorThread(void * arg)
     PLPContext ctx = (PLPContext) arg;
     intptr_t ret = 0;
     size_t psize = trf__GetPageSize();
-    void * mem = trfAllocAligned(psize, psize);
+    ctx->lp_client.thread_flags = T_RUNNING;
+    void * mem = trfAllocAligned(MAX_POINTER_SIZE, psize);
     if (!mem)
     {
         lp__log_trace("Unable to allocate memory");
         ret = -ENOMEM;
         goto destroy_ctx;
     }
-    KVMFRCursor *cursor = (KVMFRCursor *) mem;
-    LpMsg__MessageWrapper wrapper;
 
-    ret = trfRegInternalMsgBuf(ctx->lp_client.sub_channel, mem, psize);
+    KVMFRCursor * cursor = malloc(MAX_POINTER_SIZE);
+    if (!cursor)
+    {
+        lp__log_error("Unable to allocate memory");
+        goto destroy_ctx;
+    }
+    LpMsg__MessageWrapper * wrapper = NULL;
+
+    ret = trfRegInternalMsgBuf(ctx->lp_client.sub_channel, mem, MAX_POINTER_SIZE);
     if (ret < 0)
     {
         lp__log_trace("Unable to register internal buffer");
@@ -354,27 +379,30 @@ void * lpCursorThread(void * arg)
     }
 
     struct TRFMem *mr = &ctx->lp_client.sub_channel->xfer.fabric->msg_mem;
-    void * buf = trfMemPtr(mem);
-    while(1)
+
+    while (1)
     {
         if (ctx->lp_client.thread_flags == T_STOPPED) // Parent request to stop thread
         {
             break;
         }
+
         ret = trfFabricRecv(ctx->lp_client.sub_channel, mr, trfMemPtr(mr),
-            psize, 
+            MAX_POINTER_SIZE, 
             ctx->lp_client.sub_channel->xfer.fabric->peer_addr,
             ctx->lp_client.sub_channel->opts);
         if (ret < 0)
         {
-            lp__log_error("Unable to receive cursor data: %d", fi_strerror(ret));
+            lp__log_error("Unable to receive cursor data: %s", fi_strerror(-ret));
             goto destroy_ctx;
         }
 
-        int s = trfMsgGetPackedLength(ctx->lp_client.sub_channel->xfer.fabric->msg_mem.ptr);
+        int s = trfMsgGetPackedLength(trfMemPtr(mr));
+        lp__log_trace("Packed Length: %d", s);
         ret = trfMsgUnpackProtobuf((ProtobufCMessage **) &wrapper, 
                                    (const ProtobufCMessageDescriptor *) 
-                                   &lp_msg__message_wrapper__descriptor, s, buf);
+                                   &lp_msg__message_wrapper__descriptor, s, 
+                                   trfMsgGetPayload(trfMemPtr(mr)));
         if (ret < 0)
         {
             lp__log_error("Unable to decode message");
@@ -382,22 +410,81 @@ void * lpCursorThread(void * arg)
             goto destroy_ctx;
         }
 
-        if (cursor)
+        if (wrapper->wdata_case == LP_MSG__MESSAGE_WRAPPER__WDATA_KA)
         {
-            lp__log_trace("Cursor X--> %d\t Y--> %d", cursor->x, cursor->y);
+            lp__log_debug("Waiting for new data...");
+            lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
+            wrapper = NULL;
+            continue;
         }
-
-        if (lpUpdateCursorPos(ctx,cursor) < 0)
+        else if (wrapper->wdata_case == 
+                LP_MSG__MESSAGE_WRAPPER__WDATA_CURSOR_DATA)
         {
+            cursor->y       = wrapper->cursor_data->y;
+            cursor->x       = wrapper->cursor_data->x;
+            cursor->width   = wrapper->cursor_data->width;
+            cursor->height  = wrapper->cursor_data->height;
+            cursor->hx      = wrapper->cursor_data->hpx;
+            cursor->hy      = wrapper->cursor_data->hpy;
+            cursor->type    = wrapper->cursor_data->tex_fmt;
+            cursor->pitch   = wrapper->cursor_data->pitch;
+
+            uint32_t flags = wrapper->cursor_data->flags;
+
+            if (wrapper->cursor_data->data.len)
+            {
+                memcpy((uint8_t *)(cursor + 1), 
+                    wrapper->cursor_data->data.data, 
+                    wrapper->cursor_data->data.len);
+
+                flags |= CURSOR_FLAG_SHAPE;
+
+                lp__log_trace("Data: %lu bytes", wrapper->cursor_data->data.len);
+                uint8_t *tmp = (uint8_t *) (cursor + 1);
+                for (int i = 0; i < 50; i++)
+                {
+                    printf("%hhx", *tmp);
+                    tmp++;
+                }
+                printf("\n");
+            }
+            else
+            {
+                flags &= ~CURSOR_FLAG_SHAPE;   
+            }
+
+            lp__log_trace("Cursor x: %d, y: %d, v: %d", cursor->x, cursor->y, (flags & CURSOR_FLAG_VISIBLE) > 0);
+            lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
+
+            ret = lpUpdateCursorPos(ctx,cursor, wrapper->cursor_data->data.len, 
+                                    flags);
+            if (ret == -EAGAIN)
+            {
+                continue;
+            }
+            else if (ret < 0)
+            {
+                ctx->lp_client.thread_flags = T_ERR;
+                lp__log_error("Unable to send cursor position to Looking Glass");
+                goto destroy_ctx;
+            }
+            wrapper = NULL;
+        }
+        else
+        {
+            lp__log_error("Server sent garbage data");
+            lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
+            wrapper = NULL;
             ctx->lp_client.thread_flags = T_ERR;
-            lp__log_error("Unable to send cursor position to Looking Glass");
             goto destroy_ctx;
         }
-
     }
 
 destroy_ctx:
-    // lpDestroyContext(ctx);
+    if (cursor)
+    {
+        free(cursor);
+    }
     trfDestroyContext(ctx->lp_client.sub_channel);
     lp__log_error("Thread exited");
     if (ctx->lp_client.thread_flags != T_ERR)

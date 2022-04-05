@@ -55,7 +55,7 @@ typedef struct {
     PLGMPMemory             frame_memory[LGMP_Q_FRAME_LEN];
     PLGMPMemory             pointer_memory[LGMP_Q_POINTER_LEN];
     PLGMPMemory             cursor_shape[POINTER_SHAPE_BUFFERS];
-    PLGMPMemory             pointer_shape;
+    // PLGMPMemory             pointer_shape;
     unsigned                cursor_shape_index;
     bool                    pointer_shape_valid;
     PTRFContext             server_ctx;

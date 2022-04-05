@@ -16,6 +16,7 @@ PROTOBUF_C__BEGIN_DECLS
 
 
 typedef struct LpMsg__CursorData LpMsg__CursorData;
+typedef struct LpMsg__KeepAlive LpMsg__KeepAlive;
 typedef struct LpMsg__MessageWrapper LpMsg__MessageWrapper;
 
 
@@ -74,15 +75,36 @@ struct  LpMsg__CursorData
    * row length in bytes of the shape
    */
   uint32_t pitch;
+  /**
+   * Flags from looking glass
+   */
+  uint32_t flags;
 };
 #define LP_MSG__CURSOR_DATA__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&lp_msg__cursor_data__descriptor) \
-    , 0, 0, 0, 0, 0, 0, 0, 0, {0,NULL}, 0 }
+    , 0, 0, 0, 0, 0, 0, 0, 0, {0,NULL}, 0, 0 }
+
+
+/**
+ *Keep Alive Message
+ */
+struct  LpMsg__KeepAlive
+{
+  ProtobufCMessage base;
+  /**
+   * Currently Unused
+   */
+  uint32_t info;
+};
+#define LP_MSG__KEEP_ALIVE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&lp_msg__keep_alive__descriptor) \
+    , 0 }
 
 
 typedef enum {
   LP_MSG__MESSAGE_WRAPPER__WDATA__NOT_SET = 0,
-  LP_MSG__MESSAGE_WRAPPER__WDATA_CURSOR_DATA = 1
+  LP_MSG__MESSAGE_WRAPPER__WDATA_CURSOR_DATA = 1,
+  LP_MSG__MESSAGE_WRAPPER__WDATA_KA = 2
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(LP_MSG__MESSAGE_WRAPPER__WDATA__CASE)
 } LpMsg__MessageWrapper__WdataCase;
 
@@ -92,6 +114,7 @@ struct  LpMsg__MessageWrapper
   LpMsg__MessageWrapper__WdataCase wdata_case;
   union {
     LpMsg__CursorData *cursor_data;
+    LpMsg__KeepAlive *ka;
   };
 };
 #define LP_MSG__MESSAGE_WRAPPER__INIT \
@@ -118,6 +141,25 @@ LpMsg__CursorData *
 void   lp_msg__cursor_data__free_unpacked
                      (LpMsg__CursorData *message,
                       ProtobufCAllocator *allocator);
+/* LpMsg__KeepAlive methods */
+void   lp_msg__keep_alive__init
+                     (LpMsg__KeepAlive         *message);
+size_t lp_msg__keep_alive__get_packed_size
+                     (const LpMsg__KeepAlive   *message);
+size_t lp_msg__keep_alive__pack
+                     (const LpMsg__KeepAlive   *message,
+                      uint8_t             *out);
+size_t lp_msg__keep_alive__pack_to_buffer
+                     (const LpMsg__KeepAlive   *message,
+                      ProtobufCBuffer     *buffer);
+LpMsg__KeepAlive *
+       lp_msg__keep_alive__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   lp_msg__keep_alive__free_unpacked
+                     (LpMsg__KeepAlive *message,
+                      ProtobufCAllocator *allocator);
 /* LpMsg__MessageWrapper methods */
 void   lp_msg__message_wrapper__init
                      (LpMsg__MessageWrapper         *message);
@@ -142,6 +184,9 @@ void   lp_msg__message_wrapper__free_unpacked
 typedef void (*LpMsg__CursorData_Closure)
                  (const LpMsg__CursorData *message,
                   void *closure_data);
+typedef void (*LpMsg__KeepAlive_Closure)
+                 (const LpMsg__KeepAlive *message,
+                  void *closure_data);
 typedef void (*LpMsg__MessageWrapper_Closure)
                  (const LpMsg__MessageWrapper *message,
                   void *closure_data);
@@ -152,6 +197,7 @@ typedef void (*LpMsg__MessageWrapper_Closure)
 /* --- descriptors --- */
 
 extern const ProtobufCMessageDescriptor lp_msg__cursor_data__descriptor;
+extern const ProtobufCMessageDescriptor lp_msg__keep_alive__descriptor;
 extern const ProtobufCMessageDescriptor lp_msg__message_wrapper__descriptor;
 
 PROTOBUF_C__END_DECLS

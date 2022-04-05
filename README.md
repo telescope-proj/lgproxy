@@ -1,4 +1,5 @@
 # Telescope Looking Glass Proxy
+[![CodeQL](https://github.com/telescope-proj/lgproxy/actions/workflows/codeql-analysis.yaml/badge.svg)](https://github.com/telescope-proj/lgproxy/actions/workflows/codeql-analysis.yaml)
 
 ## Building the project
 ```
@@ -27,6 +28,7 @@ LGProxy Sink Usage Guide
 
 ## Set Log Level
 `LP_LOG_LEVEL=<value>`
+`TRF_LOG_LEVEL=<value>`
 * 1 = Trace
 * 2 = Debug
 * 3 = Info

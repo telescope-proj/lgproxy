@@ -46,6 +46,7 @@ set(LP_COMMON
     common/src/lp_types.c
     common/src/lp_write.c
     common/src/lp_msg.pb-c.c
+    common/src/lp_msg.c
 )
 
 set(SOURCE 

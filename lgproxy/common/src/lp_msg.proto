@@ -18,11 +18,19 @@ message CursorData {
     uint32 tex_fmt              = 8;    // Cursor image format
     bytes  data                 = 9;    // Raw image data
     uint32 pitch                = 10;   // row length in bytes of the shape
+    uint32 flags                = 11;   // Flags from looking glass
 }
 
+/*
+Keep Alive Message
+*/
+message KeepAlive {
+    uint32 info               = 1; // Currently Unused
+}
 
 message MessageWrapper {
     oneof wdata {
-        CursorData cursor_data      = 1;            
+        CursorData cursor_data      = 1;      
+        KeepAlive ka                = 2;      
     }
 }

@@ -10,6 +10,7 @@
 #include "lp_log.h"
 #include "lp_types.h"
 #include "lp_convert.h"
+#include "lp_msg.h"
 
 #include <getopt.h>
 #include <errno.h>

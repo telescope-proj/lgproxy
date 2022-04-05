@@ -44,7 +44,8 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp);
  * @param cur        Cursor data
  * @return 0 on success, negative error code on failure
  */
-int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor *cur);
+int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor *cur, uint32_t curSize, 
+                uint32_t flags);
 
 /**
  * @brief Post Update to LGMP Client

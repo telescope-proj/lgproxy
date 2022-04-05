@@ -29,6 +29,8 @@ int main(int argc, char ** argv)
 
     char * host = NULL;
     char * port = NULL;
+    pthread_t sub_channel;
+    bool sub_started = 0;
 
     int o;
     while ((o = getopt(argc, argv, "h:p:f:s:")) != -1)
@@ -62,39 +64,64 @@ int main(int argc, char ** argv)
         return EINVAL;
     }
 
-    char* loglevel = getenv("LP_LOG_LEVEL");
-    if (!loglevel)
+    char* lpLogLevel = getenv("LP_LOG_LEVEL");
+    if (!lpLogLevel)
     {
         lp__log_set_level(LP__LOG_FATAL);
         trf__log_set_level(TRF__LOG_FATAL);
     }
     else
     {
-        int temp = atoi(loglevel);
+        int temp = atoi(lpLogLevel);
         switch (temp)
         {
         case 1:
             lp__log_set_level(LP__LOG_TRACE);
-            trf__log_set_level(TRF__LOG_TRACE);
             break;
         case 2:
             lp__log_set_level(LP__LOG_DEBUG);
-            trf__log_set_level(TRF__LOG_TRACE);
             break;
         case 3:
             lp__log_set_level(LP__LOG_INFO);
-            trf__log_set_level(TRF__LOG_INFO);
             break;
         case 4:
             lp__log_set_level(LP__LOG_WARN);
-            trf__log_set_level(TRF__LOG_WARN);
             break;
         case 5:
             lp__log_set_level(LP__LOG_ERROR);
-            trf__log_set_level(TRF__LOG_ERROR);
             break;
         default:
             lp__log_set_level(LP__LOG_FATAL);
+            break;
+        }
+    }
+
+    char* trfLogLevel = getenv("TRF_LOG_LEVEL");
+    if (!trfLogLevel)
+    {
+        trf__log_set_level(TRF__LOG_FATAL);
+    }
+        else
+    {
+        int temp = atoi(trfLogLevel);
+        switch (temp)
+        {
+        case 1:
+            trf__log_set_level(TRF__LOG_TRACE);
+            break;
+        case 2:
+            trf__log_set_level(TRF__LOG_DEBUG);
+            break;
+        case 3:
+            trf__log_set_level(TRF__LOG_INFO);
+            break;
+        case 4:
+            trf__log_set_level(TRF__LOG_WARN);
+            break;
+        case 5:
+            trf__log_set_level(TRF__LOG_ERROR);
+            break;
+        default:
             trf__log_set_level(TRF__LOG_FATAL);
             break;
         }
@@ -150,8 +177,7 @@ int main(int argc, char ** argv)
     FrameBuffer * fb = NULL;
     LGMP_STATUS status;
     int opaque = 0;
-    pthread_t sub_channel;
-    bool sub_started = 0;
+
     // Get the first frame from the host so we have metadata
 
     while (1)
@@ -281,6 +307,16 @@ int main(int argc, char ** argv)
             lp__log_error("Destroying CTX");
             goto destroy_ctx;
         }
+
+        if (ctx->lp_client.thread_flags == T_ERR)
+        {
+            uint64_t *tret;
+            pthread_join(sub_channel, (void*) &tret);
+            lp__log_error("Subchannel has exited with an error: %s", 
+                fi_strerror(abs((uint64_t) tret)));
+            goto destroy_ctx;
+        }
+
         ret = trfGetMessageAuto(ctx->lp_client.client_ctx, 
                     ~(TRFM_CLIENT_F_REQ | TRFM_KEEP_ALIVE | TRFM_CH_OPEN), &processed, 
                     (void **) &msg, &opaque);
@@ -345,6 +381,15 @@ int main(int argc, char ** argv)
             {
                 if (flag)
                     goto destroy_ctx;
+
+                if (ctx->lp_client.thread_flags == T_ERR)
+                {
+                    uint64_t *tret;
+                    pthread_join(sub_channel, (void*) &tret);
+                    lp__log_error("Subchannel has exited with an error: %s", 
+                        fi_strerror(abs((uint64_t) tret)));
+                    goto destroy_ctx;
+                }
 
                 ret = lpGetFrame(ctx, &metadata, &fb);
                 if (ret == -EAGAIN)
@@ -473,7 +518,8 @@ void * lpHandleCursorPos(void * arg)
     intptr_t ret = 0;
     uint32_t cursorSize = 0;
     size_t psize = trf__GetPageSize();
-    void * cursorData = trfAllocAligned(psize, psize);
+    uint32_t flags = 0;
+    void * cursorData = trfAllocAligned(MAX_POINTER_SIZE, psize);
     if (!cursorData)
     {
         lp__log_error("Unable to allocate memory for subchannel");
@@ -485,7 +531,7 @@ void * lpHandleCursorPos(void * arg)
     cursor = NULL;
 
     ret = trfRegInternalMsgBuf(ctx->lp_client.sub_channel, cursorData,
-            psize);
+            MAX_POINTER_SIZE);
     if (ret)
     {
         lp__log_error("Unable to register buffer");
@@ -501,37 +547,82 @@ void * lpHandleCursorPos(void * arg)
     wrapper.cursor_data             = &curData;
     wrapper.wdata_case              = LP_MSG__MESSAGE_WRAPPER__WDATA_CURSOR_DATA;
 
+    struct timespec te;
+    bool setDeadline = false;
     while (1)
     {
         if (ctx->lp_client.thread_flags == T_STOPPED)
         {
             break;
         }
-        struct timespec te; // Send Cursor data to client at an interval
-        trfGetDeadline(&te, ctx->lp_client.sub_channel->opts->fab_rcv_timeo);
+        if (!setDeadline)
+        {
+            trfGetDeadline(&te, 1000);
+            setDeadline = true;
+            lp__log_trace("Setting new deadline");
+        }
 
-        if ((ret = lpgetCursor(ctx, &cursor, &cursorSize)) < 0)
+        if ((ret = lpgetCursor(ctx, &cursor, &cursorSize, &flags)) < 0)
         {
             lp__log_error("Unable to get cursor position");
             ctx->lp_client.thread_flags = T_ERR;
             goto destroy_ctx;
         }
+
+        if (trf__HasPassed(CLOCK_MONOTONIC, &te) && !cursor)
+        {
+            lp__log_debug("Sending cursor keep alive...");
+            ret = lpKeepAlive(ctx->lp_client.sub_channel);
+            if (ret < 0)
+            {
+                lp__log_error("Error sending keep alive: %s", fi_strerror(abs(ret)));
+                return (void *) ret;
+            }
+            setDeadline = false;
+            lp__log_debug("Sent keep alive");
+            continue;
+        }
         
         if (cursor)
         {
-            lp__log_trace("Mouse position \n\tX --> %d\n\tY--> %d",
-                cursor->x, cursor->y);
             curData.y       = cursor->y;
-            curData.x       = cursor->y;
+            curData.x       = cursor->x;
             curData.width   = cursor->width;
             curData.height  = cursor->height;
             curData.hpx     = cursor->hx;
             curData.hpy     = cursor->hy;
             curData.tex_fmt = cursor->type;
             curData.pitch   = cursor->pitch;
+            curData.flags   = flags;
 
+            if (cursorSize > sizeof(KVMFRCursor))
+            {
+                curData.data.len = cursorSize - sizeof(KVMFRCursor);
+                curData.data.data = (uint8_t *)(cursor + 1);
+                    lp__log_trace("Data on Sink");
 
-            ret = trfMsgPackProtobuf((ProtobufCMessage *) &wrapper, psize, buf);
+                uint8_t *tmp = (uint8_t *) (cursor + 1);
+                for (int i = 0; i < 50; i++)
+                {
+                    printf("%hhx", *tmp);
+                    tmp++;
+                }
+                printf("\n");
+
+            }
+            else
+            {
+                curData.data.len = 0;
+                curData.data.data = NULL;
+            }
+            
+            lp__log_trace("Mouse x: %d; y: %d; p: %d, s: %lu, len: %lu, data: %p", 
+                          cursor->x, cursor->y, cursor->pitch, 
+                          cursorSize,
+                          curData.data.len, curData.data.data);
+
+            ret = trfMsgPackProtobuf((ProtobufCMessage *) &wrapper, 
+                                     MAX_POINTER_SIZE, buf);
             if (ret < 0)
             {
                 lp__log_error("Unable to pack message");
@@ -539,10 +630,11 @@ void * lpHandleCursorPos(void * arg)
                 goto destroy_ctx;
             }
 
+            free(cursor);
+
             ret = trfFabricSend(ctx->lp_client.sub_channel, mr, trfMemPtr(mr), ret, 
                     ctx->lp_client.sub_channel->xfer.fabric->peer_addr,
                     ctx->lp_client.sub_channel->opts);
-
             if (ret < 0)
             {
                 lp__log_error("Unable to send cursor data %s", fi_strerror(ret));
@@ -550,8 +642,8 @@ void * lpHandleCursorPos(void * arg)
                 goto destroy_ctx;
             }
             cursor = NULL;
+            setDeadline = false;
         }
-        
     }
     
     ret = 0;
@@ -561,7 +653,5 @@ destroy_ctx:
     lp__log_error("Exited Subchannel");
     if (ctx->lp_client.thread_flags != T_ERR)
         ctx->lp_client.thread_flags = T_STOPPED;
-    if (cursor)
-        lp_msg__cursor_data__free_unpacked(&curData, NULL);
     return (void *) ret;
 }

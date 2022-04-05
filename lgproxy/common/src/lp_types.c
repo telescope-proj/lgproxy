@@ -52,8 +52,10 @@ void lpDestroyContext(PLPContext ctx){
     {
         trfDestroyContext(ctx->lp_host.server_ctx);
     }
-
-    munmap(ctx->ram, ctx->ram_size);
+    if (ctx->ram)
+    {
+        munmap(ctx->ram, ctx->ram_size);
+    }
     if (ctx->shmFile)
     {
         close(ctx->shmFile);

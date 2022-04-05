@@ -275,11 +275,6 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
         }
     }
 
-    // if (++ctx->lp_host.frame_index == LGMP_Q_FRAME_LEN)
-    // {
-    //     ctx->lp_host.frame_index = 0;
-    // }
-
     lgmpHostQueueNewSubs(ctx->lp_host.host_q);
     KVMFRFrame *fi = lgmpHostMemPtr(ctx->lp_host.frame_memory[ctx->lp_host.frame_index]);
 
@@ -318,41 +313,27 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
     return 0;
 } 
 
-int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor *cur)
+int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor * cur, uint32_t curShapeSize, 
+                uint32_t flags)
 {
     if (!ctx || !cur)
     {
         return -EINVAL;
     }
     
-    PLGMPMemory mem;
-    if (ctx->lp_host.pointer_shape_valid)
-        mem = ctx->lp_host.pointer_shape;
-    else
-    {
-        mem = ctx->lp_host.pointer_memory[ctx->lp_host.pointer_index];
-        if (ctx->lp_host.pointer_index++ == LGMP_Q_POINTER_LEN)
-        {
-            ctx->lp_host.pointer_index = 0;
-        }
-    }
-
-    const uint32_t flags = CURSOR_FLAG_POSITION |
-    (ctx->lp_host.pointer_shape_valid ? CURSOR_FLAG_SHAPE : 0) |
-    (CURSOR_FLAG_VISIBLE);
-
+    PLGMPMemory mem = ctx->lp_host.cursor_shape[0];
     KVMFRCursor *tmpCur = lgmpHostMemPtr(mem);
-    *tmpCur = *cur;
+    memcpy((void *) tmpCur, (void *) cur, curShapeSize + sizeof(KVMFRCursor));
+    
+    int ret = lpPostCursor(ctx,flags,mem);
+    if (ret < 0)
+        return ret;
 
-    if (lpPostCursor(ctx,flags,mem) < 0)
-    {
-        lp__log_error("Unable to post cursor");
-        return -1;
-    }
+    ctx->lp_host.pointer_shape_valid = curShapeSize ? true : false;
     return 0;
 }
 
-int lpPostCursor(PLPContext ctx ,uint32_t flags, PLGMPMemory mem)
+int lpPostCursor(PLPContext ctx, uint32_t flags, PLGMPMemory mem)
 {
     LGMP_STATUS status;
     while ((status = lgmpHostQueuePost(ctx->lp_host.pointer_q, flags, mem)) 
@@ -360,8 +341,7 @@ int lpPostCursor(PLPContext ctx ,uint32_t flags, PLGMPMemory mem)
     {
         if (status == LGMP_ERR_QUEUE_FULL)
         {
-            usleep(1);
-            continue;
+            return -EAGAIN;
         }
         lp__log_error("lgmpHostQueuePost (Pointer) failed: %s", 
                 lgmpStatusString(status));
