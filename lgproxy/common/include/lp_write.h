@@ -29,6 +29,15 @@ LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx);
 int lpInitHost(PLPContext ctx, PTRFDisplay display);
 
 /**
+ * @brief       Signal that a frame is done writing to the LGMP client
+ * 
+ * @param ctx   Client context to use.
+ * @param disp  Display data to write.
+ * @return      int 
+ */
+int lpSignalFrameDone(PLPContext ctx, PTRFDisplay disp);
+
+/**
  * @brief Write data to shared memory
  * 
  * @param ctx               PLPContext to use

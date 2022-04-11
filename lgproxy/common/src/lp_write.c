@@ -238,6 +238,16 @@ LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx)
     return status;
 }
 
+int lpSignalFrameDone(PLPContext ctx, PTRFDisplay disp)
+{
+    if (!ctx || !disp)
+        return -EINVAL;
+
+    FrameBuffer * fb = trfGetFBPtr(disp) - FrameBufferStructSize;
+    framebuffer_set_write_ptr(fb, trfGetDisplayBytes(disp));
+    return 0;
+}
+
 int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
 {
     bool repeatFrame = false;
@@ -299,9 +309,18 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
 
     disp->fb_offset = ((uint8_t *) fi - (uint8_t *) ctx->ram) + fi->offset
                        + FrameBufferStructSize;
+    
+    FrameBuffer * fb = (FrameBuffer *) (((uint8_t *) fi) + fi->offset);
+    framebuffer_prepare(fb);
+
     lp__log_trace("Absolute memory position: %p. Relative offset: %lu", 
-                  ((uintptr_t) fi + fi->offset), disp->fb_offset);
-                
+                  framebuffer_get_data(fb), disp->fb_offset);
+    
+    if (trfGetFBPtr(disp) != framebuffer_get_data(fb))
+    {
+        lp__log_error("Address mismatch! Looking Glass: %p, LibTRF: %p",
+                      framebuffer_get_data(fb), trfGetFBPtr(disp));
+    }
 
     if ((status = lgmpHostQueuePost(ctx->lp_host.host_q, 0, 
             ctx->lp_host.frame_memory[ctx->lp_host.frame_index])) != LGMP_OK)

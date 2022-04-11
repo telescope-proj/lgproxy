@@ -312,6 +312,13 @@ int main(int argc, char ** argv)
             else if (ifmt == TRFM_SERVER_ACK_F_REQ)
             {
                 lp__log_debug("Acknowledgement received...");
+                ret = lpSignalFrameDone(ctx, displays);
+                if (ret < 0)
+                {
+                    lp__log_error("Could not signal frame done: %s",
+                                  strerror(-ret));
+                    goto destroy_ctx;
+                }
                 break;
             }
             else

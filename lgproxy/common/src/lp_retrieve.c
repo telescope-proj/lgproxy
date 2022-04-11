@@ -252,8 +252,13 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     *out = frame;
     
     lp__log_trace("-----------------------------------------");
-    //uint8_t *index = framebuffer_get_data((FrameBuffer *) ((uint8_t *) frame + frame->offset));
-    lp__log_trace("First 50 Bytes");
+    uint8_t *index = framebuffer_get_data((FrameBuffer *) ((uint8_t *) frame + frame->offset));
+    uint32_t checksum = 0;
+    for (int i=0; i<trfGetTextureBytes(frame->width, frame->height, lpLGToTrfFormat(frame->type)); i++)
+    {
+        checksum += index[i];
+    }
+    lp__log_trace("LP Source Checksum --> %d", checksum);
     lp__log_trace("Frame Format: %d", lpLGToTrfFormat(frame->type));
     size_t ff = ((uint8_t *) frame - (uint8_t *) ctx->ram) + frame->offset;
     lp__log_trace("ff: %lu, fi->offset: %lu", ff, frame->offset);

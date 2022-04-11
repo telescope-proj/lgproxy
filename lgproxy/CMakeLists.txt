@@ -33,10 +33,7 @@ add_compile_options(
 "-O0;-g3;-ggdb"
 ) 
 
-execute_process(
-    COMMAND bash -c "cp -r ${PROJECT_TOP}/repos/libtrf/libtrf/conf ./build"
-)
-
+file(COPY "${PROJECT_TOP}/repos/libtrf/libtrf/conf" DESTINATION "./build")
 
 set(LP_COMMON
     common/src/lp_log.c
