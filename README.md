@@ -1,11 +1,22 @@
 # Telescope Looking Glass Proxy
 [![CodeQL](https://github.com/telescope-proj/lgproxy/actions/workflows/codeql-analysis.yaml/badge.svg)](https://github.com/telescope-proj/lgproxy/actions/workflows/codeql-analysis.yaml)
 
+## Dependencies
+### Fedora/RHEL/Rocky
+```
+  sudo dnf install -y libfabric libfabric-devel protobuf-c-compiler protobuf-c-devel
+```
+### Ubuntu
+```
+  sudo apt install -y protobuf-c-compiler libprotobuf-c-dev
+```
+* Latest version of [Libfabric](https://github.com/ofiwg/libfabric) (Note: If you are running Ubuntu you need to compile from source, the version in the repository is too old.)
+
 ## Building the project
 ```
-    git clone --recurse-submodules https://github.com/telescope-proj/lgproxy.git
-    cd lgproxy/lgproxy
-    cmake . && make -j $(nproc)
+  git clone https://github.com/telescope-proj/lgproxy.git
+  cd lgproxy/lgproxy
+  cmake . && make -j $(nproc)
 ```
 
 ## Running Source
