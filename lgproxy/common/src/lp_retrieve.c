@@ -72,7 +72,6 @@ int lpClientInitSession(PLPContext ctx)
                     "The host application is not compatible with this client"
                     "Please download and install the matching version");
                 trfSleep(1000);
-                continue;
                 if(retry >= 20){
                     ctx->state = LP_STATE_STOP;
                     lp__log_debug("Incompatible LGMP Versions between" 

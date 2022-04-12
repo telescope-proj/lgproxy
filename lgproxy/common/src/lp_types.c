@@ -6,6 +6,9 @@ PLPContext lpAllocContext(){
 }
 
 void lpDestroyContext(PLPContext ctx){
+    if (!ctx)
+        return;
+        
     if (ctx->lp_client.lgmp_client)
     {
         lgmpClientFree(&ctx->lp_client.lgmp_client);
@@ -30,4 +33,5 @@ void lpDestroyContext(PLPContext ctx){
     {
         close(ctx->shmFile);
     }
+    free(ctx);
 }

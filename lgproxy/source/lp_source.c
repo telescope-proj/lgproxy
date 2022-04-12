@@ -250,10 +250,6 @@ int main(int argc, char ** argv)
 
         if (ctx->lp_client.thread_flags == T_ERR)
         {
-            uint64_t *tret;
-            pthread_join(sub_channel, (void*) &tret);
-            lp__log_error("Subchannel has exited with an error: %s", 
-                fi_strerror(abs((uint64_t) tret)));
             goto destroy_ctx;
         }
 
@@ -412,7 +408,6 @@ int main(int argc, char ** argv)
             ctx->lp_host.server_ctx->disconnected = 1;
             lp__log_debug("Client requested a disconnect\n");
             goto destroy_ctx;
-            break;
         }
         else
         {
@@ -527,12 +522,12 @@ void * lpHandleCursorPos(void * arg)
             curData.pitch   = cursor->pitch;
             curData.flags   = flags;
 
-            if (cursorSize > sizeof(KVMFRCursor))
+            if (cursorSize > sizeof(KVMFRCursor)) // Send cursor shape data
             {
                 curData.data.len = cursorSize - sizeof(KVMFRCursor);
                 curData.data.data = (uint8_t *)(cursor + 1);
             }
-            else
+            else // Only cursor position has changed
             {
                 curData.data.len = 0;
                 curData.data.data = NULL;
