@@ -55,7 +55,6 @@ typedef struct {
     PLGMPMemory             frame_memory[LGMP_Q_FRAME_LEN];
     PLGMPMemory             pointer_memory[LGMP_Q_POINTER_LEN];
     PLGMPMemory             cursor_shape[POINTER_SHAPE_BUFFERS];
-    // PLGMPMemory             pointer_shape;
     unsigned                cursor_shape_index;
     bool                    pointer_shape_valid;
     PTRFContext             server_ctx;
@@ -78,15 +77,6 @@ struct LPContext {
 
 
 #define PLPContext struct LPContext *
-
-/**
- * @brief Poll for a message, decoding it if the message has been received.
- * 
- * @param ctx   Context to use.
- * @param msg   Message pointer to be set when a message has been received.
- * @return      0 on success, negative error code on failure.
- */
-int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg);
 
 /**
  * @brief Allocates Memory for lpAllocContext

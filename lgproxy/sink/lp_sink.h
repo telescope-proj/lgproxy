@@ -17,11 +17,12 @@
 #include "lp_trf_client.h"
 #include "lp_write.h"
 #include "lp_msg.pb-c.h"
+#include "lp_utils.h"
 
 /**
  * @brief Handle Cursor Data
  * 
- * @param arg           PLPContext
+ * @param arg     PLPContext
  */
 void * lpCursorThread(void * arg);
 

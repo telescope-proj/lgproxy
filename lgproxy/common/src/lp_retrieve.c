@@ -14,11 +14,6 @@ int lpInitLgmpClient(PLPContext ctx)
         ret = -errno;
         goto out;
     }
-    if(ftruncate(fd, ctx->ram_size) != 0){
-        lp__log_error("Unable to truncate shm file: %s", strerror(errno));
-        goto close_fd;
-    }
-
     ctx->ram = mmap(0, ctx->ram_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 
                     0);
     if (!ctx->ram)
@@ -242,23 +237,13 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     if (frame)
     {
         lp__log_trace("------------ Frame Received ------------");
-        lp__log_trace("Frame height: %d\t", frame->height);
-        lp__log_trace("Frame width: %d\t", frame->width);
-        lp__log_trace("Frame real height: %d\t", frame->realHeight);
+        lp__log_trace("Frame size: %d x %d", frame->width, frame->height);
         lp__log_trace("----------------------------------------");
     }
     
     frameSerial = frame->frameSerial;
     *out = frame;
     
-    lp__log_trace("-----------------------------------------");
-    uint8_t *index = framebuffer_get_data((FrameBuffer *) ((uint8_t *) frame + frame->offset));
-    uint32_t checksum = 0;
-    for (int i=0; i<trfGetTextureBytes(frame->width, frame->height, lpLGToTrfFormat(frame->type)); i++)
-    {
-        checksum += index[i];
-    }
-    lp__log_trace("LP Source Checksum --> %d", checksum);
     lp__log_trace("Frame Format: %d", lpLGToTrfFormat(frame->type));
     size_t ff = ((uint8_t *) frame - (uint8_t *) ctx->ram) + frame->offset;
     lp__log_trace("ff: %lu, fi->offset: %lu", ff, frame->offset);

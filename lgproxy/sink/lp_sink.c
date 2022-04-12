@@ -68,43 +68,8 @@ int main(int argc, char ** argv)
         return EINVAL;
     }
 
-    char* loglevel = getenv("LP_LOG_LEVEL");
-    if (!loglevel)
-    {
-        lp__log_set_level(LP__LOG_FATAL);
-        trf__log_set_level(TRF__LOG_FATAL);
-    }
-    else
-    {
-        int temp = atoi(loglevel);
-        switch (temp)
-        {
-        case 1:
-            lp__log_set_level(LP__LOG_TRACE);
-            trf__log_set_level(TRF__LOG_TRACE);
-            break;
-        case 2:
-            lp__log_set_level(LP__LOG_DEBUG);
-            trf__log_set_level(TRF__LOG_TRACE);
-            break;
-        case 3:
-            lp__log_set_level(LP__LOG_INFO);
-            trf__log_set_level(TRF__LOG_INFO);
-            break;
-        case 4:
-            lp__log_set_level(LP__LOG_WARN);
-            trf__log_set_level(TRF__LOG_WARN);
-            break;
-        case 5:
-            lp__log_set_level(LP__LOG_ERROR);
-            trf__log_set_level(TRF__LOG_ERROR);
-            break;
-        default:
-            lp__log_set_level(LP__LOG_FATAL);
-            trf__log_set_level(TRF__LOG_FATAL);
-            break;
-        }
-    }
+    lpSetLPLogLevel();  // Set lgproxy log level
+    lpSetTRFLogLevel(); // Set libtrf log level
 
 
     if ((ret = lpTrfClientInit(ctx, host, port)) < 0)
@@ -114,7 +79,6 @@ int main(int argc, char ** argv)
     }
 
     PTRFDisplay displays;
-    printf("Retrieving displays");
     ret = trfGetServerDisplays(ctx->lp_client.client_ctx, &displays);
     if (ret < 0)
     {
@@ -122,18 +86,15 @@ int main(int argc, char ** argv)
         return -1;
     }
 
-    printf("Server Display List\n");
-    printf("---------------------------------------------\n");
+    lp__log_trace("Server Display List");
+    lp__log_trace("---------------------------------------------");
     for (PTRFDisplay tmp = displays; tmp != NULL; tmp = tmp->next)
     {
-        printf("Display ID:    %d\n", tmp->id);
-        printf("Display Name:  %s\n", tmp->name);
-        printf("Resolution:    %d x %d\n", tmp->width, tmp->height);
-        printf("Refresh Rate:  %d\n", tmp->rate);
-        printf("Pixel Format:  %d\n", tmp->format);
-        printf("Display Group: %d\n", tmp->dgid);
-        printf("Group Offset:  %d, %d\n", tmp->x_offset, tmp->y_offset);
-        printf("---------------------------------------------\n");
+        lp__log_trace("Display id: %d, Display name: %s", tmp->id, tmp->name);
+        lp__log_trace("Resolution: %d x %d, Resolution: %d", tmp->width, tmp->height, tmp->rate);
+        lp__log_trace("Pixel Format: %d, Display Group: %d", tmp->format, tmp->dgid);
+        lp__log_trace("Group Offset:  %d, %d", tmp->x_offset, tmp->y_offset);
+        lp__log_trace("---------------------------------------------");
     }
 
     if (lpInitHost(ctx, displays) < 0)
@@ -145,7 +106,7 @@ int main(int argc, char ** argv)
 
     if ((ret = trfSendClientReq(ctx->lp_client.client_ctx, displays)) < 0)
     {
-        printf("Unable to send display request");
+        lp__log_error("Unable to send display request");
         return -1;
     }
 
@@ -185,7 +146,7 @@ int main(int argc, char ** argv)
     (((_end).tv_sec - (_start).tv_sec) * 1000000000 + \
     ((_end).tv_nsec - (_start).tv_nsec))
 
-    printf( "\"Frame\",\"Size\",\"Request (ms)\",\"Frame Time (ms)\""
+    lp__log_trace( "\"Frame\",\"Size\",\"Request (ms)\",\"Frame Time (ms)\""
             ",\"Speed (Gbit/s)\",\"Framerate (Hz)\"\n");
     struct timespec tstart, tend;
     int ctr     = 0;
@@ -198,10 +159,6 @@ int main(int argc, char ** argv)
 
         if (ctx->lp_client.thread_flags == T_ERR)
         {
-            uint64_t *tret;
-            pthread_join(sub_channel, (void*) &tret);
-            lp__log_error("Subchannel has exited with an error: %s", 
-                    fi_strerror(abs((uint64_t) tret)));
             goto destroy_ctx;
         }
 
@@ -245,14 +202,11 @@ int main(int argc, char ** argv)
             goto destroy_ctx;
         }
         
-        // Post a frame receive request. This will inform the server that the
-        // client is ready to receive a frame, but the frame will not be ready
-        // until the server sends an acknowledgement.
         clock_gettime(CLOCK_MONOTONIC, &tstart);
         ret = trfRecvFrame(ctx->lp_client.client_ctx, displays);
         if (ret < 0)
         {
-            printf("Unable to receive frame: error %s\n", strerror(-ret));
+            lp__log_error("Unable to receive frame: error %s\n", strerror(-ret));
             return -1;
         }
         clock_gettime(CLOCK_MONOTONIC, &tend);
@@ -265,10 +219,6 @@ int main(int argc, char ** argv)
 
             if (ctx->lp_client.thread_flags == T_ERR)
             {
-                uint64_t *tret;
-                pthread_join(sub_channel, (void*) &tret);
-                lp__log_error("Subchannel has exited with an error: %s", 
-                        fi_strerror(abs((uint64_t) tret)));
                 goto destroy_ctx;
             }
 
@@ -284,7 +234,6 @@ int main(int argc, char ** argv)
                 trfSleep(ctx->lp_client.client_ctx->opts->fab_poll_rate);
                 continue;
             }
-
             if (ret < 0)
             {
                 lp__log_error("Unable to poll CQ: %s", fi_strerror(-ret));
@@ -319,6 +268,7 @@ int main(int argc, char ** argv)
                                   strerror(-ret));
                     goto destroy_ctx;
                 }
+                trf__ProtoFree(msg);
                 break;
             }
             else
@@ -331,7 +281,7 @@ int main(int argc, char ** argv)
         clock_gettime(CLOCK_MONOTONIC, &tend);
         double tsd2 = timespecdiff(tstart, tend) / 1000000.0;
 
-        printf("%ld,%f,%f,%f,%f\n",
+        lp__log_trace("%ld,%f,%f,%f,%f",
                trfGetDisplayBytes(displays), tsd1, tsd2, 
                ((double) trfGetDisplayBytes(displays)) / tsd2 / 1e5,
                1000.0 / tsd2);
@@ -346,10 +296,10 @@ destroy_ctx:
     if (sub_started)
     {
         pthread_join(sub_channel, (void*) &tret);
-    }
-    if (tret)
-    {
-        lp__log_error("Thread exited unsuccessfully");
+        if (tret)
+        {
+            lp__log_error("Thread exited unsuccessfully");
+        }
     }
     lpDestroyContext(ctx);
     return ret;
@@ -365,7 +315,7 @@ void * lpCursorThread(void * arg)
     void * mem = trfAllocAligned(MAX_POINTER_SIZE, psize);
     if (!mem)
     {
-        lp__log_trace("Unable to allocate memory");
+        lp__log_error("Unable to allocate memory");
         ret = -ENOMEM;
         goto destroy_ctx;
     }
@@ -381,7 +331,7 @@ void * lpCursorThread(void * arg)
     ret = trfRegInternalMsgBuf(ctx->lp_client.sub_channel, mem, MAX_POINTER_SIZE);
     if (ret < 0)
     {
-        lp__log_trace("Unable to register internal buffer");
+        lp__log_error("Unable to register internal buffer");
         goto destroy_ctx;
     }
 
@@ -445,22 +395,14 @@ void * lpCursorThread(void * arg)
                     wrapper->cursor_data->data.len);
 
                 flags |= CURSOR_FLAG_SHAPE;
-
                 lp__log_trace("Data: %lu bytes", wrapper->cursor_data->data.len);
-                uint8_t *tmp = (uint8_t *) (cursor + 1);
-                for (int i = 0; i < 50; i++)
-                {
-                    printf("%hhx", *tmp);
-                    tmp++;
-                }
-                printf("\n");
+                
             }
             else
             {
                 flags &= ~CURSOR_FLAG_SHAPE;   
             }
 
-            lp__log_trace("Cursor x: %d, y: %d, v: %d", cursor->x, cursor->y, (flags & CURSOR_FLAG_VISIBLE) > 0);
             lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
 
             ret = lpUpdateCursorPos(ctx,cursor, wrapper->cursor_data->data.len, 

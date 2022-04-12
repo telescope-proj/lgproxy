@@ -11,6 +11,7 @@
 #include "lp_types.h"
 #include "lp_convert.h"
 #include "lp_msg.h"
+#include "lp_utils.h"
 
 #include <getopt.h>
 #include <errno.h>

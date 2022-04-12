@@ -64,68 +64,8 @@ int main(int argc, char ** argv)
         return EINVAL;
     }
 
-    char* lpLogLevel = getenv("LP_LOG_LEVEL");
-    if (!lpLogLevel)
-    {
-        lp__log_set_level(LP__LOG_FATAL);
-        trf__log_set_level(TRF__LOG_FATAL);
-    }
-    else
-    {
-        int temp = atoi(lpLogLevel);
-        switch (temp)
-        {
-        case 1:
-            lp__log_set_level(LP__LOG_TRACE);
-            break;
-        case 2:
-            lp__log_set_level(LP__LOG_DEBUG);
-            break;
-        case 3:
-            lp__log_set_level(LP__LOG_INFO);
-            break;
-        case 4:
-            lp__log_set_level(LP__LOG_WARN);
-            break;
-        case 5:
-            lp__log_set_level(LP__LOG_ERROR);
-            break;
-        default:
-            lp__log_set_level(LP__LOG_FATAL);
-            break;
-        }
-    }
-
-    char* trfLogLevel = getenv("TRF_LOG_LEVEL");
-    if (!trfLogLevel)
-    {
-        trf__log_set_level(TRF__LOG_FATAL);
-    }
-        else
-    {
-        int temp = atoi(trfLogLevel);
-        switch (temp)
-        {
-        case 1:
-            trf__log_set_level(TRF__LOG_TRACE);
-            break;
-        case 2:
-            trf__log_set_level(TRF__LOG_DEBUG);
-            break;
-        case 3:
-            trf__log_set_level(TRF__LOG_INFO);
-            break;
-        case 4:
-            trf__log_set_level(TRF__LOG_WARN);
-            break;
-        case 5:
-            trf__log_set_level(TRF__LOG_ERROR);
-            break;
-        default:
-            trf__log_set_level(TRF__LOG_FATAL);
-            break;
-        }
-    }
+    lpSetLPLogLevel();  // Set lgproxy log level
+    lpSetTRFLogLevel(); // Set libtrf log level
 
 
     if (!host || !port)
@@ -243,14 +183,14 @@ int main(int argc, char ** argv)
                 &msg, &opaque);
     if (ret < 0)
     {
-        printf("unable to get poll messages: %d\n", ret);
+        lp__log_error("unable to get poll messages: %d\n", ret);
         ret = 0;
         goto destroy_ctx;
     }
 
     if (msg && trfPBToInternal(msg->wdata_case) != TRFM_CLIENT_REQ)
     {
-        printf("Wrong Message Type 2: %" PRIu64 "\n", trfPBToInternal(msg->wdata_case));
+        lp__log_error("Wrong Message Type 2: %" PRIu64 "\n", trfPBToInternal(msg->wdata_case));
         ret = 0;
         goto destroy_ctx;
     }
@@ -261,13 +201,13 @@ int main(int argc, char ** argv)
         msg->client_req->display[0]->id);
     if (!req_disp)
     {
-        printf("unable to get display: %s\n", strerror(errno));
+        lp__log_error("unable to get display: %s\n", strerror(errno));
         ret = 0;
         goto destroy_ctx;
     }
 
     req_disp->mem.ptr = ctx->ram;
-    // req_disp->fb_addr = ctx->ram;
+
     ret = trfRegDisplayCustom(ctx->lp_client.client_ctx, req_disp, 
                               ctx->ram_size, 
                               framebuffer_get_data(fb) - (uint8_t *) ctx->ram, 
@@ -283,7 +223,7 @@ int main(int argc, char ** argv)
     ret = trfAckClientReq(ctx->lp_client.client_ctx, &disp_id, 1);
     if (ret < 0)
     {
-        printf("unable to acknowledge request: %d\n", ret);
+        lp__log_error("unable to acknowledge request: %d\n", ret);
         return -1;
     }
 
@@ -322,7 +262,7 @@ int main(int argc, char ** argv)
                     (void **) &msg, &opaque);
         if (ret < 0)
         {
-            printf("unable to get poll messages: %d\n", ret);
+            lp__log_error("unable to get poll messages: %d\n", ret);
             ret = -1;
             goto destroy_ctx;
         }
@@ -384,10 +324,6 @@ int main(int argc, char ** argv)
 
                 if (ctx->lp_client.thread_flags == T_ERR)
                 {
-                    uint64_t *tret;
-                    pthread_join(sub_channel, (void*) &tret);
-                    lp__log_error("Subchannel has exited with an error: %s", 
-                        fi_strerror(abs((uint64_t) tret)));
                     goto destroy_ctx;
                 }
 
@@ -432,7 +368,7 @@ int main(int argc, char ** argv)
                     lp__log_debug("Repeated frame");
                     continue;
                 }
-                lp__log_debug("Got frame from LG");
+                lp__log_debug("Got frame from LookingGlass");
                 break;
             }
         
@@ -442,7 +378,7 @@ int main(int argc, char ** argv)
                                msg->client_f_req->rkey);
             if (ret < 0)
             {
-                printf("unable to send frame: %d\n", ret);
+                lp__log_error("unable to send frame: %d\n", ret);
                 ret = -1;
                 goto destroy_ctx;
             }
@@ -468,22 +404,19 @@ int main(int argc, char ** argv)
             ret = trfAckFrameReq(ctx->lp_client.client_ctx, req_disp);
             if (ret < 0)
             {
-                printf("Unable to send Ack: %s\n", fi_strerror(ret));
+                lp__log_error("Unable to send Ack: %s\n", fi_strerror(ret));
             }
         }
         else if (processed == TRFM_DISCONNECT)
         {
-            // If the peer initiates a disconnect, setting this flag will ensure
-            // that a disconnect message is not sent back to an already
-            // disconnected peer (which results in a wait until the timeout).
             ctx->lp_host.server_ctx->disconnected = 1;
-            printf("Client requested a disconnect\n");
+            lp__log_debug("Client requested a disconnect\n");
             goto destroy_ctx;
             break;
         }
         else
         {
-            printf("Wrong message type...\n");
+            lp__log_debug("Wrong message type...\n");
         }
     }
 
@@ -496,10 +429,10 @@ destroy_ctx:
     if (sub_started)
     {
         pthread_join(sub_channel, (void*) &tret);
-    }
-    if (tret)
-    {
-        lp__log_error("Thread exited unsuccessfully: %d", tret);
+        if (tret)
+        {
+            lp__log_error("Thread exited unsuccessfully: %d", tret);
+        }
     }
     status = lgmpClientUnsubscribe(&ctx->lp_client.client_q);
     if (status != LGMP_OK)
@@ -559,7 +492,6 @@ void * lpHandleCursorPos(void * arg)
         {
             trfGetDeadline(&te, 1000);
             setDeadline = true;
-            lp__log_trace("Setting new deadline");
         }
 
         if ((ret = lpgetCursor(ctx, &cursor, &cursorSize, &flags)) < 0)
@@ -599,27 +531,12 @@ void * lpHandleCursorPos(void * arg)
             {
                 curData.data.len = cursorSize - sizeof(KVMFRCursor);
                 curData.data.data = (uint8_t *)(cursor + 1);
-                    lp__log_trace("Data on Sink");
-
-                uint8_t *tmp = (uint8_t *) (cursor + 1);
-                for (int i = 0; i < 50; i++)
-                {
-                    printf("%hhx", *tmp);
-                    tmp++;
-                }
-                printf("\n");
-
             }
             else
             {
                 curData.data.len = 0;
                 curData.data.data = NULL;
             }
-            
-            lp__log_trace("Mouse x: %d; y: %d; p: %d, s: %lu, len: %lu, data: %p", 
-                          cursor->x, cursor->y, cursor->pitch, 
-                          cursorSize,
-                          curData.data.len, curData.data.data);
 
             ret = trfMsgPackProtobuf((ProtobufCMessage *) &wrapper, 
                                      MAX_POINTER_SIZE, buf);

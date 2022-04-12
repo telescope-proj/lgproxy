@@ -113,12 +113,6 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         ret = -errno;
         goto out;
     }
-    if(ftruncate(fd, ctx->ram_size) != 0)
-    {
-        lp__log_error("Unable to truncate shm file: %s", strerror(errno));
-        ret = -errno;
-        goto close_fd;
-    }
     ctx->ram = mmap(0, ctx->ram_size, PROT_READ | PROT_WRITE, MAP_SHARED, 
                 fd, 0);
     if (!ctx->ram)
@@ -257,7 +251,6 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
         usleep(1);
         continue;
     }
-    printf("\n");
 
     if (ctx->state != LP_STATE_RUNNING)
     {
@@ -304,7 +297,7 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
                            trfGetTextureBytes(disp->width, 1, disp->format) :0;
     fi->width            = disp->width;
 
-    lp__log_trace("Display size: %d x %d", fi->width, fi->height);
+    lp__log_trace("Display size received: %d x %d", fi->width, fi->height);
     lp__log_trace("Display Type: %d", lpTrftoLGFormat(disp->format));
 
     disp->fb_offset = ((uint8_t *) fi - (uint8_t *) ctx->ram) + fi->offset
