@@ -41,6 +41,12 @@ int main(int argc, char ** argv)
     pthread_t sub_channel;
     bool sub_started = 0;
 
+    if (lpSetDefaultOpts(ctx))
+    {
+        lp__log_error("Unable to set default options");
+        return -1;
+    }
+
     int o;
     while ((o = getopt(argc, argv, "h:p:f:s:")) != -1)
     {
@@ -66,7 +72,7 @@ int main(int argc, char ** argv)
             default:
             case '?':
                 lp__log_fatal("Invalid argument -%c", optopt);
-                printf(LP_USAGE_GUIDE_STR);
+                fputs(LP_USAGE_GUIDE_STR, stdout);
                 return EINVAL;
         }
     }
@@ -74,7 +80,7 @@ int main(int argc, char ** argv)
 
     if (!host || !port || !ctx->shm || ctx->ram_size == 0)
     {
-        printf(LP_USAGE_GUIDE_STR);
+        fputs(LP_USAGE_GUIDE_STR, stdout);
         return EINVAL;
     }
 
@@ -97,7 +103,7 @@ int main(int argc, char ** argv)
         goto destroy_ctx;
     }
 
-    if((ret = trfNCAccept(ctx->lp_host.server_ctx, &ctx->lp_client.client_ctx)) < 0)
+    if((ret = trfNCAccept(ctx->lp_host.server_ctx, &ctx->lp_host.client_ctx)) < 0)
     {
         lp__log_error("Unable to Accept Client Connection");
         ret = -1;
@@ -160,7 +166,7 @@ int main(int argc, char ** argv)
     displays->format    =  lpLGToTrfFormat(metadata->type);
     displays->rate      =   0;
     
-    ret = trfBindDisplayList(ctx->lp_client.client_ctx, displays); //Bind display list to client context
+    ret = trfBindDisplayList(ctx->lp_host.client_ctx, displays); //Bind display list to client context
     if (ret < 0)
     {
         trf__log_error("Unable to bind display list");
@@ -174,7 +180,7 @@ int main(int argc, char ** argv)
         if (flag)
             goto destroy_ctx;
         
-        ret = trfGetMessageAuto(ctx->lp_client.client_ctx, TRFM_SET_DISP, 
+        ret = trfGetMessageAuto(ctx->lp_host.client_ctx, TRFM_SET_DISP, 
                 &processed, (void **) &msg, &opaque);
 
         if (ret > 0)
@@ -193,7 +199,7 @@ int main(int argc, char ** argv)
 
     lp__log_trace("Client requested display");
     
-    ret = trfGetMessageAuto(ctx->lp_client.client_ctx, 0, &processed, (void **) 
+    ret = trfGetMessageAuto(ctx->lp_host.client_ctx, 0, &processed, (void **) 
                 &msg, &opaque);
     if (ret < 0)
     {
@@ -222,7 +228,7 @@ int main(int argc, char ** argv)
 
     req_disp->mem.ptr = ctx->ram;
 
-    ret = trfRegDisplayCustom(ctx->lp_client.client_ctx, req_disp, 
+    ret = trfRegDisplayCustom(ctx->lp_host.client_ctx, req_disp, 
                               ctx->ram_size, 
                               framebuffer_get_data(fb) - (uint8_t *) ctx->ram, 
                               FI_READ);
@@ -234,7 +240,7 @@ int main(int argc, char ** argv)
     }
 
     uint32_t disp_id = req_disp->id;
-    ret = trfAckClientReq(ctx->lp_client.client_ctx, &disp_id, 1);
+    ret = trfAckClientReq(ctx->lp_host.client_ctx, &disp_id, 1);
     if (ret < 0)
     {
         lp__log_error("unable to acknowledge request: %d\n", ret);
@@ -262,12 +268,12 @@ int main(int argc, char ** argv)
             goto destroy_ctx;
         }
 
-        if (ctx->lp_client.thread_flags == T_ERR)
+        if (ctx->lp_host.thread_flags == T_ERR)
         {
             goto destroy_ctx;
         }
 
-        ret = trfGetMessageAuto(ctx->lp_client.client_ctx, 
+        ret = trfGetMessageAuto(ctx->lp_host.client_ctx, 
                     ~(TRFM_CLIENT_F_REQ | TRFM_KEEP_ALIVE | TRFM_CH_OPEN), &processed, 
                     (void **) &msg, &opaque);
         if (ret < 0)
@@ -278,9 +284,9 @@ int main(int argc, char ** argv)
         }
         if (processed == TRFM_CH_OPEN)
         {
-            ctx->lp_client.sub_channel = NULL;
-            ret = trfProcessSubchannelReq(ctx->lp_client.client_ctx, 
-                &ctx->lp_client.sub_channel, msg);
+            ctx->lp_host.sub_channel = NULL;
+            ret = trfProcessSubchannelReq(ctx->lp_host.client_ctx, 
+                &ctx->lp_host.sub_channel, msg);
             if (ret < 0)
             {
                 lp__log_error("Unable to create subchannel");
@@ -332,7 +338,7 @@ int main(int argc, char ** argv)
                 if (flag)
                     goto destroy_ctx;
 
-                if (ctx->lp_client.thread_flags == T_ERR)
+                if (ctx->lp_host.thread_flags == T_ERR)
                 {
                     goto destroy_ctx;
                 }
@@ -343,7 +349,7 @@ int main(int argc, char ** argv)
                     if (trf__HasPassed(CLOCK_MONOTONIC, &te))
                     {
                         lp__log_debug("Sending keep alive...");
-                        ret = trfSendKeepAlive(ctx->lp_client.client_ctx);
+                        ret = trfSendKeepAlive(ctx->lp_host.client_ctx);
                         if (ret < 0)
                         {
                             lp__log_debug("Error sending keep alive: %s", fi_strerror(abs(ret)));
@@ -369,7 +375,7 @@ int main(int argc, char ** argv)
                 framebuffer_wait(fb, trfGetDisplayBytes(displays));
                 if (msg->client_f_req->frame_cntr == metadata->frameSerial)
                 {
-                    ret = lgmpClientMessageDone(ctx->lp_client.client_q);
+                    ret = lgmpClientMessageDone(ctx->lp_host.client_q);
                     if (ret != LGMP_OK)
                     {
                         lp__log_error("lgmpClientMessageDone: %s", 
@@ -383,7 +389,7 @@ int main(int argc, char ** argv)
             }
         
             // Handle the frame request
-            ret = trfSendFrame(ctx->lp_client.client_ctx, displays, 
+            ret = trfSendFrame(ctx->lp_host.client_ctx, displays, 
                                msg->client_f_req->addr, 
                                msg->client_f_req->rkey);
             if (ret < 0)
@@ -395,8 +401,8 @@ int main(int argc, char ** argv)
 
             struct fi_cq_data_entry de;
             struct fi_cq_err_entry err = {0};
-            ret = trfGetSendProgress(ctx->lp_client.client_ctx, &de, &err, 1, 
-                    ctx->lp_client.client_ctx->opts);
+            ret = trfGetSendProgress(ctx->lp_host.client_ctx, &de, &err, 1, 
+                    ctx->lp_host.client_ctx->opts);
             if (ret <= 0)
             {
                 lp__log_error("Error: %s", fi_strerror(err.err));
@@ -404,14 +410,14 @@ int main(int argc, char ** argv)
             }
 
             //Post receive message to LGMP
-            ret = lgmpClientMessageDone(ctx->lp_client.client_q);
+            ret = lgmpClientMessageDone(ctx->lp_host.client_q);
             if (ret != LGMP_OK && ret != LGMP_ERR_QUEUE_EMPTY)
             {
                 lp__log_debug("lgmpClientMessageDone: %s", lgmpStatusString(ret));
             }
 
             req_disp->frame_cntr++;
-            ret = trfAckFrameReq(ctx->lp_client.client_ctx, req_disp);
+            ret = trfAckFrameReq(ctx->lp_host.client_ctx, req_disp);
             if (ret < 0)
             {
                 lp__log_error("Unable to send Ack: %s\n", fi_strerror(ret));
@@ -433,7 +439,7 @@ int main(int argc, char ** argv)
 
 
 destroy_ctx:
-    ctx->lp_client.thread_flags = T_STOPPED;
+    ctx->lp_host.thread_flags = T_STOPPED;
     uint64_t *tret;
     if (sub_started)
     {
@@ -443,7 +449,7 @@ destroy_ctx:
             lp__log_error("Thread exited unsuccessfully: %d", tret);
         }
     }
-    status = lgmpClientUnsubscribe(&ctx->lp_client.client_q);
+    status = lgmpClientUnsubscribe(&ctx->lp_host.client_q);
     if (status != LGMP_OK)
     {
         lp__log_error("Unable to unsubscribe from host");
@@ -452,11 +458,16 @@ destroy_ctx:
     return ret;
 }
 
+void * lpHandleCleintReq(PLPContext ctx)
+{
+
+}
+
 void * lpHandleCursorPos(void * arg)
 {
     lp__log_trace("Subchannel thread started");
     PLPContext ctx = (PLPContext) arg;
-    ctx->lp_client.thread_flags = T_RUNNING;
+    ctx->lp_host.thread_flags = T_RUNNING;
     intptr_t ret = 0;
     uint32_t cursorSize = 0;
     size_t psize = trf__GetPageSize();
@@ -465,23 +476,23 @@ void * lpHandleCursorPos(void * arg)
     if (!cursorData)
     {
         lp__log_error("Unable to allocate memory for subchannel");
-        ctx->lp_client.thread_flags = T_ERR;
+        ctx->lp_host.thread_flags = T_ERR;
         ret = -EINVAL;
         goto destroy_ctx;
     }
     KVMFRCursor *cursor = (KVMFRCursor *) cursorData;
     cursor = NULL;
 
-    ret = trfRegInternalMsgBuf(ctx->lp_client.sub_channel, cursorData,
+    ret = trfRegInternalMsgBuf(ctx->lp_host.sub_channel, cursorData,
             MAX_POINTER_SIZE);
     if (ret)
     {
         lp__log_error("Unable to register buffer");
-        ctx->lp_client.thread_flags = T_ERR;
+        ctx->lp_host.thread_flags = T_ERR;
         ret = -ret;
         goto destroy_ctx;
     }
-    struct TRFMem *mr   = &ctx->lp_client.sub_channel->xfer.fabric->msg_mem;
+    struct TRFMem *mr   = &ctx->lp_host.sub_channel->xfer.fabric->msg_mem;
     void * buf          = trfMemPtr(mr);
     
     LpMsg__MessageWrapper wrapper   = LP_MSG__MESSAGE_WRAPPER__INIT;
@@ -493,7 +504,7 @@ void * lpHandleCursorPos(void * arg)
     bool setDeadline = false;
     while (1)
     {
-        if (ctx->lp_client.thread_flags == T_STOPPED)
+        if (ctx->lp_host.thread_flags == T_STOPPED)
         {
             break;
         }
@@ -506,14 +517,14 @@ void * lpHandleCursorPos(void * arg)
         if ((ret = lpgetCursor(ctx, &cursor, &cursorSize, &flags)) < 0)
         {
             lp__log_error("Unable to get cursor position");
-            ctx->lp_client.thread_flags = T_ERR;
+            ctx->lp_host.thread_flags = T_ERR;
             goto destroy_ctx;
         }
 
         if (trf__HasPassed(CLOCK_MONOTONIC, &te) && !cursor)
         {
             lp__log_debug("Sending cursor keep alive...");
-            ret = lpKeepAlive(ctx->lp_client.sub_channel);
+            ret = lpKeepAlive(ctx->lp_host.sub_channel);
             if (ret < 0)
             {
                 lp__log_error("Error sending keep alive: %s", fi_strerror(abs(ret)));
@@ -552,19 +563,19 @@ void * lpHandleCursorPos(void * arg)
             if (ret < 0)
             {
                 lp__log_error("Unable to pack message");
-                ctx->lp_client.thread_flags = T_ERR;
+                ctx->lp_host.thread_flags = T_ERR;
                 goto destroy_ctx;
             }
 
             free(cursor);
 
-            ret = trfFabricSend(ctx->lp_client.sub_channel, mr, trfMemPtr(mr), ret, 
-                    ctx->lp_client.sub_channel->xfer.fabric->peer_addr,
-                    ctx->lp_client.sub_channel->opts);
+            ret = trfFabricSend(ctx->lp_host.sub_channel, mr, trfMemPtr(mr), ret, 
+                    ctx->lp_host.sub_channel->xfer.fabric->peer_addr,
+                    ctx->lp_host.sub_channel->opts);
             if (ret < 0)
             {
                 lp__log_error("Unable to send cursor data %s", fi_strerror(ret));
-                ctx->lp_client.thread_flags = T_ERR;
+                ctx->lp_host.thread_flags = T_ERR;
                 goto destroy_ctx;
             }
             cursor = NULL;
@@ -575,9 +586,9 @@ void * lpHandleCursorPos(void * arg)
     ret = 0;
 
 destroy_ctx:
-    trfDestroyContext(ctx->lp_client.sub_channel);
+    trfDestroyContext(ctx->lp_host.sub_channel);
     lp__log_error("Exited Subchannel");
-    if (ctx->lp_client.thread_flags != T_ERR)
-        ctx->lp_client.thread_flags = T_STOPPED;
+    if (ctx->lp_host.thread_flags != T_ERR)
+        ctx->lp_host.thread_flags = T_STOPPED;
     return (void *) ret;
 }

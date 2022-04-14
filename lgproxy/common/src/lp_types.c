@@ -9,13 +9,13 @@ void lpDestroyContext(PLPContext ctx){
     if (!ctx)
         return;
         
-    if (ctx->lp_client.lgmp_client)
+    if (ctx->lp_client.lgmp_host)
     {
-        lgmpClientFree(&ctx->lp_client.lgmp_client);
+        lgmpHostFree(&ctx->lp_client.lgmp_host);
     }
-    if (ctx->lp_host.lgmp_host)
+    if (ctx->lp_host.lgmp_client)
     {
-        lgmpHostFree(&ctx->lp_host.lgmp_host);
+        lgmpClientFree(&ctx->lp_host.lgmp_client);
     }
     if (ctx->lp_client.client_ctx)
     {
@@ -25,11 +25,15 @@ void lpDestroyContext(PLPContext ctx){
     {
         trfDestroyContext(ctx->lp_host.server_ctx);
     }
+    if (ctx->lp_host.client_ctx)
+    {
+        trfDestroyContext(ctx->lp_host.client_ctx);
+    }
     if (ctx->ram)
     {
         munmap(ctx->ram, ctx->ram_size);
     }
-    if (ctx->shmFile)
+    if (ctx->shmFile && ctx->opts.delete_exit)
     {
         close(ctx->shmFile);
     }

@@ -47,6 +47,12 @@ int main(int argc, char ** argv)
 
     TrfMsg__MessageWrapper * msg = NULL;
 
+    if (lpSetDefaultOpts(ctx))
+    {
+        lp__log_error("Unable to set default options");
+        return -1;
+    }
+    
     int o;
     while ((o = getopt(argc, argv, "h:p:f:s:d:r")) != -1)
     {
@@ -78,7 +84,7 @@ int main(int argc, char ** argv)
             default:
             case '?':
                 lp__log_fatal("Invalid argument -%c", optopt);
-                printf(LP_USAGE_GUIDE_STR);
+                fputs(LP_USAGE_GUIDE_STR, stdout);
                 return EINVAL;
         }
     }
@@ -86,7 +92,7 @@ int main(int argc, char ** argv)
 
     if (!host || !port || !ctx->shm || ctx->ram_size == 0)
     {
-        printf(LP_USAGE_GUIDE_STR);
+        fputs(LP_USAGE_GUIDE_STR, stdout);
         return EINVAL;
     }
 
@@ -164,6 +170,11 @@ int main(int argc, char ** argv)
     sub_started = 1;
     lp__log_trace("Subchannel has been created");
     
+
+    // Set Polling Interval
+    ctx->lp_client.client_ctx->opts->fab_poll_rate = ctx->opts.poll_int;
+    ctx->lp_client.sub_channel->opts->fab_poll_rate = ctx->opts.poll_int;
+
     #define timespecdiff(_start, _end) \
     (((_end).tv_sec - (_start).tv_sec) * 1000000000 + \
     ((_end).tv_nsec - (_start).tv_nsec))
@@ -183,16 +194,15 @@ int main(int argc, char ** argv)
         {
             goto destroy_ctx;
         }
-
         LGMP_STATUS status;
-        status = lgmpHostProcess(ctx->lp_host.lgmp_host);
+        status = lgmpHostProcess(ctx->lp_client.lgmp_host);
         if (status != LGMP_OK && status != LGMP_ERR_QUEUE_EMPTY)
         {
             lp__log_error("lgmpHostProcess failed: %s", lgmpStatusString(status));
             return -1;
         }
 
-        if (!lgmpHostQueueHasSubs(ctx->lp_host.host_q))
+        if (!lgmpHostQueueHasSubs(ctx->lp_client.host_q))
         {
             retries > 100 ? trfSleep(100) : trfSleep(1);
             retries++;

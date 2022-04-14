@@ -36,7 +36,7 @@ static inline void lpSetLPLogLevel()
     char* loglevel = getenv("LP_LOG_LEVEL");
     if (!loglevel)
     {
-        lp__log_set_level(LP__LOG_FATAL);
+        lp__log_set_level(LP__LOG_INFO);
     }
     else
     {
@@ -59,7 +59,7 @@ static inline void lpSetLPLogLevel()
             lp__log_set_level(LP__LOG_ERROR);
             break;
         default:
-            lp__log_set_level(LP__LOG_FATAL);
+            lp__log_set_level(LP__LOG_INFO);
             break;
         }
     }
@@ -70,7 +70,7 @@ static inline void lpSetTRFLogLevel()
     char* loglevel = getenv("TRF_LOG_LEVEL");
     if (!loglevel)
     {
-        trf__log_set_level(TRF__LOG_FATAL);
+        trf__log_set_level(LP__LOG_INFO);
     }
     else
     {
@@ -93,9 +93,17 @@ static inline void lpSetTRFLogLevel()
             trf__log_set_level(TRF__LOG_ERROR);
             break;
         default:
-            trf__log_set_level(TRF__LOG_FATAL);
+            trf__log_set_level(TRF__LOG_INFO);
             break;
         }
     }
 }
+
+/**
+ * @brief Set Default Options
+ * 
+ * @param ctx     Context to use
+ * @return 0 on success, negative error code on failure
+ */
+int lpSetDefaultOpts(PLPContext ctx);
 #endif

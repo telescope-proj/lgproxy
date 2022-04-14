@@ -21,6 +21,13 @@
 #include "lp_msg.pb-c.h"
 
 /**
+ * @brief Handle Client Request
+ * 
+ * @param ctx       Context to use
+ */
+void * lpHandleCleintReq(PLPContext ctx);
+
+/**
  * @brief  Get the current cursor position and update the client side
  * @param  arg      PTRFContext to use for the connections
  * 

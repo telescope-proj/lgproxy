@@ -23,7 +23,7 @@ int lpInitLgmpClient(PLPContext ctx)
         goto close_fd;
     }
     LGMP_STATUS status;
-    while ((status = lgmpClientInit(ctx->ram,ctx->ram_size, &ctx->lp_client.lgmp_client)) 
+    while ((status = lgmpClientInit(ctx->ram,ctx->ram_size, &ctx->lp_host.lgmp_client)) 
             != LGMP_OK)
     {
         lp__log_error("LGMP Client Init failure; %s\n", 
@@ -58,7 +58,7 @@ int lpClientInitSession(PLPContext ctx)
  
     for (int retry = 0; retry < 20; retry++)
     {
-        status = lgmpClientSessionInit(ctx->lp_client.lgmp_client, &udataSize, 
+        status = lgmpClientSessionInit(ctx->lp_host.lgmp_client, &udataSize, 
                                        (uint8_t **) &udata);
         lp__log_trace("lgmpClientSessionInit: %s", lgmpStatusString(status));
 
@@ -121,8 +121,8 @@ int lpClientInitSession(PLPContext ctx)
 
     while (ctx->state == LP_STATE_RUNNING)
     {
-        status = lgmpClientSubscribe(ctx->lp_client.lgmp_client, LGMP_Q_FRAME, 
-                                    &ctx->lp_client.client_q);
+        status = lgmpClientSubscribe(ctx->lp_host.lgmp_client, LGMP_Q_FRAME, 
+                                    &ctx->lp_host.client_q);
         if (status == LGMP_OK)
         {
             lp__log_trace("lgmpClientSubscribed: %s", lgmpStatusString(status));
@@ -140,8 +140,8 @@ int lpClientInitSession(PLPContext ctx)
 
     while (ctx->state == LP_STATE_RUNNING)
     {
-        status = lgmpClientSubscribe(ctx->lp_client.lgmp_client, LGMP_Q_POINTER,
-                &ctx->lp_client.pointer_q);
+        status = lgmpClientSubscribe(ctx->lp_host.lgmp_client, LGMP_Q_POINTER,
+                &ctx->lp_host.pointer_q);
         {
             if (status == LGMP_OK)
             {
@@ -178,7 +178,7 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     }
     
     LGMPMessage msg;
-    while((status = lgmpClientProcess(ctx->lp_client.client_q, &msg)) != LGMP_OK)
+    while((status = lgmpClientProcess(ctx->lp_host.client_q, &msg)) != LGMP_OK)
     {
         if (status == LGMP_ERR_QUEUE_EMPTY)
         {
@@ -206,9 +206,9 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
         }
         if (status == LGMP_ERR_QUEUE_TIMEOUT)
         {
-            status = lgmpClientSubscribe(ctx->lp_client.lgmp_client, 
+            status = lgmpClientSubscribe(ctx->lp_host.lgmp_client, 
                             LGMP_Q_FRAME, 
-                            &ctx->lp_client.client_q);
+                            &ctx->lp_host.client_q);
             if (status != LGMP_OK)
             {
                 ctx->state = LP_STATE_RESTART;
@@ -230,7 +230,7 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     if (frame->frameSerial == frameSerial && ctx->format_valid)
     {
         lp__log_error("Repeated Frame");
-        lgmpClientMessageDone(ctx->lp_client.client_q);
+        lgmpClientMessageDone(ctx->lp_host.client_q);
     }
     
     if (frame)
@@ -260,7 +260,7 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
         }
     }
     *fb = (FrameBuffer *)(((uint8_t*)frame) + frame->offset);
-    lgmpClientMessageDone(ctx->lp_client.client_q);
+    lgmpClientMessageDone(ctx->lp_host.client_q);
     return 0;
 }
 
@@ -273,7 +273,7 @@ int lpgetCursor(PLPContext ctx, KVMFRCursor **out, uint32_t *size, uint32_t *fla
 
     while (ctx->state == LP_STATE_RUNNING)
     {
-        status = lgmpClientProcess(ctx->lp_client.pointer_q, &msg);
+        status = lgmpClientProcess(ctx->lp_host.pointer_q, &msg);
         if (status == LGMP_OK)
         {
             break;
@@ -285,8 +285,8 @@ int lpgetCursor(PLPContext ctx, KVMFRCursor **out, uint32_t *size, uint32_t *fla
         }
         if (status == LGMP_ERR_QUEUE_TIMEOUT)
         {
-            status = lgmpClientSubscribe(ctx->lp_client.lgmp_client, 
-                LGMP_Q_POINTER, &ctx->lp_client.pointer_q);
+            status = lgmpClientSubscribe(ctx->lp_host.lgmp_client, 
+                LGMP_Q_POINTER, &ctx->lp_host.pointer_q);
             if (status != LGMP_OK)
             {
                 lp__log_error("Unable to resubscribe to pointer queue");
@@ -302,7 +302,7 @@ int lpgetCursor(PLPContext ctx, KVMFRCursor **out, uint32_t *size, uint32_t *fla
         else{
             lp__log_error("lgmpClientProcess Failed: %s", 
                 lgmpStatusString(status));
-            lgmpClientMessageDone(ctx->lp_client.pointer_q);
+            lgmpClientMessageDone(ctx->lp_host.pointer_q);
             return -1;
         }
     }
@@ -331,7 +331,7 @@ int lpgetCursor(PLPContext ctx, KVMFRCursor **out, uint32_t *size, uint32_t *fla
     
     memcpy(cursor, msg.mem, sizeNeeded);
 
-    lgmpClientMessageDone(ctx->lp_client.pointer_q);
+    lgmpClientMessageDone(ctx->lp_host.pointer_q);
     *out = cursor;
     *size = cursorSize;
     return 0;

@@ -40,28 +40,29 @@ typedef enum LG_RendererCursor
 
 
 typedef struct {
-    PLGMPClient             lgmp_client;
-    PLGMPClientQueue        client_q;
-    PLGMPClientQueue        pointer_q;
-    PTRFContext             client_ctx;
-    PTRFContext             sub_channel;
-    enum T_STATE            thread_flags;
-} LPClient;
-
-typedef struct {
     PLGMPHost               lgmp_host;
     PLGMPHostQueue          host_q;
     PLGMPHostQueue          pointer_q;
+    PTRFContext             client_ctx;
+    PTRFContext             sub_channel;
+    enum T_STATE            thread_flags;
     PLGMPMemory             frame_memory[LGMP_Q_FRAME_LEN];
     PLGMPMemory             pointer_memory[LGMP_Q_POINTER_LEN];
     PLGMPMemory             cursor_shape[POINTER_SHAPE_BUFFERS];
-    unsigned                cursor_shape_index;
-    bool                    pointer_shape_valid;
-    PTRFContext             server_ctx;
-    PTRFContext             sub_channel;
-    enum T_STATE            thread_flags;
     unsigned int            frame_index;
     unsigned int            pointer_index;
+    unsigned                cursor_shape_index;
+    bool                    pointer_shape_valid;
+} LPClient;
+
+typedef struct {
+    PLGMPClient             lgmp_client;
+    PLGMPClientQueue        client_q;
+    PLGMPClientQueue        pointer_q;
+    PTRFContext             server_ctx;
+    PTRFContext             client_ctx;
+    PTRFContext             sub_channel;
+    enum T_STATE            thread_flags;
 } LPHost;
 
 typedef struct {

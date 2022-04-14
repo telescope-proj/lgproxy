@@ -73,3 +73,10 @@ bool lpShouldTruncate(PLPContext ctx)
     }
     return false;
 }
+
+int lpSetDefaultOpts(PLPContext ctx)
+{
+    ctx->opts.poll_int = 1;
+    ctx->shm = "/dev/shm/looking-glass";
+    return 0;
+}

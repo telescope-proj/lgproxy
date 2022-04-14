@@ -147,7 +147,7 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
 
     LGMP_STATUS status;
     while ((status = lgmpHostInit(ctx->ram, ctx->ram_size, 
-                &ctx->lp_host.lgmp_host, udata.used, udata.data)) != LGMP_OK)
+                &ctx->lp_client.lgmp_host, udata.used, udata.data)) != LGMP_OK)
     {
         lp__log_error("Unable to init host");
         ret = -1;
@@ -167,8 +167,8 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         .subTimeout     = 1000,
     };
     
-    if ((status = lgmpHostQueueNew(ctx->lp_host.lgmp_host, frameQueueConfig, 
-                &ctx->lp_host.host_q)) != LGMP_OK)
+    if ((status = lgmpHostQueueNew(ctx->lp_client.lgmp_host, frameQueueConfig, 
+                &ctx->lp_client.host_q)) != LGMP_OK)
     {
         lp__log_error("Unable to create new host queue: %s", 
             lgmpStatusString(status));
@@ -176,8 +176,8 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         goto free_udata;
     }
 
-    if ((status = lgmpHostQueueNew(ctx->lp_host.lgmp_host, pointerQueueConfig,
-                &ctx->lp_host.pointer_q)) != LGMP_OK)
+    if ((status = lgmpHostQueueNew(ctx->lp_client.lgmp_host, pointerQueueConfig,
+                &ctx->lp_client.pointer_q)) != LGMP_OK)
     {
         lp__log_error("Unable to create new pointer queue: %s",
                 lgmpStatusString(status));
@@ -187,27 +187,27 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
 
     for(int i = 0; i < LGMP_Q_POINTER_LEN; ++i)
     {
-        if ((status = lgmpHostMemAlloc(ctx->lp_host.lgmp_host, 
-            sizeof(KVMFRCursor), &ctx->lp_host.pointer_memory[i])) != LGMP_OK)
+        if ((status = lgmpHostMemAlloc(ctx->lp_client.lgmp_host, 
+            sizeof(KVMFRCursor), &ctx->lp_client.pointer_memory[i])) != LGMP_OK)
         {
         lp__log_error("lgmpHostMemAlloc Failed (Pointer): %s", 
             lgmpStatusString(status));
         goto free_udata;
         }
-        memset(lgmpHostMemPtr(ctx->lp_host.pointer_memory[i]), 0, 
+        memset(lgmpHostMemPtr(ctx->lp_client.pointer_memory[i]), 0, 
                 sizeof(KVMFRCursor));
     }
 
     for(int i = 0; i < POINTER_SHAPE_BUFFERS; ++i)
     {
-        if ((status = lgmpHostMemAlloc(ctx->lp_host.lgmp_host, 
-            MAX_POINTER_SIZE, &ctx->lp_host.cursor_shape[i])) != LGMP_OK)
+        if ((status = lgmpHostMemAlloc(ctx->lp_client.lgmp_host, 
+            MAX_POINTER_SIZE, &ctx->lp_client.cursor_shape[i])) != LGMP_OK)
         {
         lp__log_error("lgmpHostMemAlloc Failed (Pointer Shapes): %s", 
                 lgmpStatusString(status));
         goto free_udata;
         }
-        memset(lgmpHostMemPtr(ctx->lp_host.cursor_shape[i]), 
+        memset(lgmpHostMemPtr(ctx->lp_client.cursor_shape[i]), 
                 0, MAX_POINTER_SIZE);
     }
 
@@ -215,8 +215,8 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
     ssize_t dispsize = trfGetDisplayBytes(display);
     for (int i = 0; i < LGMP_Q_FRAME_LEN; ++i )
     {
-        if ((status = lgmpHostMemAllocAligned(ctx->lp_host.lgmp_host, dispsize,
-                trf__GetPageSize(), &ctx->lp_host.frame_memory[i])) != LGMP_OK)
+        if ((status = lgmpHostMemAllocAligned(ctx->lp_client.lgmp_host, dispsize,
+                trf__GetPageSize(), &ctx->lp_client.frame_memory[i])) != LGMP_OK)
         {
             lp__log_error("lgmpHostMemAllocAligned Failed: %s", 
                 lgmpStatusString(status));
@@ -238,7 +238,7 @@ out:
 LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx)
 {
     LGMP_STATUS status;
-    status = lgmpHostProcess(ctx->lp_host.lgmp_host);
+    status = lgmpHostProcess(ctx->lp_client.lgmp_host);
     if (status != LGMP_OK)
     {
         lp__log_error("lgmpHostProcess failed: %s", lgmpStatusString(status));
@@ -260,7 +260,7 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
 {
     bool repeatFrame = false;
     while (ctx->state == LP_STATE_RUNNING && 
-        lgmpHostQueuePending(ctx->lp_host.host_q) == LGMP_Q_FRAME_LEN)
+        lgmpHostQueuePending(ctx->lp_client.host_q) == LGMP_Q_FRAME_LEN)
     {
         usleep(1);
         continue;
@@ -272,7 +272,7 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
     }
 
     LGMP_STATUS status;
-    status = lgmpHostProcess(ctx->lp_host.lgmp_host);
+    status = lgmpHostProcess(ctx->lp_client.lgmp_host);
     if (status != LGMP_OK)
     {
         lp__log_error("lgmpHostProcess failed: %s", lgmpStatusString(status));
@@ -282,8 +282,8 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
     if (repeatFrame)
     {
         status = lgmpHostQueuePost(
-            ctx->lp_host.host_q, 0,
-            ctx->lp_host.frame_memory[ctx->lp_host.frame_index]);
+            ctx->lp_client.host_q, 0,
+            ctx->lp_client.frame_memory[ctx->lp_client.frame_index]);
         if (status != LGMP_OK)
         {
             lp__log_error("Failed lgmpHostQueuePost: %s", 
@@ -292,8 +292,8 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
         }
     }
 
-    lgmpHostQueueNewSubs(ctx->lp_host.host_q);
-    KVMFRFrame *fi = lgmpHostMemPtr(ctx->lp_host.frame_memory[ctx->lp_host.frame_index]);
+    lgmpHostQueueNewSubs(ctx->lp_client.host_q);
+    KVMFRFrame *fi = lgmpHostMemPtr(ctx->lp_client.frame_memory[ctx->lp_client.frame_index]);
 
     uint8_t comp = trfTextureIsCompressed(disp->format);
     
@@ -329,8 +329,8 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
                       framebuffer_get_data(fb), trfGetFBPtr(disp));
     }
 
-    if ((status = lgmpHostQueuePost(ctx->lp_host.host_q, 0, 
-            ctx->lp_host.frame_memory[ctx->lp_host.frame_index])) != LGMP_OK)
+    if ((status = lgmpHostQueuePost(ctx->lp_client.host_q, 0, 
+            ctx->lp_client.frame_memory[ctx->lp_client.frame_index])) != LGMP_OK)
     {
         lp__log_error("Unable to post queue: %s", lgmpStatusString(status));
         return true;
@@ -347,7 +347,7 @@ int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor * cur, uint32_t curShapeSize,
         return -EINVAL;
     }
     
-    PLGMPMemory mem = ctx->lp_host.cursor_shape[0];
+    PLGMPMemory mem = ctx->lp_client.cursor_shape[0];
     KVMFRCursor *tmpCur = lgmpHostMemPtr(mem);
     memcpy((void *) tmpCur, (void *) cur, curShapeSize + sizeof(KVMFRCursor));
     
@@ -355,14 +355,14 @@ int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor * cur, uint32_t curShapeSize,
     if (ret < 0)
         return ret;
 
-    ctx->lp_host.pointer_shape_valid = curShapeSize ? true : false;
+    ctx->lp_client.pointer_shape_valid = curShapeSize ? true : false;
     return 0;
 }
 
 int lpPostCursor(PLPContext ctx, uint32_t flags, PLGMPMemory mem)
 {
     LGMP_STATUS status;
-    while ((status = lgmpHostQueuePost(ctx->lp_host.pointer_q, flags, mem)) 
+    while ((status = lgmpHostQueuePost(ctx->lp_client.pointer_q, flags, mem)) 
                 != LGMP_OK)
     {
         if (status == LGMP_ERR_QUEUE_FULL)
