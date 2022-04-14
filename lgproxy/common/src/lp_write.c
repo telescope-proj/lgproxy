@@ -113,6 +113,18 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         ret = -errno;
         goto out;
     }
+    
+    bool truncFile = lpShouldTruncate(ctx);
+    if (truncFile)
+    {
+        if(ftruncate(fd, ctx->ram_size) != 0)
+        {
+            lp__log_error("Unable to truncate shm file: %s", strerror(errno));
+            ret = -errno;
+            goto close_fd;
+        }
+    }
+
     ctx->ram = mmap(0, ctx->ram_size, PROT_READ | PROT_WRITE, MAP_SHARED, 
                 fd, 0);
     if (!ctx->ram)
@@ -139,7 +151,7 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
     {
         lp__log_error("Unable to init host");
         ret = -1;
-        goto close_fd;
+        goto free_udata;
     }
     lp__log_trace("lgmpHostInit: %s", lgmpStatusString(status));
 
@@ -161,7 +173,7 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         lp__log_error("Unable to create new host queue: %s", 
             lgmpStatusString(status));
         ret = -1;
-        goto close_fd;
+        goto free_udata;
     }
 
     if ((status = lgmpHostQueueNew(ctx->lp_host.lgmp_host, pointerQueueConfig,
@@ -170,7 +182,7 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         lp__log_error("Unable to create new pointer queue: %s",
                 lgmpStatusString(status));
         ret = -1;
-        goto close_fd;
+        goto free_udata;
     }
 
     for(int i = 0; i < LGMP_Q_POINTER_LEN; ++i)
@@ -180,7 +192,7 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         {
         lp__log_error("lgmpHostMemAlloc Failed (Pointer): %s", 
             lgmpStatusString(status));
-        goto close_fd;
+        goto free_udata;
         }
         memset(lgmpHostMemPtr(ctx->lp_host.pointer_memory[i]), 0, 
                 sizeof(KVMFRCursor));
@@ -193,7 +205,7 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         {
         lp__log_error("lgmpHostMemAlloc Failed (Pointer Shapes): %s", 
                 lgmpStatusString(status));
-        goto close_fd;
+        goto free_udata;
         }
         memset(lgmpHostMemPtr(ctx->lp_host.cursor_shape[i]), 
                 0, MAX_POINTER_SIZE);
@@ -209,12 +221,14 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
             lp__log_error("lgmpHostMemAllocAligned Failed: %s", 
                 lgmpStatusString(status));
             ret = -1;
-            goto close_fd;
+            goto free_udata;
         }
     }
 
     return 0;
 
+free_udata:
+    free(udata.data);
 close_fd:
     close(fd);
 out:

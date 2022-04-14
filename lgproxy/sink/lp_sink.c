@@ -1,12 +1,23 @@
 #include "lp_sink.h"
 
-
-#define USAGEGUIDE "LGProxy Sink Usage Guide\n \
--h\tHost to connect to\n \
--p\tPort to connect to on the host for the NCP Channel\n \
--f\tSHM file to write data into\n \
--s\tSize to allocate for SHM File in Bytes\n\n"
-
+static const char * LP_USAGE_GUIDE_STR =                                \
+"Looking Glass Proxy (LGProxy)\n"                                       \
+"Copyright (c) 2022 Telescope Project Developers\n"                     \
+"Matthew McMullin (@matthewjmc), Tim Dettmar (@beanfacts)\n"            \
+"\n"                                                                    \
+"Documentation: https://telescope-proj.github.io/lgproxy\n"             \
+"Documentation also contains licenses for third party libraries\n"      \
+"used by this project\n"                                                \
+"\n"                                                                    \
+"Options:\n"                                                            \
+"   -h  Hostname or IP address to connect to\n"                         \
+"   -p  Port or service name to connect to\n"                           \
+"   -f  Shared memory or KVMFR file to use\n"                           \
+"   -s  Size of the shared memory file - not required unless\n"         \
+"       the file has not been created\n"                                \
+"   -d  Delete the shared memory file on exit\n"                        \
+"   -r  Polling interval in milliseconds\n"                             \
+;
 
 volatile int8_t flag = 0;
 
@@ -37,7 +48,7 @@ int main(int argc, char ** argv)
     TrfMsg__MessageWrapper * msg = NULL;
 
     int o;
-    while ((o = getopt(argc, argv, "h:p:f:s:")) != -1)
+    while ((o = getopt(argc, argv, "h:p:f:s:d:r")) != -1)
     {
         switch (o)
         {
@@ -51,12 +62,23 @@ int main(int argc, char ** argv)
                 ctx->shm = optarg;
                 break;
             case 's':
-                ctx->ram_size = (uint32_t) atoi(optarg);
+                ctx->ram_size = lpParseMemString(optarg);
+                if (ctx->ram_size < 0)
+                {
+                    lp__log_error("Invalid shared file size passed");
+                    return EINVAL;
+                }
+                break;
+            case 'd':
+                ctx->opts.delete_exit = true;
+                break;
+            case 'r':
+                ctx->opts.poll_int = atoi(optarg);
                 break;
             default:
             case '?':
                 lp__log_fatal("Invalid argument -%c", optopt);
-                printf(USAGEGUIDE);
+                printf(LP_USAGE_GUIDE_STR);
                 return EINVAL;
         }
     }
@@ -64,7 +86,7 @@ int main(int argc, char ** argv)
 
     if (!host || !port || !ctx->shm || ctx->ram_size == 0)
     {
-        printf(USAGEGUIDE);
+        printf(LP_USAGE_GUIDE_STR);
         return EINVAL;
     }
 
@@ -302,6 +324,10 @@ destroy_ctx:
         }
     }
     lpDestroyContext(ctx);
+    if (msg)
+    {
+        trf__ProtoFree(msg);
+    }
     return ret;
 }
 

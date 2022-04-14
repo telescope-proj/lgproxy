@@ -64,6 +64,11 @@ typedef struct {
     unsigned int            pointer_index;
 } LPHost;
 
+typedef struct {
+    int                     poll_int;
+    bool                    delete_exit;
+}LPUserOpts;
+
 struct LPContext {
     enum LP_STATE           state;
     const char *            shm;
@@ -73,6 +78,7 @@ struct LPContext {
     int                     shmFile;
     LPClient                lp_client;
     LPHost                  lp_host;
+    LPUserOpts              opts;
 };
 
 

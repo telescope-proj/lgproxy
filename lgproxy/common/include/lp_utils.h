@@ -4,7 +4,7 @@
 #include "trf.h"
 #include <stdio.h>
 #include "lp_types.h"
-
+#include <sys/stat.h>
 
 /**
  * @brief Poll for a message, decoding it if the message has been received.
@@ -15,6 +15,21 @@
  */
 int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg);
 
+/**
+ * @brief Parse bytes neede from string passed in to arguments
+ * 
+ * @param data          String containing memory amount (e.g. 1048576 or 128m)
+ * @return              size in bytes, -1 if invalid data 
+ */
+uint64_t lpParseMemString(char * data);
+
+/**
+ * @brief Check if the SHM File needs to be truncated 
+ * 
+ * @param  shmFile       Path to shm file
+ * @return true if shm file needs to be truncated, false if not
+ */
+bool lpShouldTruncate(PLPContext ctx);
 
 static inline void lpSetLPLogLevel()
 {

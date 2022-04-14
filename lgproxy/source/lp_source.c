@@ -1,11 +1,20 @@
 #include "lp_source.h"
 
 
-#define USAGEGUIDE "LGProxy Source Usage Guide\n \
--h\tAddress to allow connections from (set to '0.0.0.0' to allow from all)\n \
--p\tPort to listen to for incoming NCP connections\n \
--f\tSHM file to read data from Looking Glass Host\n \
--s\tSize to allocate for SHM File in Bytes\n\n"
+static const char * LP_USAGE_GUIDE_STR =                                \
+"Looking Glass Proxy (LGProxy)\n"                                       \
+"Copyright (c) 2022 Telescope Project Developers\n"                     \
+"Matthew McMullin (@matthewjmc), Tim Dettmar (@beanfacts)\n"            \
+"\n"                                                                    \
+"Documentation: https://telescope-proj.github.io/lgproxy\n"             \
+"Documentation also contains licenses for third party libraries\n"      \
+"used by this project\n"                                                \
+"\n"                                                                    \
+"Options:\n"                                                            \
+"   -h  Hostname or IP address to listen on\n"                          \
+"   -p  Port or service name to listen on\n"                            \
+"   -f  Shared memory or KVMFR file to use\n"                           \
+"   -s  Size of the shared memory file\n";
 
 
 volatile int8_t flag = 0;
@@ -47,12 +56,17 @@ int main(int argc, char ** argv)
                 ctx->shm = optarg;
                 break;
             case 's':
-                ctx->ram_size = (uint32_t) atoi(optarg);
+                ctx->ram_size = lpParseMemString(optarg);
+                if (ctx->ram_size < 0)
+                {
+                    lp__log_error("Invalid shared file size passed");
+                    return EINVAL;
+                }
                 break;
             default:
             case '?':
                 lp__log_fatal("Invalid argument -%c", optopt);
-                printf(USAGEGUIDE);
+                printf(LP_USAGE_GUIDE_STR);
                 return EINVAL;
         }
     }
@@ -60,7 +74,7 @@ int main(int argc, char ** argv)
 
     if (!host || !port || !ctx->shm || ctx->ram_size == 0)
     {
-        printf(USAGEGUIDE);
+        printf(LP_USAGE_GUIDE_STR);
         return EINVAL;
     }
 

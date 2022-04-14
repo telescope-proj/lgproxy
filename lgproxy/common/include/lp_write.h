@@ -16,6 +16,7 @@
 #include "lp_convert.h"
 #include "common/KVMFR.h"
 #include "common/framebuffer.h"
+#include "lp_utils.h"
 
 LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx);
 
