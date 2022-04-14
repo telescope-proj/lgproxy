@@ -25,7 +25,7 @@
  * 
  * @param ctx       Context to use
  */
-void * lpHandleCleintReq(PLPContext ctx);
+int lpHandleClientReq(PLPContext ctx);
 
 /**
  * @brief  Get the current cursor position and update the client side

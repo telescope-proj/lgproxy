@@ -38,8 +38,6 @@ int main(int argc, char ** argv)
 
     char * host = NULL;
     char * port = NULL;
-    pthread_t sub_channel;
-    bool sub_started = 0;
 
     if (lpSetDefaultOpts(ctx))
     {
@@ -103,13 +101,34 @@ int main(int argc, char ** argv)
         goto destroy_ctx;
     }
 
-    if((ret = trfNCAccept(ctx->lp_host.server_ctx, &ctx->lp_host.client_ctx)) < 0)
+    while(1)
     {
-        lp__log_error("Unable to Accept Client Connection");
-        ret = -1;
-        goto destroy_ctx;
+        lp__log_info("Waiting for Client Connection ...");
+        if((ret = trfNCAccept(ctx->lp_host.server_ctx, &ctx->lp_host.client_ctx)) < 0)
+        {
+            lp__log_error("Unable to Accept Client Connection");
+            ret = -1;
+            goto destroy_ctx;
+        }
+        lp__log_info("New Client Connected");
+        if ((ret = lpHandleClientReq(ctx)) < 0)
+        {
+            lp__log_error("Client disconnection with error: %s", fi_strerror(ret));
+        }
     }
 
+destroy_ctx:
+    lpDestroyContext(ctx);
+    return ret;
+
+}
+
+int lpHandleClientReq(PLPContext ctx)
+{
+    pthread_t sub_channel;
+    bool sub_started = 0;
+    int ret = 0;
+    lp__log_trace("Accepted Connection");
     if ((ret = lpInitLgmpClient(ctx) < 0)) // Initialize LGMP Client 
     {
         lp__log_fatal("Unable to initialize the lgmp client: %s", 
@@ -259,6 +278,8 @@ int main(int argc, char ** argv)
         lp__log_error("Wait timedout");
         return -1;
     }
+    // Set Polling Interval
+    ctx->lp_host.client_ctx->opts->fab_poll_rate = ctx->opts.poll_int;
 
     while (1)
     {
@@ -304,6 +325,7 @@ int main(int argc, char ** argv)
                 ret = -1;
                 goto destroy_ctx;
             }
+            ctx->lp_host.sub_channel->opts->fab_poll_rate = ctx->opts.poll_int;
             sub_started = 1;
         }
         if (processed == TRFM_KEEP_ALIVE)
@@ -349,6 +371,10 @@ int main(int argc, char ** argv)
                     if (trf__HasPassed(CLOCK_MONOTONIC, &te))
                     {
                         lp__log_debug("Sending keep alive...");
+                        if (ctx->lp_host.thread_flags == T_ERR)
+                        {
+                            goto destroy_ctx;
+                        }
                         ret = trfSendKeepAlive(ctx->lp_host.client_ctx);
                         if (ret < 0)
                         {
@@ -435,9 +461,6 @@ int main(int argc, char ** argv)
         }
     }
 
-    return 0;
-
-
 destroy_ctx:
     ctx->lp_host.thread_flags = T_STOPPED;
     uint64_t *tret;
@@ -454,13 +477,9 @@ destroy_ctx:
     {
         lp__log_error("Unable to unsubscribe from host");
     }
-    lpDestroyContext(ctx);
+    trfDestroyContext(ctx->lp_host.client_ctx);
+    ctx->lp_host.client_ctx = NULL;
     return ret;
-}
-
-void * lpHandleCleintReq(PLPContext ctx)
-{
-
 }
 
 void * lpHandleCursorPos(void * arg)
@@ -587,6 +606,7 @@ void * lpHandleCursorPos(void * arg)
 
 destroy_ctx:
     trfDestroyContext(ctx->lp_host.sub_channel);
+    ctx->lp_host.sub_channel = NULL;
     lp__log_error("Exited Subchannel");
     if (ctx->lp_host.thread_flags != T_ERR)
         ctx->lp_host.thread_flags = T_STOPPED;

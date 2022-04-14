@@ -99,7 +99,7 @@ int main(int argc, char ** argv)
     lpSetLPLogLevel();  // Set lgproxy log level
     lpSetTRFLogLevel(); // Set libtrf log level
 
-
+    lp__log_info("Connecting to %s:%s", host,port);
     if ((ret = lpTrfClientInit(ctx, host, port)) < 0)
     {
         lp__log_error("Unable to initialize trf client");
@@ -320,7 +320,6 @@ int main(int argc, char ** argv)
         displays->frame_cntr++;
     }
 
-    
 
 destroy_ctx:
     ctx->lp_client.thread_flags = T_STOPPED;
