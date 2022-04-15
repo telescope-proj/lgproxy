@@ -71,3 +71,4 @@ version.h
 *_build
 _BUILD
 _build
+!docs/Makefile
