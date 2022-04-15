@@ -135,6 +135,18 @@ int lpHandleClientReq(PLPContext ctx)
     ctx->ram_size = fileStat.st_size;
     lp__log_trace("SHM File %s opened, size: %lu", ctx->shm, ctx->ram_size);
 
+destroy_ctx:
+    lpDestroyContext(ctx);
+    return ret;
+
+}
+
+int lpHandleClientReq(PLPContext ctx)
+{
+    pthread_t sub_channel;
+    bool sub_started = 0;
+    int ret = 0;
+    lp__log_trace("Accepted Connection");
     if ((ret = lpInitLgmpClient(ctx) < 0)) // Initialize LGMP Client 
     {
         lp__log_fatal("Unable to initialize the lgmp client: %s", 
