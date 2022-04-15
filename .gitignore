@@ -68,3 +68,6 @@ lgmp-examples
 .profile
 .history
 version.h
+*_build
+_BUILD
+_build

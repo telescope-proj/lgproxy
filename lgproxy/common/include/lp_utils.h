@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "lp_types.h"
 #include <sys/stat.h>
+#include <math.h>
 
 /**
  * @brief Poll for a message, decoding it if the message has been received.
@@ -31,6 +32,10 @@ uint64_t lpParseMemString(char * data);
  */
 bool lpShouldTruncate(PLPContext ctx);
 
+/**
+ * @brief Set Looking Glass Proxy logging level
+ * 
+ */
 static inline void lpSetLPLogLevel()
 {
     char* loglevel = getenv("LP_LOG_LEVEL");
@@ -58,6 +63,9 @@ static inline void lpSetLPLogLevel()
         case 5:
             lp__log_set_level(LP__LOG_ERROR);
             break;
+        case 6:
+            lp__log_set_level(LP__LOG_FATAL);
+            break;
         default:
             lp__log_set_level(LP__LOG_INFO);
             break;
@@ -65,6 +73,10 @@ static inline void lpSetLPLogLevel()
     }
 }
 
+/**
+ * @brief Set Libtrf logging level
+ * 
+ */
 static inline void lpSetTRFLogLevel()
 {
     char* loglevel = getenv("TRF_LOG_LEVEL");
@@ -92,6 +104,9 @@ static inline void lpSetTRFLogLevel()
         case 5:
             trf__log_set_level(TRF__LOG_ERROR);
             break;
+        case 6:
+            trf__log_set_level(TRF__LOG_FATAL);
+            break;
         default:
             trf__log_set_level(TRF__LOG_INFO);
             break;
@@ -106,4 +121,12 @@ static inline void lpSetTRFLogLevel()
  * @return 0 on success, negative error code on failure
  */
 int lpSetDefaultOpts(PLPContext ctx);
+
+/**
+ * @brief Calculate the size needed for shared memory file
+ * 
+ * @param display   Display metadata from Libtrf
+ * @return size of the display needed
+ */
+int lpCalcFrameSizeNeeded(PTRFDisplay display);
 #endif

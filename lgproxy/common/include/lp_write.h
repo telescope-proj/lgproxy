@@ -17,17 +17,19 @@
 #include "common/KVMFR.h"
 #include "common/framebuffer.h"
 #include "lp_utils.h"
+#include "lp_msg.pb-c.h"
 
-LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx);
+LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx, PTRFDisplay display);
 
 /**
  * @brief Initialize LGMP Host for receiving data from libtrf
  * 
  * @param ctx               PLPContext to use
  * @param display           Display data received
+ * @param initShm            Set to true if shm file needs to be initialized again
  * @return 0 on success, negative error code on failure
  */
-int lpInitHost(PLPContext ctx, PTRFDisplay display);
+int lpInitHost(PLPContext ctx, PTRFDisplay display, bool initShm);
 
 /**
  * @brief       Signal that a frame is done writing to the LGMP client
@@ -66,4 +68,34 @@ int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor *cur, uint32_t curSize,
  * @return 0 on success, negative error code on failure
  */
 int lpPostCursor(PLPContext ctx ,uint32_t flags, PLGMPMemory mem);
+
+/**
+ * @brief Open and Map SHM File
+ * 
+ * @param ctx       Context to use
+ * @return 0 on success, negative error code on failure
+ */
+int lpInitShmFile(PLPContext ctx);
+
+/**
+ * @brief Shutdown all LGMP Host processes
+ * 
+ * @param ctx       Context to use
+ */
+void lpShutdown(PLPContext ctx);
+
+/**
+ * @brief Reinitialize Cursor Thread
+ * 
+ * @param ctx       Context to pass through to the thread
+ * @return 0 on success, negative error code on failure,
+ */
+int lpReinitCursorThread(PLPContext ctx);
+
+/**
+ * @brief Handle Cursor Data
+ * 
+ * @param arg     PLPContext
+ */
+void * lpCursorThread(void * arg);
 #endif

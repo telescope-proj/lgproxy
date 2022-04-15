@@ -4,7 +4,12 @@
 #include "common/types.h"
 #include "trf_def.h"
 
-
+/**
+ * @brief Convert LookingGlass texture types to Libtrf texture types
+ * 
+ * @param lg_type           Looking Glass texture type
+ * @return Libtrf Texture type
+ */
 static inline uint64_t lpLGToTrfFormat(int lg_type)
 {
     switch (lg_type)
@@ -24,6 +29,12 @@ static inline uint64_t lpLGToTrfFormat(int lg_type)
     }
 }
 
+/**
+ * @brief Convert Libtrf texture types to Looking Glass texture types
+ * 
+ * @param trf_type      Libtrf texture types
+ * @return Looking Glass texture type
+ */
 static inline uint64_t lpTrftoLGFormat(int trf_type)
 {
     switch(trf_type)

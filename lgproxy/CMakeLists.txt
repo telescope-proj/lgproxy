@@ -53,7 +53,8 @@ add_compile_options(
 "-O0;-g3;-ggdb"
 ) 
 
-file(COPY "${PROJECT_TOP}/repos/libtrf/libtrf/conf" DESTINATION "./build")
+file(COPY "${PROJECT_TOP}/repos/libtrf/libtrf/conf" DESTINATION "./source_build")
+file(COPY "${PROJECT_TOP}/repos/libtrf/libtrf/conf" DESTINATION "./sink_build")
 
 set(LP_COMMON
     common/src/lp_log.c
@@ -80,14 +81,14 @@ add_executable(source ${SOURCE})
 target_link_libraries(source trf lgmp m lg_common protobuf-c)
 set_property(TARGET source PROPERTY C_STANDARD 99)
 
-set_target_properties(source PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")
+set_target_properties(source PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./source_build")
 
 add_executable(sink ${SINK})
 
 target_link_libraries(sink trf lgmp m lg_common protobuf-c)
 set_property(TARGET sink PROPERTY C_STANDARD 99)
 
-set_target_properties(sink PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./build")       
+set_target_properties(sink PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./sink_build")       
 
 target_include_directories(sink PUBLIC
                             "${PROJECT_TOP}/sink"

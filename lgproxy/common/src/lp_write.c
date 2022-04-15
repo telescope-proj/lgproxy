@@ -98,7 +98,7 @@ static bool newKVMFRData(KVMFRUserData * dst)
   return true;
 }
 
-int lpInitHost(PLPContext ctx, PTRFDisplay display)
+int lpInitHost(PLPContext ctx, PTRFDisplay display, bool initShm)
 {
     if (!ctx)
     {
@@ -106,32 +106,13 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
     }
     int ret = 0;
 
-    int fd = open(ctx->shm, O_RDWR | O_CREAT, (mode_t) 0600);
-    if (fd < 0)
+    // Initialize SHM File
+    if (initShm)
     {
-        lp__log_error("Unable to open shared file: %s", strerror(errno));
-        ret = -errno;
-        goto out;
-    }
-    
-    bool truncFile = lpShouldTruncate(ctx);
-    if (truncFile)
-    {
-        if(ftruncate(fd, ctx->ram_size) != 0)
+        if (lpInitShmFile(ctx) < 0)
         {
-            lp__log_error("Unable to truncate shm file: %s", strerror(errno));
-            ret = -errno;
-            goto close_fd;
+            return -EINVAL;
         }
-    }
-
-    ctx->ram = mmap(0, ctx->ram_size, PROT_READ | PROT_WRITE, MAP_SHARED, 
-                fd, 0);
-    if (!ctx->ram)
-    {
-        lp__log_error("Unable to map shared memory: %s", strerror(errno));
-        ret = -errno;
-        goto close_fd;
     }
     
     lp__log_debug("Creating KVMFR data...");
@@ -211,7 +192,6 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
                 0, MAX_POINTER_SIZE);
     }
 
-
     ssize_t dispsize = trfGetDisplayBytes(display);
     for (int i = 0; i < LGMP_Q_FRAME_LEN; ++i )
     {
@@ -225,20 +205,37 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display)
         }
     }
 
-    return 0;
+    return ret;
 
 free_udata:
     free(udata.data);
-close_fd:
-    close(fd);
-out:
     return ret;
 }
 
-LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx)
+LGMP_STATUS lpKeepLGMPSessionAlive(PLPContext ctx, PTRFDisplay display)
 {
     LGMP_STATUS status;
     status = lgmpHostProcess(ctx->lp_client.lgmp_host);
+    // Reinit if the memory is zeroed out
+    if (status == LGMP_ERR_CORRUPTED)
+    {
+        lp__log_debug("Reinitializing LGMP Host");
+        lpShutdown(ctx);
+        // Reinit Host
+        status = lpInitHost(ctx, display, false);
+        // Reinitialize Thread
+        int ret = lpReinitCursorThread(ctx);
+        if (ret < 0)
+        {
+            lp__log_error("Unable to restart cursor thread: %d", ret);
+            return LGMP_ERR_INVALID_SESSION;
+        }
+        if (status != LGMP_OK)
+        {
+            lp__log_error("lgmpHostProcess failed: %s", lgmpStatusString(status));
+        }
+        return status;
+    }
     if (status != LGMP_OK)
     {
         lp__log_error("lgmpHostProcess failed: %s", lgmpStatusString(status));
@@ -374,4 +371,218 @@ int lpPostCursor(PLPContext ctx, uint32_t flags, PLGMPMemory mem)
         return -1;
     }
     return 0;
+}
+
+
+int lpInitShmFile(PLPContext ctx)
+{
+    int ret = 0;
+
+    int fd = open(ctx->shm, O_RDWR | O_CREAT, (mode_t) 0600);
+    if (fd < 0)
+    {
+        lp__log_error("Unable to open shared file: %s", strerror(errno));
+        ret = -errno;
+        goto out;
+    }
+    
+    bool truncFile = lpShouldTruncate(ctx);
+    if (truncFile)
+    {
+        if(ftruncate(fd, ctx->ram_size) != 0)
+        {
+            lp__log_error("Unable to truncate shm file: %s", strerror(errno));
+            ret = -errno;
+            goto close_fd;
+        }
+    }
+
+    ctx->ram = mmap(0, ctx->ram_size, PROT_READ | PROT_WRITE, MAP_SHARED, 
+                fd, 0);
+    if (!ctx->ram)
+    {
+        lp__log_error("Unable to map shared memory: %s", strerror(errno));
+        ret = -errno;
+        goto close_fd;
+    }
+    ctx->shmFile = fd;
+close_fd:
+    close(fd);
+out:
+    return ret;
+}
+
+void lpShutdown(PLPContext ctx)
+{
+    ctx->lp_client.thread_flags = T_STOPPED;
+    uint64_t *tret;
+    if (ctx->lp_client.sub_started)
+    {
+        pthread_join(ctx->lp_client.cursor_thread, (void*) &tret);
+        if (tret)
+        {
+            lp__log_error("Thread exited unsuccessfully");
+        }
+        ctx->lp_client.sub_started = false;
+    }
+
+    for(int i = 0; i < LGMP_Q_FRAME_LEN; ++i)
+        lgmpHostMemFree(&ctx->lp_client.frame_memory[i]);
+    for(int i = 0; i < LGMP_Q_POINTER_LEN; ++i)
+        lgmpHostMemFree(&ctx->lp_client.pointer_memory[i]);
+    for(int i = 0; i < POINTER_SHAPE_BUFFERS; ++i)
+        lgmpHostMemFree(&ctx->lp_client.cursor_shape[i]);
+    lgmpHostFree(&ctx->lp_client.lgmp_host);
+
+    ctx->lp_client.pointer_shape_valid = false;
+}
+
+int lpReinitCursorThread(PLPContext ctx)
+{
+    // Create new thread to use
+    int ret = pthread_create(&ctx->lp_client.cursor_thread, NULL, lpCursorThread ,ctx);
+    if (ret < 0)
+    {
+        lp__log_error("Unable to create thread for cursor");
+        return ret;
+    }
+
+    ctx->lp_client.sub_started = 1;
+    lp__log_trace("Subchannel has been created");
+    return ret;
+}
+
+void * lpCursorThread(void * arg)
+{
+    lp__log_trace("Started Cursor thread");
+    PLPContext ctx = (PLPContext) arg;
+    intptr_t ret = 0;
+    size_t psize = trf__GetPageSize();
+    ctx->lp_client.thread_flags = T_RUNNING;
+    void * mem = trfAllocAligned(MAX_POINTER_SIZE, psize);
+    if (!mem)
+    {
+        lp__log_error("Unable to allocate memory");
+        ret = -ENOMEM;
+        goto destroy_ctx;
+    }
+
+    KVMFRCursor * cursor = malloc(MAX_POINTER_SIZE);
+    if (!cursor)
+    {
+        lp__log_error("Unable to allocate memory");
+        goto destroy_ctx;
+    }
+    LpMsg__MessageWrapper * wrapper = NULL;
+
+    ret = trfRegInternalMsgBuf(ctx->lp_client.sub_channel, mem, MAX_POINTER_SIZE);
+    if (ret < 0)
+    {
+        lp__log_error("Unable to register internal buffer");
+        goto destroy_ctx;
+    }
+
+    struct TRFMem *mr = &ctx->lp_client.sub_channel->xfer.fabric->msg_mem;
+
+    while (1)
+    {
+        if (ctx->lp_client.thread_flags == T_STOPPED) // Parent request to stop thread
+        {
+            break;
+        }
+
+        ret = trfFabricRecv(ctx->lp_client.sub_channel, mr, trfMemPtr(mr),
+            MAX_POINTER_SIZE, 
+            ctx->lp_client.sub_channel->xfer.fabric->peer_addr,
+            ctx->lp_client.sub_channel->opts);
+        if (ret < 0)
+        {
+            lp__log_error("Unable to receive cursor data: %s", fi_strerror(-ret));
+            goto destroy_ctx;
+        }
+
+        int s = trfMsgGetPackedLength(trfMemPtr(mr));
+        lp__log_trace("Packed Length: %d", s);
+        ret = trfMsgUnpackProtobuf((ProtobufCMessage **) &wrapper, 
+                                   (const ProtobufCMessageDescriptor *) 
+                                   &lp_msg__message_wrapper__descriptor, s, 
+                                   trfMsgGetPayload(trfMemPtr(mr)));
+        if (ret < 0)
+        {
+            lp__log_error("Unable to decode message");
+            ctx->lp_client.thread_flags = T_ERR;
+            goto destroy_ctx;
+        }
+
+        if (wrapper->wdata_case == LP_MSG__MESSAGE_WRAPPER__WDATA_KA)
+        {
+            lp__log_debug("Waiting for new data...");
+            lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
+            wrapper = NULL;
+            continue;
+        }
+        else if (wrapper->wdata_case == 
+                LP_MSG__MESSAGE_WRAPPER__WDATA_CURSOR_DATA)
+        {
+            cursor->y       = wrapper->cursor_data->y;
+            cursor->x       = wrapper->cursor_data->x;
+            cursor->width   = wrapper->cursor_data->width;
+            cursor->height  = wrapper->cursor_data->height;
+            cursor->hx      = wrapper->cursor_data->hpx;
+            cursor->hy      = wrapper->cursor_data->hpy;
+            cursor->type    = wrapper->cursor_data->tex_fmt;
+            cursor->pitch   = wrapper->cursor_data->pitch;
+
+            uint32_t flags = wrapper->cursor_data->flags;
+
+            if (wrapper->cursor_data->data.len)
+            {
+                memcpy((uint8_t *)(cursor + 1), 
+                    wrapper->cursor_data->data.data, 
+                    wrapper->cursor_data->data.len);
+
+                flags |= CURSOR_FLAG_SHAPE;
+                lp__log_trace("Data: %lu bytes", wrapper->cursor_data->data.len);
+                
+            }
+            else
+            {
+                flags &= ~CURSOR_FLAG_SHAPE;   
+            }
+
+            lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
+
+            ret = lpUpdateCursorPos(ctx,cursor, wrapper->cursor_data->data.len, 
+                                    flags);
+            if (ret == -EAGAIN)
+            {
+                continue;
+            }
+            else if (ret < 0)
+            {
+                ctx->lp_client.thread_flags = T_ERR;
+                lp__log_error("Unable to send cursor position to Looking Glass");
+                goto destroy_ctx;
+            }
+            wrapper = NULL;
+        }
+        else
+        {
+            lp__log_error("Server sent garbage data");
+            lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
+            wrapper = NULL;
+            ctx->lp_client.thread_flags = T_ERR;
+            goto destroy_ctx;
+        }
+    }
+
+destroy_ctx:
+    if (cursor)
+    {
+        free(cursor);
+    }
+    lp__log_debug("Thread exited");
+    if (ctx->lp_client.thread_flags != T_ERR)
+        ctx->lp_client.thread_flags = T_STOPPED;
+    return (void *) ret;
 }

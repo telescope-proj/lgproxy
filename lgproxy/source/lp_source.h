@@ -19,17 +19,18 @@
 #include <signal.h>
 #include "common/framebuffer.h"
 #include "lp_msg.pb-c.h"
+#include <sys/stat.h>
 
 /**
- * @brief Handle Client Request
+ * @brief This Function will handle all client side requests (e.g. Frames data, Cursor data)
  * 
- * @param ctx       Context to use
+ * @param ctx       Context containing the TRFContext for client connections
  */
-void * lpHandleCleintReq(PLPContext ctx);
+int lpHandleClientReq(PLPContext ctx);
 
 /**
  * @brief  Get the current cursor position and update the client side
- * @param  arg      PTRFContext to use for the connections
+ * @param  arg      PTRFContext containing connection details
  * 
  */
 void * lpHandleCursorPos(void * arg);

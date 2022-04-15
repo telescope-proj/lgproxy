@@ -51,7 +51,7 @@ uint64_t lpParseMemString(char * data)
             case 'g':
                 return b * 1024 * 1024 * 1024;
             default:
-                return -1;
+                return 0;
         }
     }
 }
@@ -65,18 +65,33 @@ bool lpShouldTruncate(PLPContext ctx)
     }
     if (strncmp(ctx->shm, "/dev/kvmfr", sizeof("/dev/kvmfr")-1) == 0)
     {
+        ctx->dma_buf = true;
         return false;
     }
     if (ctx->ram_size > filestat.st_size)
     {
+        ctx->dma_buf = false;
         return true;
     }
     return false;
 }
+
 
 int lpSetDefaultOpts(PLPContext ctx)
 {
     ctx->opts.poll_int = 1;
     ctx->shm = "/dev/shm/looking-glass";
     return 0;
+}
+
+int lpRoundUpFrameSize(int size)
+{
+    return (int) powf(2.0f, ceilf(logf(size) / logf(2.0f)));
+}
+
+int lpCalcFrameSizeNeeded(PTRFDisplay display)
+{
+    int needed = trfGetDisplayBytes(display) * 2 + \
+        (sizeof(KVMFRCursor) + 1048576) * 2;
+    return lpRoundUpFrameSize(needed);
 }

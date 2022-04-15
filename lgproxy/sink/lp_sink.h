@@ -19,12 +19,6 @@
 #include "lp_msg.pb-c.h"
 #include "lp_utils.h"
 
-/**
- * @brief Handle Cursor Data
- * 
- * @param arg     PLPContext
- */
-void * lpCursorThread(void * arg);
 
 
 #endif
