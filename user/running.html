@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running the Application &mdash; Telescope Looking Glass Proxy  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Development" href="development.html" />
+    <link rel="prev" title="Building the application" href="building.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installating Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building the application</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running the Application</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sink">Sink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#source">Source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">Function Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Telescope Looking Glass Proxy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Running the Application</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user/running.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="running-the-application">
+<span id="running"></span><h1>Running the Application<a class="headerlink" href="#running-the-application" title="Permalink to this headline"></a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Currently, the proxy has very poor performance with DMABUF. Use of /dev/shm
+over /dev/kvmfr is advised, but this may change in a future update.</p>
+</div>
+<section id="sink">
+<h2>Sink<a class="headerlink" href="#sink" title="Permalink to this headline"></a></h2>
+<p><strong>Usage Guide</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Looking Glass Proxy (LGProxy)
+Copyright (c) 2022 Telescope Project Developers
+Matthew McMullin (@matthewjmc), Tim Dettmar (@beanfacts)
+
+Documentation: https://telescope-proj.github.io/lgproxy
+Documentation also contains licenses for third party libraries
+used by this project
+
+Options:
+-h  Hostname or IP address to connect to
+-p  Port or service name to connect to
+-f  Shared memory or KVMFR file to use
+-s  Size of the shared memory file - not required unless
+    the file has not been created
+-d  Delete the shared memory file on exit
+-r  Polling interval in milliseconds
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is currently a very early release of this software so when running the Looking Glass client
+you will need to add the <strong>-c</strong> option to specify which host to connect to for your spice server,
+the <strong>spice:captureOnStart=yes</strong> option also needs to be set for mouse input to work properly.</p>
+</div>
+<p>The <strong>sink</strong> side is the side where your Looking Glass client will be running on. The hostname or IP address specified is the host machine
+running the <strong>source</strong> application. By default only the hostname and port need to be spcified when running the application. The default shm
+file is <strong>/dev/shm/looking-glass</strong> which is the same as what Looking-Glass. The shared file memory size does not need to be specified.
+The <strong>-d</strong> flag will delete the shm file when the application has exited to free up memory. The poll interval specifies RDMA polling interval
+by defaul the polling interval will be set to 1ms but it could be set to 0 which will increase performance CPU usage will be much higher.</p>
+</section>
+<section id="source">
+<h2>Source<a class="headerlink" href="#source" title="Permalink to this headline"></a></h2>
+<p><strong>Usage Guide</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Looking Glass Proxy (LGProxy)
+Copyright (c) 2022 Telescope Project Developers
+Matthew McMullin (@matthewjmc), Tim Dettmar (@beanfacts)
+
+Documentation: https://telescope-proj.github.io/lgproxy
+Documentation also contains licenses for third party libraries
+used by this project
+
+Options:
+-h  Hostname or IP address to listen on
+-p  Port or service name to listen on
+-f  Shared memory or KVMFR file to use
+-s  Size of the shared memory file
+</pre></div>
+</div>
+<p>The <strong>source</strong> application will be running on the host machine where Looking Glass is running. Only the hostname and port need to be specified.
+The hostname should be set to <cite>0.0.0.0</cite> if you want to accept incoming connections from all addresses. The port is the port where it will listen
+for incoming connections. The shared memory file does not need to be specified it will default to <strong>/dev/shm/looking-glass</strong>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="building.html" class="btn btn-neutral float-left" title="Building the application" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="development.html" class="btn btn-neutral float-right" title="Development" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Matthew McMullin, Tim Dettmar.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
