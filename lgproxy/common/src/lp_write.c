@@ -192,6 +192,9 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display, bool initShm)
                 0, MAX_POINTER_SIZE);
     }
 
+    ctx->lp_client.pointer_index = 0;
+    ctx->lp_client.cursor_shape_index = 0;
+
     ssize_t dispsize = trfGetDisplayBytes(display);
     for (int i = 0; i < LGMP_Q_FRAME_LEN; ++i )
     {
@@ -255,6 +258,7 @@ int lpSignalFrameDone(PLPContext ctx, PTRFDisplay disp)
 
 int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
 {
+    ctx->lp_client.frame_index = 0; 
     bool repeatFrame = false;
     while (ctx->state == LP_STATE_RUNNING && 
         lgmpHostQueuePending(ctx->lp_client.host_q) == LGMP_Q_FRAME_LEN)
@@ -287,6 +291,11 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
                 lgmpStatusString(status));
             return -ENOBUFS;
         }
+    }
+
+    if (++ctx->lp_client.frame_index == LGMP_Q_FRAME_LEN)
+    {
+        ctx->lp_client.frame_index = 0;
     }
 
     lgmpHostQueueNewSubs(ctx->lp_client.host_q);
@@ -343,8 +352,25 @@ int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor * cur, uint32_t curShapeSize,
     {
         return -EINVAL;
     }
+
+    lp__log_trace("Updating cursor position... %d, %d", cur->x, cur->y);
     
-    PLGMPMemory mem = ctx->lp_client.cursor_shape[0];
+    PLGMPMemory mem;
+    if (!curShapeSize)
+    {
+        mem = ctx->lp_client.pointer_memory[ctx->lp_client.pointer_index];
+        if (++ctx->lp_client.pointer_index == LGMP_Q_POINTER_LEN)
+            ctx->lp_client.pointer_index = 0;
+        lp__log_trace("Using pointer-mem");
+    }
+    else
+    {
+        mem = ctx->lp_client.cursor_shape[ctx->lp_client.cursor_shape_index];
+        if (++ctx->lp_client.cursor_shape_index == POINTER_SHAPE_BUFFERS)
+            ctx->lp_client.cursor_shape_index = 0;
+        lp__log_trace("Using cursor-shape");
+    }
+
     KVMFRCursor *tmpCur = lgmpHostMemPtr(mem);
     memcpy((void *) tmpCur, (void *) cur, curShapeSize + sizeof(KVMFRCursor));
     
@@ -359,16 +385,14 @@ int lpUpdateCursorPos(PLPContext ctx, KVMFRCursor * cur, uint32_t curShapeSize,
 int lpPostCursor(PLPContext ctx, uint32_t flags, PLGMPMemory mem)
 {
     LGMP_STATUS status;
-    while ((status = lgmpHostQueuePost(ctx->lp_client.pointer_q, flags, mem)) 
-                != LGMP_OK)
+    status = lgmpHostQueuePost(ctx->lp_client.pointer_q, flags, mem);
+    if (status != LGMP_OK)
     {
+        lp__log_trace("LGMP Cursor == %s", lgmpStatusString(status));
         if (status == LGMP_ERR_QUEUE_FULL)
         {
             return -EAGAIN;
         }
-        lp__log_error("lgmpHostQueuePost (Pointer) failed: %s", 
-                lgmpStatusString(status));
-        return -1;
     }
     return 0;
 }
@@ -458,6 +482,7 @@ void * lpCursorThread(void * arg)
     PLPContext ctx = (PLPContext) arg;
     intptr_t ret = 0;
     size_t psize = trf__GetPageSize();
+    PTRFContext sc = ctx->lp_client.sub_channel;
     ctx->lp_client.thread_flags = T_RUNNING;
     void * mem = trfAllocAligned(MAX_POINTER_SIZE, psize);
     if (!mem)
@@ -475,14 +500,16 @@ void * lpCursorThread(void * arg)
     }
     LpMsg__MessageWrapper * wrapper = NULL;
 
-    ret = trfRegInternalMsgBuf(ctx->lp_client.sub_channel, mem, MAX_POINTER_SIZE);
+    ret = trfRegInternalMsgBuf(sc, mem, MAX_POINTER_SIZE);
     if (ret < 0)
     {
         lp__log_error("Unable to register internal buffer");
         goto destroy_ctx;
     }
 
-    struct TRFMem *mr = &ctx->lp_client.sub_channel->xfer.fabric->msg_mem;
+    struct TRFMem *mr = &sc->xfer.fabric->msg_mem;
+    uint32_t flags = 0;
+    bool posted = 0;
 
     while (1)
     {
@@ -491,14 +518,58 @@ void * lpCursorThread(void * arg)
             break;
         }
 
-        ret = trfFabricRecv(ctx->lp_client.sub_channel, mr, trfMemPtr(mr),
-            MAX_POINTER_SIZE, 
-            ctx->lp_client.sub_channel->xfer.fabric->peer_addr,
-            ctx->lp_client.sub_channel->opts);
+        if (!posted)
+        {
+            ret = trfFabricRecvUnchecked(
+                    sc, mr, trfMemPtr(mr),
+                    MAX_POINTER_SIZE, 
+                    sc->xfer.fabric->peer_addr);
+            if (ret < 0)
+            {
+                lp__log_error("Unable to post receive: %s", fi_strerror(-ret));
+                goto destroy_ctx;
+            }
+            posted = true;
+            lp__log_trace("Receive buffer posted!");
+        }
+
+        struct timespec dl;
+        ret = trfGetDeadline(&dl, 100);
         if (ret < 0)
         {
-            lp__log_error("Unable to receive cursor data: %s", fi_strerror(-ret));
+            lp__log_error("System clock error");
             goto destroy_ctx;
+        }
+
+        struct fi_cq_data_entry de;
+        struct fi_cq_err_entry err;
+
+        ret = trfFabricPollRecv(sc, &de, &err, 0, 0, &dl, 1);
+        switch (ret)
+        {
+            case -FI_ETIMEDOUT:
+            case -FI_EAGAIN:
+            case 0:
+                trfSleep(sc->opts->fab_poll_rate);
+                if (trf__HasPassed(CLOCK_MONOTONIC, &dl))
+                {
+                    ret = -ETIMEDOUT;
+                    uint32_t tmp_flags = flags & ~CURSOR_FLAG_SHAPE;
+                    lpUpdateCursorPos(ctx, cursor, 0, tmp_flags);
+                    continue;
+                }
+                break;
+            case 1:
+                posted = 0;
+                break;
+            default:
+                lp__log_error("Poll failed: %s", fi_strerror(-ret));
+                goto destroy_ctx;
+        }
+
+        if (ret != 1)
+        {
+            continue;
         }
 
         int s = trfMsgGetPackedLength(trfMemPtr(mr));
@@ -532,8 +603,7 @@ void * lpCursorThread(void * arg)
             cursor->hy      = wrapper->cursor_data->hpy;
             cursor->type    = wrapper->cursor_data->tex_fmt;
             cursor->pitch   = wrapper->cursor_data->pitch;
-
-            uint32_t flags = wrapper->cursor_data->flags;
+            flags           = wrapper->cursor_data->flags;
 
             if (wrapper->cursor_data->data.len)
             {

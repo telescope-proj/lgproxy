@@ -86,6 +86,7 @@ int main(int argc, char ** argv)
     if (!host || !port || !ctx->shm)
     {
         fputs(LP_USAGE_GUIDE_STR, stdout);
+        lp__log_trace("Invalid Arguments");
         return EINVAL;
     }
 
@@ -149,7 +150,7 @@ int main(int argc, char ** argv)
         goto destroy_ctx;
     }
 
-    // Create new thread to use
+    // Create new thread for cursor
     ret = pthread_create(&ctx->lp_client.cursor_thread, NULL, lpCursorThread ,ctx);
     if (ret < 0)
     {
@@ -218,9 +219,7 @@ int main(int argc, char ** argv)
 
         if (!lgmpHostQueueHasSubs(ctx->lp_client.host_q))
         {
-            
-            retries > 100 ? trfSleep(100) : trfSleep(1);
-            
+            retries > 100 ? trfSleep(100) : trfSleep(1);   
             retries++;
             ctr++;
             if (ctr % 10 == 0)
@@ -261,14 +260,35 @@ int main(int argc, char ** argv)
         clock_gettime(CLOCK_MONOTONIC, &tend);
         double tsd1 = timespecdiff(tstart, tend) / 1000000.0;
 
+        bool repeatframe = false;
         while (1)
         {
+            
             if (flag)
                 goto destroy_ctx;
 
             if (ctx->lp_client.thread_flags == T_ERR)
             {
                 goto destroy_ctx;
+            }
+
+            if (repeatframe)
+            {
+                status = lgmpHostQueuePost(
+                    ctx->lp_client.host_q, 0,
+                    ctx->lp_client.frame_memory[ctx->lp_client.frame_index]);
+                if (status != LGMP_OK && status != LGMP_ERR_QUEUE_FULL)
+                {
+                    lp__log_error("Failed lgmpHostQueuePost: %s", 
+                        lgmpStatusString(status));
+                    goto destroy_ctx;
+                }
+                ret = lpSignalFrameDone(ctx, displays);
+                if (ret < 0)
+                {
+                    lp__log_error("Unable to signal frame done: %s", 
+                            strerror(ret));
+                }
             }
 
             status = lpKeepLGMPSessionAlive(ctx, displays);
@@ -281,6 +301,7 @@ int main(int argc, char ** argv)
             if (ret == -EAGAIN)
             {
                 trfSleep(ctx->lp_client.client_ctx->opts->fab_poll_rate);
+                repeatframe = true;
                 continue;
             }
             if (ret < 0)
@@ -317,6 +338,7 @@ int main(int argc, char ** argv)
                                   strerror(-ret));
                     goto destroy_ctx;
                 }
+                repeatframe = false;
                 trf__ProtoFree(msg);
                 break;
             }

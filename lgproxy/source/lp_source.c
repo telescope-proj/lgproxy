@@ -46,7 +46,7 @@ int main(int argc, char ** argv)
     }
 
     int o;
-    while ((o = getopt(argc, argv, "h:p:f:s:")) != -1)
+    while ((o = getopt(argc, argv, "h:p:f:s:r:")) != -1)
     {
         switch (o)
         {
@@ -61,6 +61,10 @@ int main(int argc, char ** argv)
                 break;
             case 's':
                 ctx->ram_size = lpParseMemString(optarg);
+                break;
+            case 'r':
+                lp__log_trace("Poll Interval: %s", optarg);
+                ctx->opts.poll_int = atoi(optarg);
                 break;
             default:
             case '?':
@@ -285,7 +289,6 @@ int lpHandleClientReq(PLPContext ctx)
     }
     // Set Polling Interval
     ctx->lp_host.client_ctx->opts->fab_poll_rate = ctx->opts.poll_int;
-
     while (1)
     {
         if (flag)
@@ -383,13 +386,15 @@ int lpHandleClientReq(PLPContext ctx)
                         ret = trfSendKeepAlive(ctx->lp_host.client_ctx);
                         if (ret < 0)
                         {
-                            lp__log_debug("Error sending keep alive: %s", fi_strerror(abs(ret)));
+                            lp__log_debug("Error sending keep alive: %s", 
+                                    fi_strerror(abs(ret)));
                             return ret;
                         }
                         ret = clock_gettime(CLOCK_MONOTONIC, &ts);
                         if (ret < 0)
                         {
-                            trf__log_error("System clock error: %s", strerror(errno));
+                            trf__log_error("System clock error: %s", 
+                                    strerror(errno));
                             return -errno;
                         }
                         trf__GetDelay(&ts, &te, 1000);
