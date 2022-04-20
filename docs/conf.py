@@ -22,8 +22,8 @@ subprocess.call('doxygen Doxyfile.in', shell=True)
 # -- Project information -----------------------------------------------------
 
 project = 'Telescope Looking Glass Proxy'
-copyright = '2022, Matthew McMullin, Tim Dettmar'
-author = 'Matthew McMullin, Tim Dettmar'
+copyright = '2022, Telescope Project Team'
+author = 'Telescope Project Team'
 
 
 # -- General configuration ---------------------------------------------------

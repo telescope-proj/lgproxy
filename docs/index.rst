@@ -3,18 +3,22 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Telescope Looking Glass Proxy's documentation!
-=========================================================
+Welcome to the LGProxy Documentation!
+=====================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-What is Looking Glass Proxy
-***************************
-``lgproxy`` is a High-performance remote desktop proxy for Looking Glass utilizing ``libtrf`` which supports network offloading capabilities (e.g. RDMA)
+What is LGProxy
+***************
+
+``lgproxy`` is a High-performance remote desktop proxy for Looking Glass
+utilizing ``libtrf`` which supports network offloading capabilities (e.g. RDMA)
 
 `Github Repository <https://github.com/telescope-proj/lgproxy>`_
+
+Developed by the Telescope Project Team. :doc:`user/team`
 
 .. image:: diagram.png
 
@@ -28,6 +32,7 @@ Table of Contents
    user/installation
    user/building
    user/running
+   user/team
    user/development
    api/index
    user/copyright
