@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Development &mdash; Telescope Looking Glass Proxy  documentation</title>
+  <title>Telescope Project Team &mdash; Telescope Looking Glass Proxy  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -19,8 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Function Documentation" href="../api/index.html" />
-    <link rel="prev" title="Telescope Project Team" href="team.html" /> 
+    <link rel="next" title="Development" href="development.html" />
+    <link rel="prev" title="Running The Application" href="running.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,16 +43,11 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installing Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building The Application</a></li>
 <li class="toctree-l1"><a class="reference internal" href="running.html">Running The Application</a></li>
-<li class="toctree-l1"><a class="reference internal" href="team.html">Telescope Project Team</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Development</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#logging">Logging</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#lgproxy-logging">LGProxy logging</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#libtrf-logging">LibTRF logging</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#libfabric-logging">Libfabric Logging</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Telescope Project Team</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
 </ul>
 </li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/index.html">Function Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="copyright.html">Licenses</a></li>
 </ul>
@@ -71,9 +66,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Development</li>
+      <li>Telescope Project Team</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/user/development.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/user/team.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -81,54 +76,35 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="development">
-<span id="id1"></span><h1>Development<a class="headerlink" href="#development" title="Permalink to this headline"></a></h1>
-<section id="logging">
-<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline"></a></h2>
-<section id="lgproxy-logging">
-<h3>LGProxy logging<a class="headerlink" href="#lgproxy-logging" title="Permalink to this headline"></a></h3>
-<dl class="simple">
-<dt>Values</dt><dd><ul class="simple">
-<li><p>1 (Trace)</p></li>
-<li><p>2 (Debug)</p></li>
-<li><p>3 (Info) (Default Value)</p></li>
-<li><p>4 (Warn)</p></li>
-<li><p>5 (Error)</p></li>
-<li><p>6 (Fatal)</p></li>
-</ul>
-</dd>
-</dl>
-<p><strong>LP_LOG_LEVEL=&lt;VALUE&gt;</strong></p>
-</section>
-<section id="libtrf-logging">
-<h3>LibTRF logging<a class="headerlink" href="#libtrf-logging" title="Permalink to this headline"></a></h3>
-<dl class="simple">
-<dt>Values</dt><dd><ul class="simple">
-<li><p>1 (Trace)</p></li>
-<li><p>2 (Debug)</p></li>
-<li><p>3 (Info) (Default Value)</p></li>
-<li><p>4 (Warn)</p></li>
-<li><p>5 (Error)</p></li>
-<li><p>6 (Fatal)</p></li>
-</ul>
-</dd>
-</dl>
-<p><strong>TRF_LOG_LEVEL=&lt;VALUE&gt;</strong></p>
-</section>
-<section id="libfabric-logging">
-<h3>Libfabric Logging<a class="headerlink" href="#libfabric-logging" title="Permalink to this headline"></a></h3>
-<dl class="simple">
-<dt>Values</dt><dd><ul class="simple">
-<li><p>warn</p></li>
-<li><p>trace</p></li>
-<li><p>info</p></li>
-<li><p>debug</p></li>
-</ul>
-</dd>
-</dl>
-<p><strong>FI_LOG_LEVEL=&lt;VALUE&gt;</strong></p>
-<p>For more details look at the <a class="reference internal" href="../api/index.html"><span class="doc">Function Documentation</span></a>.</p>
-</section>
+  <section id="telescope-project-team">
+<span id="team"></span><h1>Telescope Project Team<a class="headerlink" href="#telescope-project-team" title="Permalink to this headline"></a></h1>
+<p>The Telescope Project is our capstone project exploring novel uses for RDMA
+transports. Our team consists of:</p>
+<p><strong>Tim Dettmar</strong> <a class="reference external" href="https://github.com/beanfacts">beanfacts</a></p>
+<p>Project Head</p>
+<p>Wrote LibTRF, a Libfabric-based framebuffer relay implementation written from
+the ground up for uncompressed video streaming over both RDMA and traditional
+transports.</p>
+<p><strong>Matthew McMullin</strong> <a class="reference external" href="https://github.com/matthewjmc">matthewjmc</a></p>
+<p>LGProxy Developer</p>
+<p>Wrote LGProxy, a high-performance remote desktop proxy designed for the Looking
+Glass application.</p>
+<p><strong>Vorachat Somsuay</strong> <a class="reference external" href="https://github.com/ailucky">ailucky</a></p>
+<p>Looking Glass Integration</p>
+<p>Integrated support for compressed texture formats directly into the Looking
+Glass client application.</p>
+<p><strong>Kittidech Ditsuwan</strong> <a class="reference external" href="https://github.com/poiler22">poiler22</a></p>
+<p>LibTTC Developer</p>
+<p>Wrote wrappers for the etcpak library for real-time texture compression in
+Looking Glass.</p>
+<section id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline"></a></h2>
+<p>We would like to thank Dr. Akkarit Sangpetch for mentoring and giving us access
+to the CMKL University <a class="reference external" href="https://www.cmkl.ac.th/research/apex">Apex Cluster</a>
+for our RDMA research and benchmarking work.</p>
+<p>We would also like to thank the Looking Glass development team for explaining
+details of their transfer system and providing the software as an open-source
+project.</p>
 </section>
 </section>
 
@@ -136,8 +112,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="team.html" class="btn btn-neutral float-left" title="Telescope Project Team" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../api/index.html" class="btn btn-neutral float-right" title="Function Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="running.html" class="btn btn-neutral float-left" title="Running The Application" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="development.html" class="btn btn-neutral float-right" title="Development" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -1,14 +1,33 @@
 .. _copyright:
 
 Licenses
-====================
+========
 
-Telescope Looking Glass Proxy (LGProxy)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Telescope Libraries
+-------------------
+
+Telescope Proxy For Looking Glass (LGProxy)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Copyright (c) 2022 `Matthew John McMullin <https://github.com/matthewjmc>`_.
 
-This project is licensed under `GPL 2.0+ <https://github.com/telescope-proj/lgproxy/blob/main/LICENSE>`_.
+This project is licensed under `GPL 2.0+
+<https://github.com/telescope-proj/lgproxy/blob/main/LICENSE>`_.
+
+Telescope Remote Frame Buffer Library (LibTRF)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Copyright (c) 2022 `Tim Dettmar <https://github.com/beanfacts>`_. 
+
+Licensed under `LGPL v2.1 
+<https://github.com/telescope-proj/libtrf/blob/main/LICENSE>`_.
+
+LibTRF includes other third-party libraries. Please see the LibTRF
+`documentation <https://telescope-proj.github.io/libtrf/index.html>`_ for more
+details. 
+
+External Libraries
+------------------
 
 Looking Glass
 ~~~~~~~~~~~~~
@@ -29,11 +48,3 @@ Looking Glass Memory Protocol (LGMP)
 Copyright (c) 2020 `Geoffrey McRae <https://github.com/gnif>`_.
 
 Licensed under `GPL 2.0+ <https://github.com/gnif/LGMP/blob/master/LICENSE>`_.
-
-
-Telescope Remote Frame Buffer Library (LibTRF)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Copyright (c) 2022 `Tim Dettmar <https://github.com/beanfacts>`_.
-
-Licensed under `LGPL v2.1 <https://github.com/telescope-proj/libtrf/blob/main/LICENSE>`_.
