@@ -1,4 +1,5 @@
 #include "lp_sink.h"
+#include "version.h"
 
 static const char * LP_USAGE_GUIDE_STR =                                \
 "Looking Glass Proxy (LGProxy)\n"                                       \
@@ -71,7 +72,7 @@ int main(int argc, char ** argv)
                 ctx->opts.delete_exit = true;
                 break;
             case 'r':
-                lp__log_trace("Poll Interval: %s", optarg);
+                lp__log_info("Poll Interval: %s", optarg);
                 ctx->opts.poll_int = atoi(optarg);
                 break;
             default:
@@ -99,6 +100,48 @@ int main(int argc, char ** argv)
         lp__log_error("Unable to initialize trf client");
         return -1;
     }
+
+    // Get server version
+    LpMsg__MessageWrapper * wrapper = NULL;
+    ret = trfFabricRecv(ctx->lp_client.client_ctx,
+                        &ctx->lp_client.client_ctx->xfer.fabric->msg_mem,
+                        trfMemPtr(&ctx->lp_client.client_ctx->xfer.fabric->msg_mem),
+                        trfMemSize(&ctx->lp_client.client_ctx->xfer.fabric->msg_mem),
+                        ctx->lp_client.client_ctx->xfer.fabric->peer_addr,
+                        ctx->lp_client.client_ctx->opts);
+    if (ret < 0)
+    {
+        lp__log_error("Message receive failed: %s", fi_strerror(-ret));
+        return -1;
+    }
+    int s = trfMsgGetPackedLength((trfMemPtr(&ctx->lp_client.client_ctx->xfer.fabric->msg_mem)));
+    lp__log_trace("Packed Length: %d", s);
+    ret = trfMsgUnpackProtobuf((ProtobufCMessage **) &wrapper,
+                                (const ProtobufCMessageDescriptor *)
+                                &lp_msg__message_wrapper__descriptor, s,
+                                trfMsgGetPayload(
+                                    trfMemPtr(&ctx->lp_client.client_ctx->xfer.fabric->msg_mem)
+                                ));
+    if (ret < 0)
+    {
+        lp__log_error("Message unpack failed: %s", strerror(-ret));
+        return -1;
+    }
+    if (strncmp(wrapper->build_version->lg_version, LG_BUILD_VERSION, strlen(LG_BUILD_VERSION)) != 0
+        || strncmp(wrapper->build_version->lp_version, LP_BUILD_VERSION, strlen(LP_BUILD_VERSION) != 0))
+    {
+        lp__log_error("Incorrect Version");
+        lp__log_error("Server LG Version: %s Client LG Version: %s", 
+                wrapper->build_version->lg_version,
+                wrapper->build_version->lg_version);
+        lp__log_error("Server LP Version: %s Client LP Version: %s", 
+                wrapper->build_version->lp_version,
+                wrapper->build_version->lp_version);
+    }
+    lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
+    wrapper = NULL;
+    lp__log_info("Looking Glass Proxy Build: %s", LP_BUILD_VERSION);
+    lp__log_info("Looking Glass Build: %s", LG_BUILD_VERSION);
 
     PTRFDisplay displays;
     ret = trfGetServerDisplays(ctx->lp_client.client_ctx, &displays);
@@ -199,7 +242,13 @@ int main(int argc, char ** argv)
         if (flag)
             goto destroy_ctx;
 
-        if (ctx->lp_client.thread_flags == T_ERR || ctx->lp_client.thread_flags == T_STOPPED)
+        if (ctx->state == LP_STATE_STOP)
+        {
+            lp__log_info("Shutting down");
+            goto destroy_ctx;
+        }
+
+        if (ctx->lp_client.thread_flags == T_STOP)
         {
             ret = lpReinitCursorThread(ctx);
             if (ret < 0)
@@ -263,7 +312,6 @@ int main(int argc, char ** argv)
         bool repeatframe = false;
         while (1)
         {
-            
             if (flag)
                 goto destroy_ctx;
 
@@ -361,14 +409,23 @@ int main(int argc, char ** argv)
 
 
 destroy_ctx:
-    ctx->lp_client.thread_flags = T_STOPPED;
-    uint64_t *tret;
+    ctx->state = LP_STATE_STOP; // Shutdown all threads
+
+    void * tret = NULL;
     if (ctx->lp_client.sub_started)
     {
         pthread_join(ctx->lp_client.cursor_thread, (void*) &tret);
-        if (tret)
+        if ((uint64_t) tret)
         {
-            lp__log_error("Thread exited unsuccessfully");
+            if ((uint64_t) tret == 1) // Server Requested Disconnect
+            {
+                lp__log_info("Server requested disconnect");
+                ctx->lp_client.client_ctx->disconnected = 1;
+            }
+            else
+            {
+                lp__log_error("Thread exited unsuccessfully: %s", strerror((uint64_t) tret));
+            }
         }
     }
     lpDestroyContext(ctx);

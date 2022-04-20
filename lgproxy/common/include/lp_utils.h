@@ -6,6 +6,7 @@
 #include "lp_types.h"
 #include <sys/stat.h>
 #include <math.h>
+#include "lp_msg.pb-c.h"
 
 /**
  * @brief Poll for a message, decoding it if the message has been received.
@@ -129,4 +130,20 @@ int lpSetDefaultOpts(PLPContext ctx);
  * @return size of the display needed
  */
 int lpCalcFrameSizeNeeded(PTRFDisplay display);
+
+/**
+ * @brief Send disconnect message to clients
+ * 
+ * @param ctx       Context containing fabric info to send disconnect on
+ * @return 0 on success, negative error code on failure
+ */
+int lpSendDisconnect(PTRFContext ctx);
+
+/**
+ * @brief Send API version to peer
+ * 
+ * @param ctx       Context to send connection on
+ * @return 0 on success, negative error code on failure
+ */
+int lpSendVersion(PTRFContext ctx);
 #endif

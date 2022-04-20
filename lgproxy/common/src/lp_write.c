@@ -39,7 +39,7 @@ static bool newKVMFRData(KVMFRUserData * dst)
       .version  = KVMFR_VERSION,
       .features = 0
     };
-    strncpy(kvmfr.hostver, LP_BUILD_VERSION, sizeof(kvmfr.hostver) - 1);
+    strncpy(kvmfr.hostver, LG_BUILD_VERSION, sizeof(kvmfr.hostver) - 1);
     appendData(dst, &kvmfr, sizeof(kvmfr));
   }
 
@@ -100,6 +100,8 @@ static bool newKVMFRData(KVMFRUserData * dst)
 
 int lpInitHost(PLPContext ctx, PTRFDisplay display, bool initShm)
 {
+    lp__log_info("Initializing LGProxy client ver. %s", LP_BUILD_VERSION);
+    
     if (!ctx)
     {
         return -EINVAL;
@@ -438,7 +440,7 @@ out:
 
 void lpShutdown(PLPContext ctx)
 {
-    ctx->lp_client.thread_flags = T_STOPPED;
+    ctx->state = LP_STATE_RESTART;
     uint64_t *tret;
     if (ctx->lp_client.sub_started)
     {
@@ -513,8 +515,9 @@ void * lpCursorThread(void * arg)
 
     while (1)
     {
-        if (ctx->lp_client.thread_flags == T_STOPPED) // Parent request to stop thread
+        if (ctx->state == LP_STATE_RESTART || ctx->state == LP_STATE_STOP)
         {
+            ret = 0;
             break;
         }
 
@@ -581,7 +584,6 @@ void * lpCursorThread(void * arg)
         if (ret < 0)
         {
             lp__log_error("Unable to decode message");
-            ctx->lp_client.thread_flags = T_ERR;
             goto destroy_ctx;
         }
 
@@ -630,18 +632,27 @@ void * lpCursorThread(void * arg)
             }
             else if (ret < 0)
             {
-                ctx->lp_client.thread_flags = T_ERR;
                 lp__log_error("Unable to send cursor position to Looking Glass");
                 goto destroy_ctx;
             }
             wrapper = NULL;
         }
-        else
-        {
-            lp__log_error("Server sent garbage data");
+        else if (wrapper->wdata_case == LP_MSG__MESSAGE_WRAPPER__WDATA_DISCONNECT)
+        {   
+            lp__log_trace("Host sent disconnect message");
             lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
             wrapper = NULL;
-            ctx->lp_client.thread_flags = T_ERR;
+            ctx->state = LP_STATE_STOP;
+            sc->disconnected = 1;
+            ret = 1; // Server requested disconnect
+            trfDestroyContext(sc);
+            goto destroy_ctx;
+        }
+        else
+        {
+            lp__log_error("Server sent garbage data: %d", wrapper->wdata_case);
+            lp_msg__message_wrapper__free_unpacked(wrapper, NULL);
+            wrapper = NULL;
             goto destroy_ctx;
         }
     }
@@ -651,8 +662,7 @@ destroy_ctx:
     {
         free(cursor);
     }
+    ctx->lp_client.thread_flags = T_STOP;
     lp__log_debug("Thread exited");
-    if (ctx->lp_client.thread_flags != T_ERR)
-        ctx->lp_client.thread_flags = T_STOPPED;
     return (void *) ret;
 }

@@ -14,7 +14,6 @@
 #include "trf.h"
 #include <sys/mman.h>
 
-
 #define POINTER_SHAPE_BUFFERS 3
 #define MAX_POINTER_SIZE (sizeof(KVMFRCursor) + (512 * 512 * 4))
 
@@ -22,7 +21,7 @@
 enum T_STATE {
     T_RUNNING,
     T_ERR,
-    T_STOPPED
+    T_STOP
 };
 
 enum LP_STATE {

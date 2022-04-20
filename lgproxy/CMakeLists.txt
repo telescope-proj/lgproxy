@@ -103,20 +103,21 @@ target_include_directories(source PUBLIC
                             "${PROJECT_TOP}/repos/LookingGlass/common/include"
                             "${PROJECT_TOP}/lgproxy/common/include")
 
+
+# Get Looking Glass version
 execute_process(
     COMMAND sh -c "git submodule | grep -i LookingGlass | awk -F'[()]' '{print $2}'"
     WORKING_DIRECTORY "${PROJECT_TOP}"
-    OUTPUT_VARIABLE LGPROXY_LG_GIT_REV
+    OUTPUT_VARIABLE LG_GIT_REV
     ERROR_QUIET
 )
 
-if ("${LGPROXY_LG_GIT_REV}" STREQUAL "")
-	set(LGPROXY_LG_GIT_REV "UNKNOWN")
+if ("${LG_GIT_REV}" STREQUAL "")
+	set(LG_GIT_REV "UNKNOWN")
 endif()
 
-
-string(STRIP "${LGPROXY_LG_GIT_REV}" LGPROXY_LG_GIT_VER)
-set(BUILD_VERSION "static const char * LP_BUILD_VERSION = \"${LGPROXY_LG_GIT_VER}\";")
+string(STRIP "${LG_GIT_REV}" LGPROXY_LG_GIT_VER)
+set(BUILD_VERSION "static const char * LG_BUILD_VERSION = \"${LGPROXY_LG_GIT_VER}\";")
 
 string(TIMESTAMP YEAR "%Y")
 set(HEADER "\
@@ -124,11 +125,41 @@ set(HEADER "\
 #define LG_CURRENT_YEAR ${YEAR}\n")
 
 if(EXISTS "common/include/version.h")
-	file(READ common/include/version.h BUILD_VERSION_)
+	file(READ common/include/version.h LG_BUILD_VERSION_)
 else()
-	set(BUILD_VERSION_ "")
+	set(LG_BUILD_VERSION_ "")
 endif()
 
-if (NOT "${BUILD_VERSION}" STREQUAL "${BUILD_VERSION_}")
-	file(WRITE common/include/version.h "${BUILD_VERSION}")
+if (NOT "${BUILD_VERSION}" STREQUAL "${LG_BUILD_VERSION_}")
+	file(WRITE common/include/version.h "${BUILD_VERSION}\n")
+endif()
+
+# Get LG Proxy version
+execute_process(
+    COMMAND sh -c "git rev-parse --short HEAD"
+    WORKING_DIRECTORY "${PROJECT_TOP}"
+    OUTPUT_VARIABLE LP_GIT_REV
+    ERROR_QUIET
+)
+
+if ("${LP_GIT_REV}" STREQUAL "")
+	set(LP_GIT_REV "UNKNOWN")
+endif()
+
+string(STRIP "${LP_GIT_REV}" PROXY_GIT_VER)
+set(BUILD_VERSION "static const char * LP_BUILD_VERSION = \"${PROXY_GIT_VER}\";")
+
+string(TIMESTAMP YEAR "%Y")
+set(HEADER "\
+#define LG_VERSION_STR \"${PROXY_GIT_VER}\"\n\
+#define LG_CURRENT_YEAR ${YEAR}\n")
+
+if(EXISTS "common/include/version.h")
+	file(READ common/include/version.h LP_BUILD_VERSION_)
+else()
+	set(LP_BUILD_VERSION_ "")
+endif()
+
+if (NOT "${BUILD_VERSION}" STREQUAL "${LP_BUILD_VERSION_}")
+	file(APPEND common/include/version.h "${BUILD_VERSION}")
 endif()

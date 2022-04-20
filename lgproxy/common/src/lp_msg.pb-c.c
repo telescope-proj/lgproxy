@@ -7,6 +7,51 @@
 #endif
 
 #include "lp_msg.pb-c.h"
+void   lp_msg__build_version__init
+                     (LpMsg__BuildVersion         *message)
+{
+  static const LpMsg__BuildVersion init_value = LP_MSG__BUILD_VERSION__INIT;
+  *message = init_value;
+}
+size_t lp_msg__build_version__get_packed_size
+                     (const LpMsg__BuildVersion *message)
+{
+  assert(message->base.descriptor == &lp_msg__build_version__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t lp_msg__build_version__pack
+                     (const LpMsg__BuildVersion *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &lp_msg__build_version__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t lp_msg__build_version__pack_to_buffer
+                     (const LpMsg__BuildVersion *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &lp_msg__build_version__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+LpMsg__BuildVersion *
+       lp_msg__build_version__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (LpMsg__BuildVersion *)
+     protobuf_c_message_unpack (&lp_msg__build_version__descriptor,
+                                allocator, len, data);
+}
+void   lp_msg__build_version__free_unpacked
+                     (LpMsg__BuildVersion *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &lp_msg__build_version__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   lp_msg__cursor_data__init
                      (LpMsg__CursorData         *message)
 {
@@ -97,6 +142,51 @@ void   lp_msg__keep_alive__free_unpacked
   assert(message->base.descriptor == &lp_msg__keep_alive__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   lp_msg__disconnect__init
+                     (LpMsg__Disconnect         *message)
+{
+  static const LpMsg__Disconnect init_value = LP_MSG__DISCONNECT__INIT;
+  *message = init_value;
+}
+size_t lp_msg__disconnect__get_packed_size
+                     (const LpMsg__Disconnect *message)
+{
+  assert(message->base.descriptor == &lp_msg__disconnect__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t lp_msg__disconnect__pack
+                     (const LpMsg__Disconnect *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &lp_msg__disconnect__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t lp_msg__disconnect__pack_to_buffer
+                     (const LpMsg__Disconnect *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &lp_msg__disconnect__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+LpMsg__Disconnect *
+       lp_msg__disconnect__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (LpMsg__Disconnect *)
+     protobuf_c_message_unpack (&lp_msg__disconnect__descriptor,
+                                allocator, len, data);
+}
+void   lp_msg__disconnect__free_unpacked
+                     (LpMsg__Disconnect *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &lp_msg__disconnect__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   lp_msg__message_wrapper__init
                      (LpMsg__MessageWrapper         *message)
 {
@@ -142,6 +232,57 @@ void   lp_msg__message_wrapper__free_unpacked
   assert(message->base.descriptor == &lp_msg__message_wrapper__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+static const ProtobufCFieldDescriptor lp_msg__build_version__field_descriptors[2] =
+{
+  {
+    "lp_version",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(LpMsg__BuildVersion, lp_version),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "lg_version",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(LpMsg__BuildVersion, lg_version),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned lp_msg__build_version__field_indices_by_name[] = {
+  1,   /* field[1] = lg_version */
+  0,   /* field[0] = lp_version */
+};
+static const ProtobufCIntRange lp_msg__build_version__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor lp_msg__build_version__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "lpMsg.BuildVersion",
+  "BuildVersion",
+  "LpMsg__BuildVersion",
+  "lpMsg",
+  sizeof(LpMsg__BuildVersion),
+  2,
+  lp_msg__build_version__field_descriptors,
+  lp_msg__build_version__field_indices_by_name,
+  1,  lp_msg__build_version__number_ranges,
+  (ProtobufCMessageInit) lp_msg__build_version__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
 static const ProtobufCFieldDescriptor lp_msg__cursor_data__field_descriptors[11] =
 {
   {
@@ -348,7 +489,45 @@ const ProtobufCMessageDescriptor lp_msg__keep_alive__descriptor =
   (ProtobufCMessageInit) lp_msg__keep_alive__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor lp_msg__message_wrapper__field_descriptors[2] =
+static const ProtobufCFieldDescriptor lp_msg__disconnect__field_descriptors[1] =
+{
+  {
+    "info",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(LpMsg__Disconnect, info),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned lp_msg__disconnect__field_indices_by_name[] = {
+  0,   /* field[0] = info */
+};
+static const ProtobufCIntRange lp_msg__disconnect__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor lp_msg__disconnect__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "lpMsg.Disconnect",
+  "Disconnect",
+  "LpMsg__Disconnect",
+  "lpMsg",
+  sizeof(LpMsg__Disconnect),
+  1,
+  lp_msg__disconnect__field_descriptors,
+  lp_msg__disconnect__field_indices_by_name,
+  1,  lp_msg__disconnect__number_ranges,
+  (ProtobufCMessageInit) lp_msg__disconnect__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor lp_msg__message_wrapper__field_descriptors[4] =
 {
   {
     "cursor_data",
@@ -374,15 +553,41 @@ static const ProtobufCFieldDescriptor lp_msg__message_wrapper__field_descriptors
     0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "disconnect",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(LpMsg__MessageWrapper, wdata_case),
+    offsetof(LpMsg__MessageWrapper, disconnect),
+    &lp_msg__disconnect__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "build_version",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(LpMsg__MessageWrapper, wdata_case),
+    offsetof(LpMsg__MessageWrapper, build_version),
+    &lp_msg__build_version__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned lp_msg__message_wrapper__field_indices_by_name[] = {
+  3,   /* field[3] = build_version */
   0,   /* field[0] = cursor_data */
+  2,   /* field[2] = disconnect */
   1,   /* field[1] = ka */
 };
 static const ProtobufCIntRange lp_msg__message_wrapper__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 4 }
 };
 const ProtobufCMessageDescriptor lp_msg__message_wrapper__descriptor =
 {
@@ -392,7 +597,7 @@ const ProtobufCMessageDescriptor lp_msg__message_wrapper__descriptor =
   "LpMsg__MessageWrapper",
   "lpMsg",
   sizeof(LpMsg__MessageWrapper),
-  2,
+  4,
   lp_msg__message_wrapper__field_descriptors,
   lp_msg__message_wrapper__field_indices_by_name,
   1,  lp_msg__message_wrapper__number_ranges,

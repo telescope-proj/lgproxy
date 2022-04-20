@@ -1,7 +1,5 @@
 #include "lp_msg.h"
 
-
-
 int lpKeepAlive(PTRFContext ctx)
 {
     if (!ctx)

@@ -15,8 +15,10 @@ PROTOBUF_C__BEGIN_DECLS
 #endif
 
 
+typedef struct LpMsg__BuildVersion LpMsg__BuildVersion;
 typedef struct LpMsg__CursorData LpMsg__CursorData;
 typedef struct LpMsg__KeepAlive LpMsg__KeepAlive;
+typedef struct LpMsg__Disconnect LpMsg__Disconnect;
 typedef struct LpMsg__MessageWrapper LpMsg__MessageWrapper;
 
 
@@ -25,13 +27,23 @@ typedef struct LpMsg__MessageWrapper LpMsg__MessageWrapper;
 
 /* --- messages --- */
 
-/**
- *  @brief Cursor data update
- *If the display source contains a cursor, the cursor position information
- *should be sent separately. To update the cursor shape, the values 
- *width and height should be set to non-zero values, with tex_fmt and
- *bytes being set to the cursor data type and data respectively.
- */
+struct  LpMsg__BuildVersion
+{
+  ProtobufCMessage base;
+  /**
+   * LGProxy build version
+   */
+  char *lp_version;
+  /**
+   * Looking Glass Build version
+   */
+  char *lg_version;
+};
+#define LP_MSG__BUILD_VERSION__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&lp_msg__build_version__descriptor) \
+    , (char *)protobuf_c_empty_string, (char *)protobuf_c_empty_string }
+
+
 struct  LpMsg__CursorData
 {
   ProtobufCMessage base;
@@ -101,10 +113,25 @@ struct  LpMsg__KeepAlive
     , 0 }
 
 
+struct  LpMsg__Disconnect
+{
+  ProtobufCMessage base;
+  /**
+   * Currently Unused
+   */
+  uint32_t info;
+};
+#define LP_MSG__DISCONNECT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&lp_msg__disconnect__descriptor) \
+    , 0 }
+
+
 typedef enum {
   LP_MSG__MESSAGE_WRAPPER__WDATA__NOT_SET = 0,
   LP_MSG__MESSAGE_WRAPPER__WDATA_CURSOR_DATA = 1,
-  LP_MSG__MESSAGE_WRAPPER__WDATA_KA = 2
+  LP_MSG__MESSAGE_WRAPPER__WDATA_KA = 2,
+  LP_MSG__MESSAGE_WRAPPER__WDATA_DISCONNECT = 3,
+  LP_MSG__MESSAGE_WRAPPER__WDATA_BUILD_VERSION = 4
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(LP_MSG__MESSAGE_WRAPPER__WDATA__CASE)
 } LpMsg__MessageWrapper__WdataCase;
 
@@ -115,6 +142,8 @@ struct  LpMsg__MessageWrapper
   union {
     LpMsg__CursorData *cursor_data;
     LpMsg__KeepAlive *ka;
+    LpMsg__Disconnect *disconnect;
+    LpMsg__BuildVersion *build_version;
   };
 };
 #define LP_MSG__MESSAGE_WRAPPER__INIT \
@@ -122,6 +151,25 @@ struct  LpMsg__MessageWrapper
     , LP_MSG__MESSAGE_WRAPPER__WDATA__NOT_SET, {0} }
 
 
+/* LpMsg__BuildVersion methods */
+void   lp_msg__build_version__init
+                     (LpMsg__BuildVersion         *message);
+size_t lp_msg__build_version__get_packed_size
+                     (const LpMsg__BuildVersion   *message);
+size_t lp_msg__build_version__pack
+                     (const LpMsg__BuildVersion   *message,
+                      uint8_t             *out);
+size_t lp_msg__build_version__pack_to_buffer
+                     (const LpMsg__BuildVersion   *message,
+                      ProtobufCBuffer     *buffer);
+LpMsg__BuildVersion *
+       lp_msg__build_version__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   lp_msg__build_version__free_unpacked
+                     (LpMsg__BuildVersion *message,
+                      ProtobufCAllocator *allocator);
 /* LpMsg__CursorData methods */
 void   lp_msg__cursor_data__init
                      (LpMsg__CursorData         *message);
@@ -160,6 +208,25 @@ LpMsg__KeepAlive *
 void   lp_msg__keep_alive__free_unpacked
                      (LpMsg__KeepAlive *message,
                       ProtobufCAllocator *allocator);
+/* LpMsg__Disconnect methods */
+void   lp_msg__disconnect__init
+                     (LpMsg__Disconnect         *message);
+size_t lp_msg__disconnect__get_packed_size
+                     (const LpMsg__Disconnect   *message);
+size_t lp_msg__disconnect__pack
+                     (const LpMsg__Disconnect   *message,
+                      uint8_t             *out);
+size_t lp_msg__disconnect__pack_to_buffer
+                     (const LpMsg__Disconnect   *message,
+                      ProtobufCBuffer     *buffer);
+LpMsg__Disconnect *
+       lp_msg__disconnect__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   lp_msg__disconnect__free_unpacked
+                     (LpMsg__Disconnect *message,
+                      ProtobufCAllocator *allocator);
 /* LpMsg__MessageWrapper methods */
 void   lp_msg__message_wrapper__init
                      (LpMsg__MessageWrapper         *message);
@@ -181,11 +248,17 @@ void   lp_msg__message_wrapper__free_unpacked
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
+typedef void (*LpMsg__BuildVersion_Closure)
+                 (const LpMsg__BuildVersion *message,
+                  void *closure_data);
 typedef void (*LpMsg__CursorData_Closure)
                  (const LpMsg__CursorData *message,
                   void *closure_data);
 typedef void (*LpMsg__KeepAlive_Closure)
                  (const LpMsg__KeepAlive *message,
+                  void *closure_data);
+typedef void (*LpMsg__Disconnect_Closure)
+                 (const LpMsg__Disconnect *message,
                   void *closure_data);
 typedef void (*LpMsg__MessageWrapper_Closure)
                  (const LpMsg__MessageWrapper *message,
@@ -196,8 +269,10 @@ typedef void (*LpMsg__MessageWrapper_Closure)
 
 /* --- descriptors --- */
 
+extern const ProtobufCMessageDescriptor lp_msg__build_version__descriptor;
 extern const ProtobufCMessageDescriptor lp_msg__cursor_data__descriptor;
 extern const ProtobufCMessageDescriptor lp_msg__keep_alive__descriptor;
+extern const ProtobufCMessageDescriptor lp_msg__disconnect__descriptor;
 extern const ProtobufCMessageDescriptor lp_msg__message_wrapper__descriptor;
 
 PROTOBUF_C__END_DECLS

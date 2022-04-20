@@ -1,4 +1,5 @@
 #include "lp_utils.h"
+#include "version.h"
 
 int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg)
 {
@@ -94,4 +95,48 @@ int lpCalcFrameSizeNeeded(PTRFDisplay display)
     int needed = trfGetDisplayBytes(display) * 2 + \
         (sizeof(KVMFRCursor) + 1048576) * 2;
     return lpRoundUpFrameSize(needed);
+}
+
+int lpSendDisconnect(PTRFContext ctx)
+{
+    LpMsg__MessageWrapper mw = LP_MSG__MESSAGE_WRAPPER__INIT;
+    LpMsg__Disconnect dc = LP_MSG__DISCONNECT__INIT;
+    mw.disconnect = &dc;
+    mw.wdata_case = LP_MSG__MESSAGE_WRAPPER__WDATA_DISCONNECT;
+    mw.disconnect->info = 0;
+
+    size_t dsize = trfMsgPackProtobuf((ProtobufCMessage *) &mw, 
+                    ctx->xfer.fabric->msg_mem.size,
+                    trfMemPtr(&ctx->xfer.fabric->msg_mem));
+    if (dsize < 0)
+    {
+        lp__log_error("unable to encode data");
+        return dsize;
+    }
+
+    ctx->disconnected = 1;
+
+    return trfFabricSend(ctx, &ctx->xfer.fabric->msg_mem,
+                        trfMemPtr(&ctx->xfer.fabric->msg_mem),
+                        dsize, ctx->xfer.fabric->peer_addr,
+                        ctx->opts);
+}
+
+int lpSendVersion(PTRFContext ctx)
+{
+    LpMsg__MessageWrapper mw = LP_MSG__MESSAGE_WRAPPER__INIT;
+    LpMsg__BuildVersion version = LP_MSG__BUILD_VERSION__INIT;
+    mw.build_version = &version;
+    mw.wdata_case = LP_MSG__MESSAGE_WRAPPER__WDATA_BUILD_VERSION;
+    mw.build_version->lg_version = (char *) LG_BUILD_VERSION;
+    mw.build_version->lp_version = (char *) LP_BUILD_VERSION;
+
+    size_t dsize = trfMsgPackProtobuf((ProtobufCMessage *) &mw,
+                        ctx->xfer.fabric->msg_mem.size,
+                        trfMemPtr(&ctx->xfer.fabric->msg_mem));
+                        
+    return trfFabricSend(ctx, &ctx->xfer.fabric->msg_mem,
+                        trfMemPtr(&ctx->xfer.fabric->msg_mem),
+                        dsize, ctx->xfer.fabric->peer_addr,
+                        ctx->opts);
 }

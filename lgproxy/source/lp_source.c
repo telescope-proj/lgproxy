@@ -1,5 +1,5 @@
 #include "lp_source.h"
-
+#include "version.h"
 
 static const char * LP_USAGE_GUIDE_STR =                                \
 "Looking Glass Proxy (LGProxy)\n"                                       \
@@ -63,7 +63,7 @@ int main(int argc, char ** argv)
                 ctx->ram_size = lpParseMemString(optarg);
                 break;
             case 'r':
-                lp__log_trace("Poll Interval: %s", optarg);
+                lp__log_info("Poll Interval: %s", optarg);
                 ctx->opts.poll_int = atoi(optarg);
                 break;
             default:
@@ -101,11 +101,25 @@ int main(int argc, char ** argv)
 
     while(1)
     {
+        if (flag)
+        {
+            lp__log_info("Quitting ...");
+            goto destroy_ctx;
+        }
+
         lp__log_info("Waiting for Client Connection ...");
         if((ret = trfNCAccept(ctx->lp_host.server_ctx, &ctx->lp_host.client_ctx)) < 0)
         {
-            lp__log_error("Unable to Accept Client Connection");
-            ret = -1;
+            if (abs(ret) == EINTR)
+            {
+                lp__log_info("Shutting down ...");
+                ret = 0;
+            }
+            else
+            {
+                lp__log_error("Unable to Accept Client Connection: %s", fi_strerror(ret));
+                ret = -1;
+            }
             goto destroy_ctx;
         }
         lp__log_info("New Client Connected");
@@ -127,6 +141,16 @@ int lpHandleClientReq(PLPContext ctx)
     bool sub_started = 0;
     int ret = 0;
     lp__log_trace("Accepted Connection");
+
+    // Send server build version
+    ret = lpSendVersion(ctx->lp_host.client_ctx);
+    if (ret < 0)
+    {
+        lp__log_error("Unable to send build version");
+        goto destroy_ctx;
+    }
+    lp__log_info("Looking Glass Proxy Build: %s", LP_BUILD_VERSION);
+    lp__log_info("Looking Glass Build: %s", LG_BUILD_VERSION);
 
     struct stat fileStat;
     if (stat(ctx->shm, &fileStat) != 0)
@@ -287,13 +311,15 @@ int lpHandleClientReq(PLPContext ctx)
         lp__log_error("Wait timedout");
         return -1;
     }
+
     // Set Polling Interval
     ctx->lp_host.client_ctx->opts->fab_poll_rate = ctx->opts.poll_int;
+
     while (1)
     {
         if (flag)
         {
-            lp__log_error("Destroying CTX");
+            lp__log_trace("Destroying CTX");
             goto destroy_ctx;
         }
 
@@ -472,14 +498,15 @@ int lpHandleClientReq(PLPContext ctx)
     }
 
 destroy_ctx:
-    ctx->lp_host.thread_flags = T_STOPPED;
-    uint64_t *tret;
+    ctx->lp_host.thread_flags = T_STOP;
+    void *tret = NULL;
     if (sub_started)
     {
         pthread_join(sub_channel, (void*) &tret);
-        if (tret)
+        if ((uint64_t) tret < 0)
         {
-            lp__log_error("Thread exited unsuccessfully: %d", tret);
+            lp__log_error("Thread exited unsuccessfully: %s", 
+                strerror((uint64_t)tret));
         }
     }
     trfDestroyContext(ctx->lp_host.client_ctx);
@@ -528,8 +555,9 @@ void * lpHandleCursorPos(void * arg)
     bool setDeadline = false;
     while (1)
     {
-        if (ctx->lp_host.thread_flags == T_STOPPED)
+        if (ctx->lp_host.thread_flags == T_STOP)
         {
+            ret = 0;
             break;
         }
         if (!setDeadline)
@@ -610,10 +638,15 @@ void * lpHandleCursorPos(void * arg)
     ret = 0;
 
 destroy_ctx:
+    ret = lpSendDisconnect(ctx->lp_host.sub_channel);
+    if (ret < 0)
+        lp__log_error("Unable to send disconnect message on subchannel");
+
     trfDestroyContext(ctx->lp_host.sub_channel);
     ctx->lp_host.sub_channel = NULL;
     lp__log_debug("Exited Subchannel");
     if (ctx->lp_host.thread_flags != T_ERR)
-        ctx->lp_host.thread_flags = T_STOPPED;
+        ctx->lp_host.thread_flags = T_STOP;
+
     return (void *) ret;
 }

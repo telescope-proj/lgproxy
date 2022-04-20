@@ -15,6 +15,7 @@
 #include "common/KVMFR.h"
 #include "common/framebuffer.h"
 #include "lp_convert.h"
+#include "lp_utils.h"
 
 /**
  * @param ctx               Context to use
