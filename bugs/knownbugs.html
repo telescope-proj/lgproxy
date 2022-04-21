@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Function Documentation &mdash; Telescope Looking Glass Proxy  documentation</title>
+  <title>Known Bugs &mdash; Telescope Looking Glass Proxy  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -19,8 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Server Side Functions" href="lp_source.html" />
-    <link rel="prev" title="Telescope Project Team" href="../team/team.html" /> 
+    <link rel="next" title="Telescope Project Team" href="../team/team.html" />
+    <link rel="prev" title="Bug Report Format" href="format.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,25 +48,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../user/runlg.html">Running Looking Glass</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Bug Reports</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../bugs/format.html">Bug Report Format</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../bugs/knownbugs.html">Known Bugs</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="format.html">Bug Report Format</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Known Bugs</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developers</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../team/team.html">Telescope Project Team</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Function Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="lp_source.html">Server Side Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lp_sink.html">Client Side Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lp_utils.html">Utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lp_types.html">Type Definitions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lp_trf.html">LibTRF Wrapper Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lp_convert.html">Conversion Functions</a></li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">Function Documentation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Licensing</span></p>
 <ul>
@@ -87,9 +79,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Function Documentation</li>
+      <li>Known Bugs</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/api/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/bugs/knownbugs.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -97,26 +89,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="function-documentation">
-<span id="api"></span><h1>Function Documentation<a class="headerlink" href="#function-documentation" title="Permalink to this headline"></a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="lp_source.html">Server Side Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lp_sink.html">Client Side Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lp_utils.html">Utilities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lp_types.html">Type Definitions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lp_trf.html">LibTRF Wrapper Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lp_convert.html">Conversion Functions</a></li>
+  <section id="known-bugs">
+<span id="knownbugs"></span><h1>Known Bugs<a class="headerlink" href="#known-bugs" title="Permalink to this headline"></a></h1>
+<ul class="simple">
+<li><p>When the client connects and there has been no motion on the screen, LGProxy
+will sometimes fail to display the display contents unless there is a display
+update.</p></li>
+<li><p>When <code class="docutils literal notranslate"><span class="pre">spice:captureOnStart=yes</span></code> is not specified, the Looking Glass client
+may sometimes fail to display the mouse cursor.</p></li>
+<li><p>Use of FSR with compressed texture formats does not work (no fix - option
+should be grayed out).</p></li>
+<li><p>Use of FSR with raw texture formats sometimes fails in DMABUF mode.</p></li>
 </ul>
-</div>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../team/team.html" class="btn btn-neutral float-left" title="Telescope Project Team" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="lp_source.html" class="btn btn-neutral float-right" title="Server Side Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="format.html" class="btn btn-neutral float-left" title="Bug Report Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../team/team.html" class="btn btn-neutral float-right" title="Telescope Project Team" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

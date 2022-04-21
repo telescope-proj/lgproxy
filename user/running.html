@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Telescope Project Team" href="team.html" />
+    <link rel="next" title="Running Looking Glass" href="runlg.html" />
     <link rel="prev" title="Building The Application" href="building.html" /> 
 </head>
 
@@ -39,17 +39,38 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">System Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installing Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building The Application</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Running The Application</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#sink">Sink</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#source">Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-the-log-level">Setting the log level</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lgproxy-libtrf">LGProxy &amp; LibTRF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#libfabric">Libfabric</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="team.html">Telescope Project Team</a></li>
-<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="runlg.html">Running Looking Glass</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bug Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../bugs/format.html">Bug Report Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bugs/knownbugs.html">Known Bugs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../team/team.html">Telescope Project Team</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../api/index.html">Function Documentation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Licensing</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="copyright.html">Licenses</a></li>
 </ul>
 
@@ -81,14 +102,8 @@
 <span id="running"></span><h1>Running The Application<a class="headerlink" href="#running-the-application" title="Permalink to this headline"></a></h1>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>When using RDMA transports, please ensure you have configured your network
-and system correctly, else you may experience poor performance. Information
-on recommended configuration steps may be found in the <a class="reference external" href="https://telescope-proj.github.io/libtrf/index.html">LibTRF documentation</a>.</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Currently, the proxy has very poor performance with DMABUF. Use of /dev/shm
-over /dev/kvmfr is advised, but this may change in a future update.</p>
+<p>Use of DMABUF with LGProxy (i.e., the KVMFR module) works, but has not been
+extensively tested.</p>
 </div>
 <section id="sink">
 <h2>Sink<a class="headerlink" href="#sink" title="Permalink to this headline"></a></h2>
@@ -111,23 +126,15 @@ Options:
 -r  Polling interval in milliseconds
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is currently a very early release of this software. When running the
-Looking Glass client, you will need to add the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option to specify
-which host to connect to for your SPICE server, the
-<code class="docutils literal notranslate"><span class="pre">spice:captureOnStart=yes</span></code> option also needs to be set for mouse input
-to work properly.</p>
-</div>
 <p>The <strong>sink</strong> side is the receiver side, i.e. the computer on which you will be
 running the Looking Glass client. The hostname or IP address specified should be
 that of the <strong>source</strong> application. You may use any interface with an IPv4
 address; the negotiation protocol in LibTRF will attempt to use the fastest
 interface.</p>
 <p>The shared memory file does not need to be specified - it defaults to
-/dev/shm/looking-glass, which is the default for the Looking Glass application.
-The file size does not need to be explicity specified - the system determines
-this automatically unless a specific size is needed.</p>
+<code class="docutils literal notranslate"><span class="pre">/dev/shm/looking-glass</span></code>, which is the default for the Looking Glass
+application. The file size does not need to be explicity specified - the system
+determines this automatically unless a specific size is needed.</p>
 <p>The polling interval specifies how often the transport library polls for
 incoming data. By default, the interval is 1ms, but may be set to 0 to use busy
 waiting or a higher interval for lower framerates and slower mice.</p>
@@ -161,6 +168,41 @@ interfaces, use <cite>0.0.0.0</cite>. Specify an unused port between 10240 and 6
 the shared memory file is not specified, it defaults to
 <code class="docutils literal notranslate"><span class="pre">dev/shm/looking-glass</span></code>.</p>
 </section>
+<section id="setting-the-log-level">
+<h2>Setting the log level<a class="headerlink" href="#setting-the-log-level" title="Permalink to this headline"></a></h2>
+<p>The log level may be set for specific components of LGProxy:</p>
+<section id="lgproxy-libtrf">
+<h3>LGProxy &amp; LibTRF<a class="headerlink" href="#lgproxy-libtrf" title="Permalink to this headline"></a></h3>
+<dl class="simple">
+<dt>Values</dt><dd><ul class="simple">
+<li><p>1 (Trace)</p></li>
+<li><p>2 (Debug)</p></li>
+<li><p>3 (Info) (Default Value)</p></li>
+<li><p>4 (Warn)</p></li>
+<li><p>5 (Error)</p></li>
+<li><p>6 (Fatal)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Set the LGProxy log level with the environment variable: <strong>LP_LOG_LEVEL=VALUE</strong></p>
+<p>Set the LibTRF log level with the environment variable: <strong>TRF_LOG_LEVEL=VALUE</strong></p>
+</section>
+<section id="libfabric">
+<h3>Libfabric<a class="headerlink" href="#libfabric" title="Permalink to this headline"></a></h3>
+<dl class="simple">
+<dt>Values</dt><dd><ul class="simple">
+<li><p>warn</p></li>
+<li><p>trace</p></li>
+<li><p>info</p></li>
+<li><p>debug</p></li>
+</ul>
+</dd>
+</dl>
+<p>Set the Libfabric log level with the environment variable: <strong>FI_LOG_LEVEL=VALUE</strong></p>
+<p>Once both sides are running and connected, you may start the Looking Glass
+client application: <a class="reference internal" href="runlg.html"><span class="doc">Running Looking Glass</span></a>.</p>
+</section>
+</section>
 </section>
 
 
@@ -168,7 +210,7 @@ the shared memory file is not specified, it defaults to
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="building.html" class="btn btn-neutral float-left" title="Building The Application" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="team.html" class="btn btn-neutral float-right" title="Telescope Project Team" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="runlg.html" class="btn btn-neutral float-right" title="Running Looking Glass" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installing Dependencies" href="user/installation.html" /> 
+    <link rel="next" title="System Requirements" href="user/requirements.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -38,13 +38,29 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user/requirements.html">System Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user/installation.html">Installing Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user/building.html">Building The Application</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user/running.html">Running The Application</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user/team.html">Telescope Project Team</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user/development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user/runlg.html">Running Looking Glass</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bug Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="bugs/format.html">Bug Report Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs/knownbugs.html">Known Bugs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="team/team.html">Telescope Project Team</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">Function Documentation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Licensing</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="user/copyright.html">Licenses</a></li>
 </ul>
 
@@ -76,12 +92,13 @@
 <h1>Welcome to the LGProxy Documentation!<a class="headerlink" href="#welcome-to-the-lgproxy-documentation" title="Permalink to this headline"></a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<section id="what-is-lgproxy">
-<h2>What is LGProxy<a class="headerlink" href="#what-is-lgproxy" title="Permalink to this headline"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">lgproxy</span></code> is a High-performance remote desktop proxy for Looking Glass
-utilizing <code class="docutils literal notranslate"><span class="pre">libtrf</span></code> which supports network offloading capabilities (e.g. RDMA)</p>
-<p><a class="reference external" href="https://github.com/telescope-proj/lgproxy">Github Repository</a></p>
-<p>Developed by the Telescope Project Team. <a class="reference internal" href="user/team.html"><span class="doc">Telescope Project Team</span></a></p>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h2>
+<p>LGProxy is a high-performance proxy for the Looking Glass application. It
+utilizes the Telescope Remote Framebuffer Library for transport over both
+commodity and RDMA capable networking hardware.</p>
+<p>View our <a class="reference external" href="https://github.com/telescope-proj/lgproxy">GitHub repository</a>.</p>
+<p>Developed by the <a class="reference internal" href="team/team.html"><span class="doc">Telescope Project Team</span></a>.</p>
 <img alt="_images/diagram.png" src="_images/diagram.png" />
 </section>
 </section>
@@ -91,14 +108,32 @@ utilizing <code class="docutils literal notranslate"><span class="pre">libtrf</s
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 </ul>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="user/requirements.html">System Requirements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/requirements.html#recommended-specifications">Recommended Specifications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/requirements.html#client">Client</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user/requirements.html#using-dmabuf-rdma-best-case">Using DMABUF &amp; RDMA (best case)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/requirements.html#no-dmabuf-tcp-worst-case">No DMABUF &amp; TCP (worst case)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user/requirements.html#host">Host</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user/requirements.html#uncompressed-using-rdma-best-case">Uncompressed, using RDMA (best case)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="user/requirements.html#compressed-using-tcp-worst-case">Compressed, using TCP (worst case)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user/requirements.html#bandwidth-calculator">Bandwidth Calculator</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="user/installation.html">Installing Dependencies</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="user/installation.html#build-dependencies">Build Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="user/installation.html#fedora-and-derivatives">Fedora and derivatives</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user/installation.html#ubuntu">Ubuntu</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user/installation.html#ubuntu-debian">Ubuntu &amp; Debian</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/installation.html#all-versions">All Versions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user/installation.html#ubuntu-20-04-debian-10-and-older">Ubuntu 20.04, Debian 10 and older</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user/installation.html#ubuntu-21-10-debian-11-and-newer">Ubuntu 21.10, Debian 11 and newer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="user/installation.html#all-ubuntu-debian-versions">All Ubuntu &amp; Debian Versions</a></li>
 </ul>
 </li>
 </ul>
@@ -107,21 +142,35 @@ utilizing <code class="docutils literal notranslate"><span class="pre">libtrf</s
 <li class="toctree-l1"><a class="reference internal" href="user/running.html">Running The Application</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="user/running.html#sink">Sink</a></li>
 <li class="toctree-l2"><a class="reference internal" href="user/running.html#source">Source</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="user/team.html">Telescope Project Team</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="user/team.html#acknowledgements">Acknowledgements</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="user/development.html">Development</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="user/development.html#logging">Logging</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="user/development.html#lgproxy-logging">LGProxy logging</a></li>
-<li class="toctree-l3"><a class="reference internal" href="user/development.html#libtrf-logging">LibTRF logging</a></li>
-<li class="toctree-l3"><a class="reference internal" href="user/development.html#libfabric-logging">Libfabric Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user/running.html#setting-the-log-level">Setting the log level</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user/running.html#lgproxy-libtrf">LGProxy &amp; LibTRF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/running.html#libfabric">Libfabric</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="user/runlg.html">Running Looking Glass</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Bug Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="bugs/format.html">Bug Report Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs/knownbugs.html">Known Bugs</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="team/team.html">Telescope Project Team</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="team/team.html#acknowledgements">Acknowledgements</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">Function Documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/lp_source.html">Server Side Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/lp_sink.html">Client Side Functions</a></li>
@@ -131,10 +180,15 @@ utilizing <code class="docutils literal notranslate"><span class="pre">libtrf</s
 <li class="toctree-l2"><a class="reference internal" href="api/lp_convert.html">Conversion Functions</a></li>
 </ul>
 </li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Licensing</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="user/copyright.html">Licenses</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="user/copyright.html#telescope-libraries">Telescope Libraries</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="user/copyright.html#telescope-proxy-for-looking-glass-lgproxy">Telescope Proxy For Looking Glass (LGProxy)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="user/copyright.html#telescope-remote-frame-buffer-library-libtrf">Telescope Remote Frame Buffer Library (LibTRF)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user/copyright.html#telescope-remote-framebuffer-library-libtrf">Telescope Remote Framebuffer Library (LibTRF)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="user/copyright.html#external-libraries">External Libraries</a><ul>
@@ -152,7 +206,7 @@ utilizing <code class="docutils literal notranslate"><span class="pre">libtrf</s
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="user/installation.html" class="btn btn-neutral float-right" title="Installing Dependencies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="user/requirements.html" class="btn btn-neutral float-right" title="System Requirements" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

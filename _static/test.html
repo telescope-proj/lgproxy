@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      var f = 0;
+      function calc() {
+        if (!f) {
+          document.getElementById("preset").value = "x";
+        }
+        f = 0;
+        var w = Number(document.getElementById("width").value);
+        var h = Number(document.getElementById("height").value);
+        var fps = Number(document.getElementById("fps").value);
+        var fmt = document.getElementById("fmt").value;
+        var out = 0;
+        var pix = w * h * fps;
+        switch (fmt) {
+          case "rgba":
+            out = w * h * 32;
+            break;
+          case "rgb":
+            out = w * h * 24;
+            break;
+          case "rgba16f":
+            out = w * h * 64;
+            break;
+          case "dxt1":
+            out = w * h * 4;
+            break;
+          case "dxt5":
+            out = w * h * 8;
+            break;
+          default:
+            out = 0;
+            break;
+        }
+        out *= fps;
+        var s = ["", "K", "M", "G", "T", "P", "E"];
+        for (var i = 0; i < s.length; i++) {
+          if (out <= 1000) {
+            break;
+          }
+          out /= 1000;
+        }
+        for (var j = 0; j < s.length; j++) {
+          if (pix <= 1000) {
+            break;
+          }
+          pix /= 1000;
+        }
+        document.getElementById("out").innerHTML =
+          out.toPrecision(4) + " " + s[i] + "bit/s";
+        document.getElementById("pix").innerHTML = 
+          pix.toPrecision(4) + " " + s[j] + "pix/s";
+      }
+
+      function calcPreset() {
+        var preset = document.getElementById("preset").value;
+        var w = 0;
+        var h = 0;
+        var fps = 0;
+        var fmt = "";
+        switch (preset) {
+          case "1080p60":
+            w = 1920;
+            h = 1080;
+            fps = 60;
+            fmt = "rgba";
+            break;
+          case "2160p60":
+            w = 3840;
+            h = 2160;
+            fps = 60;
+            fmt = "rgba";
+            break;
+          case "1080p60DXT1":
+            w = 1920;
+            h = 1080;
+            fps = 60;
+            fmt = "dxt1";
+          default:
+            console.log("Invalid");
+            break;
+        }
+
+        document.getElementById("width").value = w;
+        document.getElementById("height").value = h;
+        document.getElementById("fps").value = fps;
+        document.getElementById("fmt").value = fmt;
+        f = 1;
+        calc();
+      }
+    </script>
+  </head>
+  <body>
+      <div>
+    <table>
+      <tr>
+        <td>Width</td>
+        <td>
+          <input id="width" onchange="calc()" type="number" />
+        </td>
+      </tr>
+      <tr>
+        <td>Height</td>
+        <td>
+            <input id="height" onchange="calc()" type="number" />
+        </td>
+      </tr>
+      <tr>
+        <td>Framerate</td>
+        <td>
+          <input id="fps" onchange="calc()" type="number" />
+        </td>
+      </tr>
+      <tr>
+        <td style="padding-right: 10px">Data Format</td>
+        <td>
+          <select id="fmt" onchange="calc()">
+            <option disabled selected value>Select data format...</option>
+            <option disabled value>Raw formats</option>
+            <option value="rgba">BGRA/RGBA - 32 bpp</option>
+            <option value="rgba16f">RGBA HDR Float - 64 bpp</option>
+            <option disabled value>Compressed formats</option>
+            <option value="dxt1">Compressed - DXT1 / ETC2 RGB</option>
+            <option value="dxt5">Compressed - DXT5 / ETC2 RGBA</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>Preset</td>
+        <td>
+          <select id="preset" onchange="calcPreset()">
+            <option disabled selected value="x">Select preset...</option>
+            <option value="1080p60">1080p 60Hz, Raw 32bpp</option>
+            <option value="1080p60DXT1">1080p 60Hz, DXT1</option>
+            <option value="2160p60">4K 60Hz, Raw 32bpp</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>Bandwidth</td>
+        <td>
+          <p style="color: blue; margin: 0; padding: 0" id="out">&nbsp;</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Pixel Rate</td>
+        <td>
+          <p style="color: blue; margin: 0; padding: 0" id="pix">&nbsp;</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</div>
+</html>

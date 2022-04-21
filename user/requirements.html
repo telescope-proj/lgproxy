@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Requirements &mdash; Telescope Looking Glass Proxy  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installing Dependencies" href="installation.html" />
+    <link rel="prev" title="Welcome to the LGProxy Documentation!" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">System Requirements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#recommended-specifications">Recommended Specifications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#client">Client</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#using-dmabuf-rdma-best-case">Using DMABUF &amp; RDMA (best case)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#no-dmabuf-tcp-worst-case">No DMABUF &amp; TCP (worst case)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#host">Host</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#uncompressed-using-rdma-best-case">Uncompressed, using RDMA (best case)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compressed-using-tcp-worst-case">Compressed, using TCP (worst case)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#bandwidth-calculator">Bandwidth Calculator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building.html">Building The Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="running.html">Running The Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runlg.html">Running Looking Glass</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bug Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../bugs/format.html">Bug Report Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bugs/knownbugs.html">Known Bugs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../team/team.html">Telescope Project Team</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">Function Documentation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Licensing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Telescope Looking Glass Proxy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>System Requirements</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user/requirements.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="system-requirements">
+<span id="requirements"></span><h1>System Requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline"></a></h1>
+<p>While LGProxy does not <strong>require</strong> any special hardware, the use of RDMA capable
+hardware is recommended. Additionally, system and network configuration may be
+required for optimal performance. In particular, the locked memory limit must be
+increased when using RDMA as a transport.</p>
+<p>Configuration steps, as well as a listing of RDMA capable hardware, may be found
+in the <a class="reference external" href="https://telescope-proj.github.io/libtrf/index.html">LibTRF documentation</a>.</p>
+<section id="recommended-specifications">
+<h2>Recommended Specifications<a class="headerlink" href="#recommended-specifications" title="Permalink to this headline"></a></h2>
+<p>The requirements depend on whether you are using DMABUF and whether the
+transport type is accelerated.</p>
+<section id="client">
+<h3>Client<a class="headerlink" href="#client" title="Permalink to this headline"></a></h3>
+<section id="using-dmabuf-rdma-best-case">
+<h4>Using DMABUF &amp; RDMA (best case)<a class="headerlink" href="#using-dmabuf-rdma-best-case" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p>CPU: At least a modern dual core processor is recommended.</p></li>
+<li><p>GPU: Follow Looking Glass recommendations. NVIDIA GPUs do not support DMABUF with
+Looking Glass.</p></li>
+<li><p>RAM: 4 GB</p></li>
+<li><p>NIC: RDMA capable NIC - link speed depends on your bandwidth requirements.</p></li>
+</ul>
+</section>
+<section id="no-dmabuf-tcp-worst-case">
+<h4>No DMABUF &amp; TCP (worst case)<a class="headerlink" href="#no-dmabuf-tcp-worst-case" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p>CPU: One core per 200 Mpix/s pixel rate + two cores for Looking Glass</p></li>
+<li><p>GPU: Follow Looking Glass recommendations.</p></li>
+<li><p>RAM: 4 GB</p></li>
+<li><p>NIC: NIC with decent non-RDMA hardware offload support, i.e. Intel NICs.</p></li>
+</ul>
+</section>
+</section>
+<section id="host">
+<h3>Host<a class="headerlink" href="#host" title="Permalink to this headline"></a></h3>
+<section id="uncompressed-using-rdma-best-case">
+<h4>Uncompressed, using RDMA (best case)<a class="headerlink" href="#uncompressed-using-rdma-best-case" title="Permalink to this headline"></a></h4>
+<p>There are no additional recommendations aside from your NIC having enough
+bandwidth and supporting RDMA, if your PC is already capable of running Looking
+Glass.</p>
+</section>
+<section id="compressed-using-tcp-worst-case">
+<h4>Compressed, using TCP (worst case)<a class="headerlink" href="#compressed-using-tcp-worst-case" title="Permalink to this headline"></a></h4>
+<p>One additional core should be available to the VM guest, for real-time
+compression. The recommendation for one additional core per 200 Mpix/s also
+applies.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While LGProxy runs over gigabit networks, this is not an ideal
+configuration. It must be run at low resolutions/framerates or with
+real-time texture compression support enabled. Use of real-time texture
+compression currently requires our custom <a class="reference external" href="https://github.com/telescope-proj/LookingGlass/tree/client-dxtc">fork of Looking Glass</a>.</p>
+</div>
+</section>
+</section>
+</section>
+<section id="bandwidth-calculator">
+<h2>Bandwidth Calculator<a class="headerlink" href="#bandwidth-calculator" title="Permalink to this headline"></a></h2>
+<p>You may use the below bandwidth calculator to determine bandwidth requirements
+for your chosen video streaming quality.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is additional transmission overhead that varies based on several
+factors, such as the active transport type, MTU, and network load. As a
+safety margin, you should add around 10% to the result as overhead.</p>
+</div>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      var f = 0;
+      function calc() {
+        if (!f) {
+          document.getElementById("preset").value = "x";
+        }
+        f = 0;
+        var w = Number(document.getElementById("width").value);
+        var h = Number(document.getElementById("height").value);
+        var fps = Number(document.getElementById("fps").value);
+        var fmt = document.getElementById("fmt").value;
+        var out = 0;
+        var pix = w * h * fps;
+        switch (fmt) {
+          case "rgba":
+            out = w * h * 32;
+            break;
+          case "rgb":
+            out = w * h * 24;
+            break;
+          case "rgba16f":
+            out = w * h * 64;
+            break;
+          case "dxt1":
+            out = w * h * 4;
+            break;
+          case "dxt5":
+            out = w * h * 8;
+            break;
+          default:
+            out = 0;
+            break;
+        }
+        out *= fps;
+        var s = ["", "K", "M", "G", "T", "P", "E"];
+        for (var i = 0; i < s.length; i++) {
+          if (out <= 1000) {
+            break;
+          }
+          out /= 1000;
+        }
+        for (var j = 0; j < s.length; j++) {
+          if (pix <= 1000) {
+            break;
+          }
+          pix /= 1000;
+        }
+        document.getElementById("out").innerHTML =
+          out.toPrecision(4) + " " + s[i] + "bit/s";
+        document.getElementById("pix").innerHTML = 
+          pix.toPrecision(4) + " " + s[j] + "pix/s";
+      }
+
+      function calcPreset() {
+        var preset = document.getElementById("preset").value;
+        var w = 0;
+        var h = 0;
+        var fps = 0;
+        var fmt = "";
+        switch (preset) {
+          case "1080p60":
+            w = 1920;
+            h = 1080;
+            fps = 60;
+            fmt = "rgba";
+            break;
+          case "2160p60":
+            w = 3840;
+            h = 2160;
+            fps = 60;
+            fmt = "rgba";
+            break;
+          case "1080p60DXT1":
+            w = 1920;
+            h = 1080;
+            fps = 60;
+            fmt = "dxt1";
+          default:
+            console.log("Invalid");
+            break;
+        }
+
+        document.getElementById("width").value = w;
+        document.getElementById("height").value = h;
+        document.getElementById("fps").value = fps;
+        document.getElementById("fmt").value = fmt;
+        f = 1;
+        calc();
+      }
+    </script>
+  </head>
+  <body>
+      <div>
+    <table>
+      <tr>
+        <td>Width</td>
+        <td>
+          <input id="width" onchange="calc()" type="number" />
+        </td>
+      </tr>
+      <tr>
+        <td>Height</td>
+        <td>
+            <input id="height" onchange="calc()" type="number" />
+        </td>
+      </tr>
+      <tr>
+        <td>Framerate</td>
+        <td>
+          <input id="fps" onchange="calc()" type="number" />
+        </td>
+      </tr>
+      <tr>
+        <td style="padding-right: 10px">Data Format</td>
+        <td>
+          <select id="fmt" onchange="calc()">
+            <option disabled selected value>Select data format...</option>
+            <option disabled value>Raw formats</option>
+            <option value="rgba">BGRA/RGBA - 32 bpp</option>
+            <option value="rgba16f">RGBA HDR Float - 64 bpp</option>
+            <option disabled value>Compressed formats</option>
+            <option value="dxt1">Compressed - DXT1 / ETC2 RGB</option>
+            <option value="dxt5">Compressed - DXT5 / ETC2 RGBA</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>Preset</td>
+        <td>
+          <select id="preset" onchange="calcPreset()">
+            <option disabled selected value="x">Select preset...</option>
+            <option value="1080p60">1080p 60Hz, Raw 32bpp</option>
+            <option value="1080p60DXT1">1080p 60Hz, DXT1</option>
+            <option value="2160p60">4K 60Hz, Raw 32bpp</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>Bandwidth</td>
+        <td>
+          <p style="color: blue; margin: 0; padding: 0" id="out">&nbsp;</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Pixel Rate</td>
+        <td>
+          <p style="color: blue; margin: 0; padding: 0" id="pix">&nbsp;</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</div>
+</html></section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to the LGProxy Documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installing Dependencies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Telescope Project Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

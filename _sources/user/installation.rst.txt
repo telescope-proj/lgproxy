@@ -4,15 +4,24 @@ Installing Dependencies
 =======================
 
 .. note::
-    Install dependencies on both the host and the client side!
+    
+    Ensure the dependencies are installed on both the host and client side.
+    This document only covers dependencies for **LGProxy**. For Looking Glass,
+    please refer to the `Looking Glass Documentation 
+    <https://looking-glass.io/docs/>`_.
 
 Build Dependencies
 ******************
 
-* cmake
-* make
-* protobuf-c
-* libfabric
+If you are using a distribution not covered here, e.g. Arch, please
+search for the following packages in your package manager, **including the
+development headers!**
+
+* CMake
+* Make
+* GCC
+* Protobuf-c
+* Libfabric
 
 Fedora and derivatives
 **********************
@@ -24,24 +33,48 @@ Fedora and derivatives
 
 .. note::
 
-    By default, some of the dependencies for Looking Glass are not available in
-    the RHEL & Rocky Linux repositories.
+    If you intend to run the Looking Glass client on RHEL/Rocky Linux, some of
+    the dependencies for Looking Glass may not available by default in these
+    repositories.
 
 To enable RDMA transports, you will need to install the RDMA core libraries.
 This may be done using the following commands:
 
 .. code-block:: bash
 
-    sudo dnf install rdma-core -y
+    sudo dnf install -y rdma-core 
 
 Diagnostic tools for RDMA can also be installed using:
 
 .. code-block:: bash
 
-    sudo dnf install perftest infiniband-diags ibstat -y
+    sudo dnf install -y perftest infiniband-diags ibstat 
 
-Ubuntu
-******
+Ubuntu & Debian
+***************
+
+All Versions
+------------
+
+Run the following commands to install the core dependencies:
+
+.. code-block:: bash
+
+    sudo apt install -y protobuf-c-compiler libprotobuf-c-dev \
+    autogen libtool cmake gcc make build-essential git
+
+To enable RDMA transports:
+
+.. code-block:: bash
+
+    sudo apt install -y rdma-core
+
+Diagnostic tools for RDMA can also be installed using:
+
+.. code-block:: bash
+
+    sudo apt install -y perftest infiniband-diags ibstat
+
 
 Ubuntu 20.04, Debian 10 and older
 ---------------------------------
@@ -77,27 +110,6 @@ directly.
 
     sudo apt install -y libfabric-bin libfabric-dev libfabric1
 
-All Ubuntu & Debian Versions
-----------------------------
 
-Once the above commands complete, run the following commands to install the
-other dependencies:
-
-.. code-block:: bash
-
-    sudo apt install -y protobuf-c-compiler libprotobuf-c-dev \
-    autogen libtool cmake gcc make build-essential git
-
-To enable RDMA transports:
-
-.. code-block:: bash
-
-    sudo apt install rdma-core -y
-
-Diagnostic tools for RDMA can also be installed using:
-
-.. code-block:: bash
-
-    sudo dnf install perftest infiniband-diags ibstat -y
-
-Once complete, go to :doc:`building`.
+.. note::
+    Once complete, go to :doc:`building`.

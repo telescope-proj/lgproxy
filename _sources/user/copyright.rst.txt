@@ -14,8 +14,8 @@ Copyright (c) 2022 `Matthew John McMullin <https://github.com/matthewjmc>`_.
 This project is licensed under `GPL 2.0+
 <https://github.com/telescope-proj/lgproxy/blob/main/LICENSE>`_.
 
-Telescope Remote Frame Buffer Library (LibTRF)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Telescope Remote Framebuffer Library (LibTRF)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Copyright (c) 2022 `Tim Dettmar <https://github.com/beanfacts>`_. 
 

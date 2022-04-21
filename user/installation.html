@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Building The Application" href="building.html" />
-    <link rel="prev" title="Welcome to the LGProxy Documentation!" href="../index.html" /> 
+    <link rel="prev" title="System Requirements" href="requirements.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,23 +39,39 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">System Requirements</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installing Dependencies</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#build-dependencies">Build Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fedora-and-derivatives">Fedora and derivatives</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ubuntu">Ubuntu</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ubuntu-debian">Ubuntu &amp; Debian</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#all-versions">All Versions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ubuntu-20-04-debian-10-and-older">Ubuntu 20.04, Debian 10 and older</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ubuntu-21-10-debian-11-and-newer">Ubuntu 21.10, Debian 11 and newer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#all-ubuntu-debian-versions">All Ubuntu &amp; Debian Versions</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="building.html">Building The Application</a></li>
 <li class="toctree-l1"><a class="reference internal" href="running.html">Running The Application</a></li>
-<li class="toctree-l1"><a class="reference internal" href="team.html">Telescope Project Team</a></li>
-<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runlg.html">Running Looking Glass</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bug Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../bugs/format.html">Bug Report Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bugs/knownbugs.html">Known Bugs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../team/team.html">Telescope Project Team</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../api/index.html">Function Documentation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Licensing</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="copyright.html">Licenses</a></li>
 </ul>
 
@@ -87,15 +103,21 @@
 <span id="installation"></span><h1>Installing Dependencies<a class="headerlink" href="#installing-dependencies" title="Permalink to this headline"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Install dependencies on both the host and the client side!</p>
+<p>Ensure the dependencies are installed on both the host and client side.
+This document only covers dependencies for <strong>LGProxy</strong>. For Looking Glass,
+please refer to the <a class="reference external" href="https://looking-glass.io/docs/">Looking Glass Documentation</a>.</p>
 </div>
 <section id="build-dependencies">
 <h2>Build Dependencies<a class="headerlink" href="#build-dependencies" title="Permalink to this headline"></a></h2>
+<p>If you are using a distribution not covered here, e.g. Arch, please
+search for the following packages in your package manager, <strong>including the
+development headers!</strong></p>
 <ul class="simple">
-<li><p>cmake</p></li>
-<li><p>make</p></li>
-<li><p>protobuf-c</p></li>
-<li><p>libfabric</p></li>
+<li><p>CMake</p></li>
+<li><p>Make</p></li>
+<li><p>GCC</p></li>
+<li><p>Protobuf-c</p></li>
+<li><p>Libfabric</p></li>
 </ul>
 </section>
 <section id="fedora-and-derivatives">
@@ -106,21 +128,38 @@ protobuf-c-compiler protobuf-c-devel gcc cmake git
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>By default, some of the dependencies for Looking Glass are not available in
-the RHEL &amp; Rocky Linux repositories.</p>
+<p>If you intend to run the Looking Glass client on RHEL/Rocky Linux, some of
+the dependencies for Looking Glass may not available by default in these
+repositories.</p>
 </div>
 <p>To enable RDMA transports, you will need to install the RDMA core libraries.
 This may be done using the following commands:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dnf install rdma-core -y
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dnf install -y rdma-core
 </pre></div>
 </div>
 <p>Diagnostic tools for RDMA can also be installed using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dnf install perftest infiniband-diags ibstat -y
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dnf install -y perftest infiniband-diags ibstat
 </pre></div>
 </div>
 </section>
-<section id="ubuntu">
-<h2>Ubuntu<a class="headerlink" href="#ubuntu" title="Permalink to this headline"></a></h2>
+<section id="ubuntu-debian">
+<h2>Ubuntu &amp; Debian<a class="headerlink" href="#ubuntu-debian" title="Permalink to this headline"></a></h2>
+<section id="all-versions">
+<h3>All Versions<a class="headerlink" href="#all-versions" title="Permalink to this headline"></a></h3>
+<p>Run the following commands to install the core dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y protobuf-c-compiler libprotobuf-c-dev <span class="se">\</span>
+autogen libtool cmake gcc make build-essential git
+</pre></div>
+</div>
+<p>To enable RDMA transports:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y rdma-core
+</pre></div>
+</div>
+<p>Diagnostic tools for RDMA can also be installed using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y perftest infiniband-diags ibstat
+</pre></div>
+</div>
+</section>
 <section id="ubuntu-20-04-debian-10-and-older">
 <h3>Ubuntu 20.04, Debian 10 and older<a class="headerlink" href="#ubuntu-20-04-debian-10-and-older" title="Permalink to this headline"></a></h3>
 <div class="admonition note">
@@ -151,24 +190,10 @@ directly.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y libfabric-bin libfabric-dev libfabric1
 </pre></div>
 </div>
-</section>
-<section id="all-ubuntu-debian-versions">
-<h3>All Ubuntu &amp; Debian Versions<a class="headerlink" href="#all-ubuntu-debian-versions" title="Permalink to this headline"></a></h3>
-<p>Once the above commands complete, run the following commands to install the
-other dependencies:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y protobuf-c-compiler libprotobuf-c-dev <span class="se">\</span>
-autogen libtool cmake gcc make build-essential git
-</pre></div>
-</div>
-<p>To enable RDMA transports:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install rdma-core -y
-</pre></div>
-</div>
-<p>Diagnostic tools for RDMA can also be installed using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dnf install perftest infiniband-diags ibstat -y
-</pre></div>
-</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Once complete, go to <a class="reference internal" href="building.html"><span class="doc">Building The Application</span></a>.</p>
+</div>
 </section>
 </section>
 </section>
@@ -177,7 +202,7 @@ autogen libtool cmake gcc make build-essential git
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to the LGProxy Documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="requirements.html" class="btn btn-neutral float-left" title="System Requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="building.html" class="btn btn-neutral float-right" title="Building The Application" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
