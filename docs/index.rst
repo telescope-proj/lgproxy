@@ -10,15 +10,17 @@ Welcome to the LGProxy Documentation!
    :maxdepth: 2
    :caption: Contents:
 
-What is LGProxy
-***************
+Introduction
+************
 
-``lgproxy`` is a High-performance remote desktop proxy for Looking Glass
-utilizing ``libtrf`` which supports network offloading capabilities (e.g. RDMA)
+LGProxy is a high-performance proxy for the Looking Glass application. It
+utilizes the Telescope Remote Framebuffer Library for transport over both
+commodity and RDMA capable networking hardware.
 
-`Github Repository <https://github.com/telescope-proj/lgproxy>`_
 
-Developed by the Telescope Project Team. :doc:`user/team`
+View our `GitHub repository <https://github.com/telescope-proj/lgproxy>`_.
+
+Developed by the :doc:`team/team`.
 
 .. image:: diagram.png
 
@@ -28,11 +30,32 @@ Table of Contents
 * :ref:`genindex`
 
 .. toctree::
-   
+   :caption: Getting Started
+
+   user/requirements
    user/installation
    user/building
    user/running
-   user/team
-   user/development
+   user/runlg
+
+.. toctree::
+   :caption: Bug Reports
+
+   bugs/format
+   bugs/knownbugs
+
+.. toctree::
+   :caption: Developers
+
+   team/team
+
+.. toctree::
+   :caption: API Documentation
+
    api/index
+
+.. toctree::
+   :caption: Licensing
+
    user/copyright
+
