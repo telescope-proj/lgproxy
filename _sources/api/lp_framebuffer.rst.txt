@@ -1,0 +1,7 @@
+.. api_lp_framebuffer:
+
+Framebuffer Interop
+===================
+
+.. doxygenfile:: lp_framebuffer.h
+   :project: Telescope Looking Glass Proxy

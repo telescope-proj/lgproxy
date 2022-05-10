@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Framebuffer Interop &mdash; Telescope Looking Glass Proxy  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Licenses" href="../user/copyright.html" />
+    <link rel="prev" title="Conversion Functions" href="lp_convert.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/requirements.html">System Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installing Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/building.html">Building The Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running The Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/runlg.html">Running Looking Glass</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bug Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../bugs/format.html">Bug Report Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bugs/knownbugs.html">Known Bugs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../team/team.html">Telescope Project Team</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Function Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="lp_source.html">Server Side Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lp_sink.html">Client Side Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lp_utils.html">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lp_types.html">Type Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lp_trf.html">LibTRF Wrapper Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lp_convert.html">Conversion Functions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Framebuffer Interop</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Licensing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/copyright.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Telescope Looking Glass Proxy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Function Documentation</a> &raquo;</li>
+      <li>Framebuffer Interop</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/lp_framebuffer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="framebuffer-interop">
+<h1>Framebuffer Interop<a class="headerlink" href="#framebuffer-interop" title="Permalink to this headline"></a></h1>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv416lpUpdateWritePtr11PTRFContext7PTRFMem8uint32_t">
+<span id="_CPPv316lpUpdateWritePtr11PTRFContext7PTRFMem8uint32_t"></span><span id="_CPPv216lpUpdateWritePtr11PTRFContext7PTRFMem8uint32_t"></span><span id="lpUpdateWritePtr__PTRFContext.PTRFMem.uint32_t"></span><span class="target" id="lp__framebuffer_8h_1ab8fdbc0d763b71dfef9056e6db6cf6b1"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpUpdateWritePtr</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PTRFContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">PTRFMem</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">remote_mem</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">wp</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpUpdateWritePtr11PTRFContext7PTRFMem8uint32_t" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Update sink Framebuffer write pointer remotely. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ctx</strong> – Context to use </p></li>
+<li><p><strong>remote_mem</strong> – Remote memory </p></li>
+<li><p><strong>wp</strong> – Write Pointer </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>0 on success, negative error code on failure. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv416lpSendFrameChunk11PTRFContext11PTRFDisplay7PTRFMem8uint64_t6size_t">
+<span id="_CPPv316lpSendFrameChunk11PTRFContext11PTRFDisplay7PTRFMem8uint64_t6size_t"></span><span id="_CPPv216lpSendFrameChunk11PTRFContext11PTRFDisplay7PTRFMem8uint64_t6size_t"></span><span id="lpSendFrameChunk__PTRFContext.PTRFDisplay.PTRFMem.uint64_t.s"></span><span class="target" id="lp__framebuffer_8h_1a0a895d3aceb26baffb3a4cafdb3a61c6"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSendFrameChunk</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PTRFContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">PTRFDisplay</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">disp</span></span>, <span class="n"><span class="pre">PTRFMem</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">remote_mem</span></span>, <span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">offset</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpSendFrameChunk11PTRFContext11PTRFDisplay7PTRFMem8uint64_t6size_t" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Send partial frames over to client. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ctx</strong> – Context to use </p></li>
+<li><p><strong>disp</strong> – Display to capture </p></li>
+<li><p><strong>remote_mem</strong> – Remote memory address </p></li>
+<li><p><strong>offset</strong> – Frame data offset </p></li>
+<li><p><strong>length</strong> – Length of data to send </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>0 on success, negative error code on failure </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv417lpSendFramebufferP11FrameBuffer11PTRFContext7PTRFMem">
+<span id="_CPPv317lpSendFramebufferP11FrameBuffer11PTRFContext7PTRFMem"></span><span id="_CPPv217lpSendFramebufferP11FrameBuffer11PTRFContext7PTRFMem"></span><span id="lpSendFramebuffer__FrameBufferP.PTRFContext.PTRFMem"></span><span class="target" id="lp__framebuffer_8h_1ae263ade51da33c6ddca460cf720f45c5"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSendFramebuffer</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">FrameBuffer</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">fb</span></span>, <span class="n"><span class="pre">PTRFContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">PTRFMem</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">remote_mem</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417lpSendFramebufferP11FrameBuffer11PTRFContext7PTRFMem" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Split frames into chunks to send over to sink application. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fb</strong> – Framebuffer containing frame data </p></li>
+<li><p><strong>ctx</strong> – Context to use </p></li>
+<li><p><strong>remote_mem</strong> – Remote memory address </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>0 on success, negative error code on failure </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="lp_convert.html" class="btn btn-neutral float-left" title="Conversion Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../user/copyright.html" class="btn btn-neutral float-right" title="Licenses" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Telescope Project Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
