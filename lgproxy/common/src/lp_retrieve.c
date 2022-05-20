@@ -236,7 +236,7 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     if (frame)
     {
         lp__log_trace("------------ Frame Received ------------");
-        lp__log_trace("Frame size: %d x %d", frame->width, frame->height);
+        lp__log_trace("Frame size: %d x %d", frame->frameWidth, frame->frameHeight);
         lp__log_trace("----------------------------------------");
     }
     
@@ -249,9 +249,9 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
 
     if (ctx->format_valid && frame->formatVer != formatVer)
     {
-        if (frame->realHeight != frame->height)
+        if (frame->frameHeight != frame->screenHeight)
         {
-            const int needed = ((frame->realHeight * frame->pitch * 2) 
+            const int needed = ((frame->frameHeight * frame->pitch * 2) 
                             / 1048576.0f) + 10.0f;
             const int size = (int)powf(2.0f, ceilf(logf(needed) / logf(2.0f)));
 

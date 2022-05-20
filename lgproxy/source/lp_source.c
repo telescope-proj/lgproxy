@@ -212,9 +212,9 @@ int lpHandleClientReq(PLPContext ctx)
     }
     displays->id        =   0;
     displays->name      =   "Looking Glass Display";
-    displays->height    =   metadata->realHeight ? \
-                            metadata->realHeight : metadata->height;
-    displays->width     =   metadata->width;
+    displays->height    =   metadata->frameHeight ? \
+                            metadata->frameHeight : metadata->screenHeight;
+    displays->width     =   metadata->frameWidth;
     displays->format    =  lpLGToTrfFormat(metadata->type);
     displays->rate      =   0;
     

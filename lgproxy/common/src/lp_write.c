@@ -311,15 +311,15 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
     fi->formatVer        = 1;
     fi->damageRectsCount = 0;
     fi->type             = lpTrftoLGFormat(disp->format);
-    fi->height           = disp->height;
-    fi->realHeight       = disp->height;
+    fi->frameHeight      = disp->height;
+    fi->screenHeight     = disp->height;
     fi->offset           = trf__GetPageSize() - FrameBufferStructSize;
     fi->stride           = !comp ? disp->width : 0;
     fi->pitch            = !comp ? 
                            trfGetTextureBytes(disp->width, 1, disp->format) :0;
-    fi->width            = disp->width;
+    fi->frameWidth       = disp->width;
 
-    lp__log_trace("Display size received: %d x %d", fi->width, fi->height);
+    lp__log_trace("Display size received: %d x %d", fi->frameWidth, fi->frameHeight);
     lp__log_trace("Display Type: %d", lpTrftoLGFormat(disp->format));
 
     disp->fb_offset = ((uint8_t *) fi - (uint8_t *) ctx->ram) + fi->offset
