@@ -1,21 +1,26 @@
 /*
-
     SPDX-License-Identifier: GPL-2.0-only
 
-    Telescope Project 
-    Looking Glass Proxy
-    Client Functions
+    Telescope Project  
+    Looking Glass Proxy   
+    Client side functions 
+    
+    Copyright (c) 2022 Telescope Project Developers
 
-    Copyright (c) 2022 Matthew John McMullin
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 2 of the License, or (at your option)
+    any later version.
 
-    This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
-
+    You should have received a copy of the GNU General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 51
+    Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
 */
-
 #include "lp_write.h"
 #include "version.h"
 
@@ -329,15 +334,15 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
     fi->formatVer        = 1;
     fi->damageRectsCount = 0;
     fi->type             = lpTrftoLGFormat(disp->format);
-    fi->height           = disp->height;
-    fi->realHeight       = disp->height;
+    fi->frameHeight      = disp->height;
+    fi->screenHeight     = disp->height;
     fi->offset           = trf__GetPageSize() - FrameBufferStructSize;
     fi->stride           = !comp ? disp->width : 0;
     fi->pitch            = !comp ? 
                            trfGetTextureBytes(disp->width, 1, disp->format) :0;
-    fi->width            = disp->width;
+    fi->frameWidth       = disp->width;
 
-    lp__log_trace("Display size received: %d x %d", fi->width, fi->height);
+    lp__log_trace("Display size received: %d x %d", fi->frameWidth, fi->frameHeight);
     lp__log_trace("Display Type: %d", lpTrftoLGFormat(disp->format));
 
     disp->fb_offset = ((uint8_t *) fi - (uint8_t *) ctx->ram) + fi->offset

@@ -1,21 +1,26 @@
 /*
-
     SPDX-License-Identifier: GPL-2.0-only
 
-    Telescope Project 
-    Looking Glass Proxy
-    Host Functions
+    Telescope Project  
+    Looking Glass Proxy   
+    Host side functions  
+    
+    Copyright (c) 2022 Telescope Project Developers
 
-    Copyright (c) 2022 Matthew John McMullin
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 2 of the License, or (at your option)
+    any later version.
 
-    This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+    more details.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
-
+    You should have received a copy of the GNU General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 51
+    Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
 */
-
 #include "lp_retrieve.h"
 
 int lpInitLgmpClient(PLPContext ctx)
@@ -254,7 +259,7 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     if (frame)
     {
         lp__log_trace("------------ Frame Received ------------");
-        lp__log_trace("Frame size: %d x %d", frame->width, frame->height);
+        lp__log_trace("Frame size: %d x %d", frame->frameWidth, frame->frameHeight);
         lp__log_trace("----------------------------------------");
     }
     
@@ -267,9 +272,9 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
 
     if (ctx->format_valid && frame->formatVer != formatVer)
     {
-        if (frame->realHeight != frame->height)
+        if (frame->frameHeight != frame->screenHeight)
         {
-            const int needed = ((frame->realHeight * frame->pitch * 2) 
+            const int needed = ((frame->frameHeight * frame->pitch * 2) 
                             / 1048576.0f) + 10.0f;
             const int size = (int)powf(2.0f, ceilf(logf(needed) / logf(2.0f)));
 
