@@ -5,6 +5,12 @@ get_filename_component(PROJECT_TOP "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
 
 add_definitions(-DLP_LOG_USE_COLOR)
 
+# To force compile with clang set `-DUSE_CLANG=true` when running cmake .
+if(USE_CLANG)
+    set(CMAKE_CXX_COMPILER /usr/bin/clang)
+    message(STATUS "Using Clang Compiler")
+endif(USE_CLANG)
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx")
 
 # Check if submodules have been initialized

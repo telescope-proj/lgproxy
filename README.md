@@ -1,5 +1,7 @@
 # Telescope Looking Glass Proxy
-[![CodeQL](https://github.com/telescope-proj/lgproxy/actions/workflows/codeql-analysis.yaml/badge.svg)](https://github.com/telescope-proj/lgproxy/actions/workflows/codeql-analysis.yaml)
+![CodeQL](https://github.com/telescope-proj/lgproxy/actions/workflows/codeql-analysis.yaml)
+
+![Docs](https://github.com/telescope-proj/lgproxy/actions/workflows/docs.yml)
 
 The Telescope Looking Glass Proxy (LGProxy) is a high-performance, low-latency
 remote desktop solution supporting both compressed and uncompressed streaming.

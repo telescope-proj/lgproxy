@@ -1,0 +1,66 @@
+name: "UbuntuBuild"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: Analyze Code
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+        compiler:
+          - {cc: gcc}
+          - {cc: clang}
+
+    steps:
+    - name: Install requirements
+      run: sudo apt update 
+        && sudo apt install -y protobuf-c-compiler
+        && sudo apt install -y libprotobuf-c-dev
+        
+    - name: Install libfabric
+      run: git clone https://github.com/ofiwg/libfabric.git
+        && cd ./libfabric
+        && sudo ./autogen.sh
+        && ./configure
+            --enable-only
+            --enable-tcp=yes
+            --enable-rxm=yes
+        && make -j $(nproc) 
+        && sudo make install
+        && sudo cp -r include/. /usr/include
+
+    - name: Cleanup
+      run: sudo chown -R $USER:$USER $(pwd)
+        && sudo rm -rf $(pwd)/libfabric
+
+    - name: Configure Compiler
+      env:
+        CC: /usr/bin/${{ matrix.compiler.cc }}
+      run: |
+        cd lgproxy
+        cmake \
+          -DCMAKE_LINKER:FILEPATH=/usr/bin/ld \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+
+    - name: Build
+      run: cd lgproxy
+        && mkdir logs
+        && cmake . >> logs/cmake-${{ matrix.compiler.cc }}.txt
+        && make -j $(nproc) >> logs/compilelogs-${{ matrix.compiler.cc }}.txt
+
+  - name: 'Upload Artifact'
+    uses: actions/upload-artifact@v3
+    with:
+      name: Compile Artifacts
+      path: logs
