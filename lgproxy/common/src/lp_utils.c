@@ -128,7 +128,7 @@ int lpSendDisconnect(PTRFContext ctx)
     mw.wdata_case = LP_MSG__MESSAGE_WRAPPER__WDATA_DISCONNECT;
     mw.disconnect->info = 0;
 
-    size_t dsize = trfMsgPackProtobuf((ProtobufCMessage *) &mw, 
+    ssize_t dsize = trfMsgPackProtobuf((ProtobufCMessage *) &mw, 
                     ctx->xfer.fabric->msg_mem.size,
                     trfMemPtr(&ctx->xfer.fabric->msg_mem));
     if (dsize < 0)

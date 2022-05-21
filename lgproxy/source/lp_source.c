@@ -160,7 +160,7 @@ destroy_ctx:
 
 int lpHandleClientReq(PLPContext ctx)
 {
-    pthread_t sub_channel;
+    pthread_t sub_channel = 0; // Not necessary, but it shuts up CodeQL.
     bool sub_started = 0;
     int ret = 0;
     lp__log_trace("Accepted Connection");
@@ -526,7 +526,7 @@ destroy_ctx:
     if (sub_started)
     {
         pthread_join(sub_channel, (void*) &tret);
-        if ((uint64_t) tret < 0)
+        if (tret)
         {
             lp__log_error("Thread exited unsuccessfully: %s", 
                 strerror((uint64_t)tret));
