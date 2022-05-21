@@ -44,6 +44,11 @@ jobs:
       run: sudo chown -R $USER:$USER $(pwd)
         && sudo rm -rf $(pwd)/libfabric
 
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+
     - name: Configure Compiler
       env:
         CC: /usr/bin/${{ matrix.compiler.cc }}
