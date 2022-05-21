@@ -59,8 +59,8 @@ jobs:
         && cmake . >> logs/cmake-${{ matrix.compiler.cc }}.txt
         && make -j $(nproc) >> logs/compilelogs-${{ matrix.compiler.cc }}.txt
 
-  - name: 'Upload Artifact'
-    uses: actions/upload-artifact@v3
-    with:
-      name: Compile Artifacts
-      path: logs
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Compile Artifacts
+        path: logs
