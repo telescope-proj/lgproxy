@@ -182,9 +182,13 @@ int lpHandleClientReq(PLPContext ctx)
         lp__log_error("Does it exist and have you the appropriate permissions been set?");
         goto destroy_ctx;
     }
-    
-    ctx->ram_size = fileStat.st_size;
-    lp__log_trace("SHM File %s opened, size: %lu", ctx->shm, ctx->ram_size);
+
+    if(fileStat.st_size)
+    {
+        ctx->ram_size = fileStat.st_size;
+    }
+
+    lp__log_info("SHM File %s opened, size: %lu", ctx->shm, ctx->ram_size);
 
     if ((ret = lpInitLgmpClient(ctx) < 0)) // Initialize LGMP Client 
     {
@@ -221,7 +225,7 @@ int lpHandleClientReq(PLPContext ctx)
             goto destroy_ctx;
         
         ret = lpGetFrame(ctx, &metadata, &fb);
-        if ((ret == -EAGAIN))
+        if (ret == -EAGAIN)
         {
             continue;
         }
@@ -602,7 +606,8 @@ void * lpHandleCursorPos(void * arg)
             ret = lpKeepAlive(ctx->lp_host.sub_channel);
             if (ret < 0)
             {
-                lp__log_error("Error sending keep alive: %s", fi_strerror(abs(ret)));
+                lp__log_error("Error sending keep alive: %s", 
+                                fi_strerror(abs((int)ret)));
                 return (void *) ret;
             }
             setDeadline = false;

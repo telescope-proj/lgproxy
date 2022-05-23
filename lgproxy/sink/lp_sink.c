@@ -151,7 +151,7 @@ int main(int argc, char ** argv)
         return -1;
     }
     if (strncmp(wrapper->build_version->lg_version, LG_BUILD_VERSION, strlen(LG_BUILD_VERSION)) != 0
-        || strncmp(wrapper->build_version->lp_version, LP_BUILD_VERSION, strlen(LP_BUILD_VERSION) != 0))
+        || strncmp(wrapper->build_version->lp_version, LP_BUILD_VERSION, strlen(LP_BUILD_VERSION)) != 0)
     {
         lp__log_error("Incorrect Version");
         lp__log_error("Server LG Version: %s Client LG Version: %s", 

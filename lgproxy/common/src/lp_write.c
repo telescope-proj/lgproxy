@@ -339,8 +339,13 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
     fi->offset           = trf__GetPageSize() - FrameBufferStructSize;
     fi->stride           = !comp ? disp->width : 0;
     fi->pitch            = !comp ? 
-                           trfGetTextureBytes(disp->width, 1, disp->format) :0;
+                           trfGetTextureBytes(disp->width, 1, disp->format)
+                           : trfGetTextureBytes(disp->width, 
+                                    disp->height, disp->format);
     fi->frameWidth       = disp->width;
+    fi->screenWidth      = disp->width;
+    fi->flags            = 0;
+
 
     lp__log_trace("Display size received: %d x %d", fi->frameWidth, fi->frameHeight);
     lp__log_trace("Display Type: %d", lpTrftoLGFormat(disp->format));
@@ -509,6 +514,12 @@ void * lpCursorThread(void * arg)
     size_t psize = trf__GetPageSize();
     PTRFContext sc = ctx->lp_client.sub_channel;
     ctx->lp_client.thread_flags = T_RUNNING;
+    KVMFRCursor * cursor = malloc(MAX_POINTER_SIZE);
+    if (!cursor)
+    {
+        lp__log_error("Unable to allocate memory");
+        goto destroy_ctx;
+    }
     void * mem = trfAllocAligned(MAX_POINTER_SIZE, psize);
     if (!mem)
     {
@@ -517,12 +528,6 @@ void * lpCursorThread(void * arg)
         goto destroy_ctx;
     }
 
-    KVMFRCursor * cursor = malloc(MAX_POINTER_SIZE);
-    if (!cursor)
-    {
-        lp__log_error("Unable to allocate memory");
-        goto destroy_ctx;
-    }
     LpMsg__MessageWrapper * wrapper = NULL;
 
     ret = trfRegInternalMsgBuf(sc, mem, MAX_POINTER_SIZE);
