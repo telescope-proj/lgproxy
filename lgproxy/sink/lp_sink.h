@@ -1,11 +1,10 @@
 /*
-    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
 
     Telescope Project  
-    Looking Glass Proxy   
-    Sink Application
+    Looking Glass Proxy
     
-    Copyright (c) 2022 Telescope Project Developers
+    Copyright (c) 2022 - 2023 Telescope Project Developers
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the Free
@@ -21,6 +20,7 @@
     this program; if not, write to the Free Software Foundation, Inc., 51
     Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
 */
+
 #ifndef _LP_SINK_H
 #define _LP_SINK_H
 
