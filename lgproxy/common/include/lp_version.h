@@ -1,0 +1,10 @@
+#ifndef _LP_VERSION_H_
+#define _LP_VERSION_H_
+
+#define LP_VERSION_MAJOR 0
+#define LP_VERSION_MINOR 2
+#define LP_VERSION_PATCH 0
+
+#define LP_KVMFR_SUPPORTED_VER 19
+
+#endif

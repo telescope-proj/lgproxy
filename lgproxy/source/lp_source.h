@@ -24,38 +24,78 @@
 #ifndef _LP_SOURCE_H
 #define _LP_SOURCE_H
 
-#include "trf_def.h"
-#include "trf_ncp.h"
-#include "trf.h"
+#include "common/framebuffer.h"
 
-#include "lp_trf_server.h"
-#include "lp_retrieve.h"
 #include "lp_log.h"
 #include "lp_types.h"
-#include "lp_convert.h"
-#include "lp_msg.h"
-#include "lp_utils.h"
 
 #include <getopt.h>
 #include <errno.h>
 #include <pthread.h>
 #include <signal.h>
-#include "common/framebuffer.h"
-#include "lp_msg.pb-c.h"
 #include <sys/stat.h>
 
-/**
- * @brief This Function will handle all client side requests (e.g. Frames data, Cursor data)
- * 
- * @param ctx       Context containing the TRFContext for client connections
- */
-int lpHandleClientReq(PLPContext ctx);
+/* Copy of the KVMFRFrame structure, but without damage rectangles */
+typedef struct {
+    uint32_t        frameSerial; 
+    FrameType       type;        
+    uint32_t        screenWidth; 
+    uint32_t        screenHeight;
+    uint32_t        frameWidth;  
+    uint32_t        frameHeight; 
+    FrameRotation   rotation;    
+    uint32_t        stride;      
+    uint32_t        pitch;       
+    uint32_t        offset;      
+    KVMFRFrameFlags flags;       
+} lp_kvmfr;
 
-/**
- * @brief  Get the current cursor position and update the client side
- * @param  arg      PTRFContext containing connection details
- * 
- */
-void * lpHandleCursorPos(void * arg);
+/* Queues to store incoming and outgoing message details */
+
+static inline void kvmfrframe_to_lp_kvmfr(KVMFRFrame * frame, lp_kvmfr * out)
+{
+    out->frameSerial  = frame->frameSerial;
+    out->type         = frame->type;
+    out->screenWidth  = frame->screenWidth;
+    out->screenHeight = frame->screenHeight;
+    out->frameWidth   = frame->frameWidth;
+    out->frameHeight  = frame->frameHeight;
+    out->rotation     = frame->rotation;
+    out->stride       = frame->stride;
+    out->pitch        = frame->pitch;
+    out->offset       = frame->offset;
+    out->flags        = frame->flags;
+}
+
+static inline void kvmfrframe_to_lp_msg_kvmfr(KVMFRFrame * frame,
+                                              lp_msg_kvmfr * out)
+{
+    out->hdr.id = LP_MSG_KVMFR;
+    out->req_id = 0;
+    out->fmt    = frame->type;
+    out->rot    = frame->rotation;
+    out->fid    = frame->frameSerial;
+    out->width  = frame->frameWidth;
+    out->height = frame->frameHeight;
+    out->stride = frame->stride;
+    out->pitch  = frame->pitch;
+    out->flags  = frame->flags;
+}
+
+static inline void kvmfrcursor_to_lp_msg_cursor(KVMFRCursor * cursor,
+                                                uint32_t flags,
+                                                lp_msg_cursor * out)
+{
+    out->hdr.id = LP_MSG_CURSOR;
+    out->fmt = cursor->type;
+    out->flags = flags;
+    out->pos_x = cursor->x;
+    out->pos_y = cursor->y;
+    out->hot_x = cursor->hx;
+    out->hot_y = cursor->hy;
+    out->width = cursor->width;
+    out->height = cursor->height;
+    out->pitch = cursor->pitch;
+}
 
 #endif

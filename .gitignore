@@ -67,8 +67,8 @@ lgmp-examples
 .vscode
 .profile
 .history
-version.h
 *_build
 _BUILD
 _build
+build/
 !docs/Makefile
