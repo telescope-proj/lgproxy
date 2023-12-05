@@ -1,9 +1,6 @@
-[submodule "repos/LGMP"]
-	path = repos/LGMP
-	url = https://github.com/gnif/LGMP.git
 [submodule "repos/LookingGlass"]
 	path = repos/LookingGlass
 	url = https://github.com/gnif/LookingGlass.git
-[submodule "repos/tcm"]
-	path = repos/tcm
-	url = https://github.com/telescope-proj/tcm
+[submodule "repos/netfr"]
+	path = repos/netfr
+	url = https://github.com/telescope-proj/netfr
