@@ -23,10 +23,6 @@ jobs:
           - {cc: clang}
 
     steps:
-    - name: Install requirements
-      run: sudo apt update 
-        && sudo apt install -y protobuf-c-compiler
-        && sudo apt install -y libprotobuf-c-dev
         
     - name: Install libfabric
       run: git clone https://github.com/ofiwg/libfabric.git
