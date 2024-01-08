@@ -21,9 +21,9 @@ subprocess.call('doxygen Doxyfile.in', shell=True)
 
 # -- Project information -----------------------------------------------------
 
-project = 'Telescope Looking Glass Proxy'
-copyright = '2022, Telescope Project Team'
-author = 'Telescope Project Team'
+project   = 'Telescope Looking Glass Proxy'
+copyright = '2022-2023 Tim Dettmar and contributors'
+author    = 'Tim Dettmar and contributors'
 
 
 # -- General configuration ---------------------------------------------------
@@ -42,10 +42,11 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx_sitemap',
     'sphinx.ext.inheritance_diagram',
+    'sphinx_toolbox.collapse',
     'breathe'
 ]
 
-highlight_language = 'c'
+highlight_language = 'none'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -90,3 +91,44 @@ breathe_projects = {
 }
 breathe_default_project = "Telescope Looking Glass Proxy"
 breathe_default_members = ('members', 'undoc-members')
+
+# Get the current git version
+
+ver = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
+origin = subprocess.check_output(["git", "remote", "get-url", "origin"])
+
+with open("subs.rst", "w") as f:
+
+    if ver is not None:
+        ver = ver.decode("utf-8").replace("\n", "").strip()
+        f.write(f".. |GITVER| replace:: {ver}\n")
+    else:
+        f.write(".. |GITVER| unicode:: U+0020\n")
+    
+    if origin is not None:
+        origin = origin.decode("utf-8").replace("\n", "").strip()
+        f.write(f".. |GITURL| replace:: {origin}\n")
+    else:
+        f.write(".. |GITURL| replace:: https://github.com/telescope-proj/lgproxy\n")
+
+
+# Add the imprint based on the input environment variable. This is possibly
+# required for upstream LGProxy due to § 5 TMG, but forks should add their own
+# if they are required to by applicable laws.
+
+no_imp = """.. note::
+    | No imprint is configured.
+    | Telescope Project contributors are not liable for the content of any forks.
+    | Please set the environment variable ``IMPRESSUM_RST``
+    | Alternatively, modify ``docs/legal/texts/impressum.rst``
+"""
+
+imp = os.getenv("IMPRESSUM_RST")
+if imp is not None:
+    imp = imp.replace("\\n", "\n")
+    with open("./legal/texts/impressum.rst", "w") as f:
+        f.write(imp)
+else:
+    if not os.path.exists("./legal/texts/impressum.rst"):
+        with open("./legal/texts/impressum.rst", "w") as f:
+            f.write(no_imp)

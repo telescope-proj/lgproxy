@@ -3,8 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the LGProxy Documentation!
-=====================================
+.. include:: subs.rst
+
+Documentation for LGProxy |GITVER|
+==================================
 
 .. toctree::
    :maxdepth: 2
@@ -17,8 +19,9 @@ LGProxy is a high-performance proxy for the Looking Glass application. It
 utilizes the Telescope Remote Framebuffer Library for transport over both
 commodity and RDMA capable networking hardware.
 
-
-View our `GitHub repository <https://github.com/telescope-proj/lgproxy>`_.
+You can view our `GitHub repository
+<https://github.com/telescope-proj/lgproxy>`_, or download our project thesis
+:download:`here <https://public.cdn.timd.io/TelescopeProjectThesisPub.pdf>`.
 
 Developed by the :doc:`team/team`.
 
@@ -37,25 +40,23 @@ Table of Contents
    user/building
    user/running
    user/runlg
+   user/optimizations
 
 .. toctree::
-   :caption: Bug Reports
+   :caption: Support
 
-   bugs/format
-   bugs/knownbugs
+   help/faq
+   help/format
+   help/knownbugs
 
 .. toctree::
-   :caption: Developers
+   :caption: Team
 
    team/team
 
 .. toctree::
-   :caption: API Documentation
+   :caption: Legal
 
-   api/index
-
-.. toctree::
-   :caption: Licensing
-
-   user/copyright
+   legal/licenses
+   legal/impressum
 

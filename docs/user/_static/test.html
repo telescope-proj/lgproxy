@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    td {
+      padding-right: 20px;
+    }
+  </style>
+  <script>
+    var speeds = [1, 2.5, 5, 10, 25, 40, 56, 100, 200, 400];
+    var rdma_thr = 4;
+    var f = 0;
+    var overheads = {
+      "ib": 82,
+      "rocev1": 82,
+      "rocev2": 82,
+      "none": 0
+    };
+    function calc() {
+      if (!f) {
+        document.getElementById("preset").value = "x";
+      }
+      f = 0;
+      var s = ["", "K", "M", "G", "T", "P", "E"];
+      var w = Number(document.getElementById("width").value);
+      var h = Number(document.getElementById("height").value);
+      var fps = Number(document.getElementById("fps").value);
+      var fmt = document.getElementById("fmt").value;
+      var out = 0;
+      var pix = w * h * fps;
+      var transport = document.getElementById("linktype").value;
+      var ovh = overheads[transport] / Number(document.getElementById("mtu").value) * 100;
+      switch (fmt) {
+        case "rgba":
+          out = w * h * 32;
+          break;
+        case "rgb":
+          out = w * h * 24;
+          break;
+        case "rgba16f":
+          out = w * h * 64;
+          break;
+        default:
+          out = 0;
+          break;
+      }
+      out *= fps;
+      for (var i = 0; i < speeds.length; i++) {
+        if (speeds[i] * 1e9 > out * 1.15) {
+          if (out * 1.15 > rdma_thr * 1e9) {
+            document.getElementById("nic_class").innerHTML = speeds[i] + " Gbit/s with RDMA";
+          } else {
+            document.getElementById("nic_class").innerHTML = speeds[i] + " Gbit/s";
+          }
+          break;
+        }
+      }
+      if (i == speeds.length) {
+        document.getElementById("nic_class").innerHTML = "> " + speeds[i-1] + " Gbit/s";
+      }
+      for (var i = 0; i < s.length; i++) {
+        if (out <= 1000) {
+          break;
+        }
+        out /= 1000;
+      }
+      var out_safe = out * 1.15;
+      for (var j = 0; j < s.length; j++) {
+        if (pix <= 1000) {
+          break;
+        }
+        pix /= 1000;
+      }
+      document.getElementById("overhead").innerHTML =
+        ovh.toPrecision(4) + " %";
+      document.getElementById("out").innerHTML =
+        out.toPrecision(4) + " " + s[i] + "bit/s";
+      document.getElementById("out_safe").innerHTML =
+        out_safe.toPrecision(4) + " " + s[i] + "bit/s";
+      document.getElementById("pix").innerHTML =
+        pix.toPrecision(4) + " " + s[j] + "pix/s";
+    }
+
+    function calcPreset() {
+      var preset = document.getElementById("preset").value;
+      var w = 0;
+      var h = 0;
+      var fps = 0;
+      var fmt = "";
+      switch (preset) {
+        case "1080p60":
+          w = 1920;
+          h = 1080;
+          fps = 60;
+          fmt = "rgba";
+          break;
+        case "2160p60":
+          w = 3840;
+          h = 2160;
+          fps = 60;
+          fmt = "rgba";
+          break;
+        case "1440p165":
+          w = 2560;
+          h = 1440;
+          fps = 165;
+          fmt = "rgba";
+          break;
+        default:
+          console.log("Invalid");
+          break;
+      }
+
+      document.getElementById("width").value = w;
+      document.getElementById("height").value = h;
+      document.getElementById("fps").value = fps;
+      document.getElementById("fmt").value = fmt;
+      f = 1;
+      calc();
+    }
+  </script>
+</head>
+
+<body>
+  <div>
+    <table>
+      <tr>
+        <td>Link Type</td>
+        <td>
+          <select id="linktype" onchange="calc()">
+            <option selected value="none">Ethernet</option>
+            <option value="rocev1">Ethernet (RoCEv1)</option>
+            <option value="rocev2">Ethernet (RoCEv2)</option>
+            <option value="iwarp">Ethernet (iWARP)</option>
+            <option value="ib">InfiniBand</option>
+          </select>
+        </td>
+        <td>Active MTU</td>
+        <td>
+          <select id="mtu" onchange="calc()">
+            <option value="256">256</option>
+            <option value="512">512</option>
+            <option selected value="1024">1024</option>
+            <option value="2048">2048</option>
+            <option value="4096">4096</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>Overhead</td>
+        <td>
+          <p class="res" style="font-weight: bold; margin: 0; padding: 0" id="overhead">&nbsp;</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Width</td>
+        <td>
+          <input id="width" onchange="calc()" type="number" />
+        </td>
+        <td>NIC Class</td>
+        <td>
+          <p class="res" style="font-weight: bold; margin: 0; padding: 0" id="nic_class">&nbsp;</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Height</td>
+        <td>
+          <input id="height" onchange="calc()" type="number" />
+        </td>
+        <td>Raw bandwidth</td>
+        <td>
+          <p class="res" style="font-weight: bold; margin: 0; padding: 0" id="out">&nbsp;</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Framerate</td>
+        <td>
+          <input id="fps" onchange="calc()" type="number" />
+        </td>
+        <td>Recommended</td>
+        <td>
+          <p class="res" style="font-weight: bold; margin: 0; padding: 0" id="out_safe">&nbsp;</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding-right: 15px">Data Format</td>
+        <td>
+          <select id="fmt" onchange="calc()">
+            <option disabled selected value>Select data format</option>
+            <option value="rgb">BGR/RGB - 24 bpp</option>
+            <option value="rgba">BGRA/RGBA - 32 bpp</option>
+            <option value="rgba16f">RGBA HDR Float - 64 bpp</option>
+          </select>
+        </td>
+        <td>Pixel Rate</td>
+        <td>
+          <p class="res" style="font-weight: bold; margin: 0; padding: 0" id="pix">&nbsp;</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Preset</td>
+        <td>
+          <select id="preset" onchange="calcPreset()">
+            <option disabled selected value="x">Select preset</option>
+            <option value="1080p60">1080p 60Hz, Raw 32bpp</option>
+            <option value="1440p165">1440p 165Hz, Raw 32bpp</option>
+            <option value="2160p60">4K 60Hz, Raw 32bpp</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+</body>
+</div>
+
+</html>

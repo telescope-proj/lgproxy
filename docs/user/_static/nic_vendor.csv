@@ -1,0 +1,15 @@
+Vendor,Model,RoCE v1,RoCE v2,iWARP,InfiniBand,Tested
+Broadcom,P225P,✓,✓,,,
+Intel,E810,,✓,✓,,
+NVIDIA,ConnectX-3 EN,✓,,,,✓
+NVIDIA,ConnectX-3 VPI,✓,,,✓,✓
+NVIDIA,Connect-IB,,,,✓,
+NVIDIA,ConnectX-3 Pro,✓,✓*,,✓,✓
+NVIDIA,ConnectX-4,✓,✓,,✓,
+NVIDIA,ConnectX-4 Lx,✓,✓,,,✓
+NVIDIA,ConnectX-5,✓,✓,,✓,
+NVIDIA,ConnectX-6,✓,✓,,✓,
+NVIDIA,ConnectX-6 Lx,✓,✓,,,
+NVIDIA,ConnectX-7,✓,✓,,✓,
+QLogic,QL41xxx,✓,✓,✓,,
+QLogic,QL45xxx,✓,✓,✓,,✓

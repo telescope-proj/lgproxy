@@ -1,0 +1,5 @@
+_BUILD
+_build
+build/
+!Makefile
+subs.rst

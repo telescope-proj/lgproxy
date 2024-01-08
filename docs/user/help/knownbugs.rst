@@ -8,6 +8,5 @@ Known Bugs
   update.
 - When ``spice:captureOnStart=yes`` is not specified, the Looking Glass client
   may sometimes fail to display the mouse cursor.
-- Use of FSR with compressed texture formats does not work (no fix - option
-  should be grayed out).
-- Use of FSR with raw texture formats sometimes fails in DMABUF mode.
+- Use of FSR with raw texture formats sometimes fails when in DMABUF import
+  mode.
