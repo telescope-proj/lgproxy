@@ -65,10 +65,9 @@ _deps
 
 lgmp-examples
 .vscode
+.vs
 .profile
 .history
 *_build
-_BUILD
-_build
 build/
-!docs/Makefile
+*.btr
