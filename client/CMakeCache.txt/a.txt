@@ -1,0 +1,2 @@
+Don't remove this directory: it prevents CMake from caching the error message
+for in-source builds

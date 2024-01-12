@@ -1,23 +1,26 @@
 #ifndef LP_TIME_H_
 #define LP_TIME_H_
 
+#include "lp_exception.h"
 #include "lp_log.h"
 #include <stdint.h>
 #include <time.h>
 
-static inline float lp_tdiff_to_float(struct timespec start,
-                                      struct timespec stop) {
+#define LP_NOW -2
+
+static inline float lp_tdiff_to_float(const timespec & start,
+                                      const timespec & stop) {
   float e = (float) stop.tv_sec + (float) stop.tv_nsec / 1000000000.0f;
   float s = (float) start.tv_sec + (float) start.tv_nsec / 1000000000.0f;
   return s - e;
 }
 
-static inline struct timespec lp_get_deadline(int64_t timeout_ms) {
-  struct timespec t;
+static inline timespec lp_get_deadline(int64_t timeout_ms) {
+  timespec t;
 
   int ret = clock_gettime(CLOCK_MONOTONIC, &t);
   if (ret < 0) {
-    throw tcm_exception(errno, __FILE__, __LINE__, "clock_gettime() failed");
+    LP_THROW(errno, "clock_gettime() failed");
   }
 
   switch (timeout_ms) {
@@ -40,11 +43,11 @@ static inline struct timespec lp_get_deadline(int64_t timeout_ms) {
         }
         return t;
       }
-      throw tcm_exception(EINVAL, __FILE__, __LINE__, "Invalid timeout");
+      LP_THROW(EINVAL, "Invalid timeout");
   }
 }
 
-static inline int lp_check_deadline(struct timespec dl) {
+static inline int lp_check_deadline(const timespec & dl) {
   struct timespec t;
   if (dl.tv_sec == 0 && dl.tv_nsec == 0) {
     return 1; // Single-poll value
@@ -53,7 +56,7 @@ static inline int lp_check_deadline(struct timespec dl) {
   } else {
     int ret = clock_gettime(CLOCK_MONOTONIC, &t);
     if (ret) {
-      throw tcm_exception(errno, __FILE__, __LINE__, "clock_gettime() failed");
+      LP_THROW(errno, "clock_gettime() failed");
     }
     return (t.tv_sec > dl.tv_sec) ||
            ((t.tv_sec == dl.tv_sec) && (t.tv_nsec > dl.tv_nsec));

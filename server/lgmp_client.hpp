@@ -34,6 +34,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "lp_metadata.h"
+
 #include <atomic>
 typedef std::atomic_uint_least32_t atomic_uint_least32_t;
 
@@ -67,24 +69,6 @@ using std::shared_ptr;
 #if LP_KVMFR_SUPPORTED_VER != KVMFR_VERSION
 #error KVMFR version mismatch!
 #endif
-
-struct lp_metadata {
-  uint32_t width;
-  uint32_t height;
-  uint32_t stride;
-  uint32_t pitch;
-  uint16_t sockets;
-  uint16_t threads;
-  uint16_t cores;
-  uint16_t fr_flags;
-  uint16_t fr_os;
-  uint16_t fr_format;
-  uint8_t  fr_rotation;
-  char     fr_uuid[16];
-  char     fr_capture[32];
-  char     cpu_model[256];
-  char     os_name[256];
-};
 
 /* Add KVMFR user data to NetFR host metadata message */
 void lp_kvmfr_udata_to_nfr(void * udata, size_t udata_size,
@@ -154,6 +138,7 @@ public:
   uint32_t udata_size;
   uint32_t client_id;
   uint32_t q_id;
+  timespec last_msg;
 
   PLGMPClient      lgmp;
   PLGMPClientQueue q;
@@ -172,14 +157,26 @@ public:
 
   void bind_exit_flag(volatile int * flag);
 
-  LGMP_STATUS   init();                   // initialize lgmp session
-  LGMP_STATUS   subscribe(uint32_t q_id); // subscribe to queue
-  LGMP_STATUS   unsubscribe();            // unsubscribe from queue
-  lp_lgmp_msg   get_msg();                // get new message in queue
-  LGMP_STATUS   ack_msg();                // acknowledge pending message
-  LGMP_STATUS   connect(uint32_t q_id);   // combines init + subscribe
-  lp_metadata & get_metadata();           // get collected metadata
-  bool          connected();              // get connection status
+  /* Initialize the LGMP session. */
+  LGMP_STATUS      init();
+  /* Subscribe to a queue with the specified ID. */
+  LGMP_STATUS      subscribe(uint32_t q_id);
+  /* Unsubscribe from a queue. */
+  LGMP_STATUS      unsubscribe();
+  /* Get a new message from the queue. */
+  lp_lgmp_msg      get_msg();
+  /* Send a message to the LGMP host. */
+  LGMP_STATUS      send_msg(const void * data, size_t size, uint32_t * serial);
+  /* Acknowledge a pending message. */
+  LGMP_STATUS      ack_msg();
+  /* Combination of init() + subscribe(). */
+  LGMP_STATUS      connect(uint32_t q_id);
+  /* Get LGMP host metadata. */
+  lp_metadata &    get_metadata();
+  /* Get session status (not subscription status). */
+  bool             connected();
+  /* Get the timestamp of when the last message was received. */
+  const timespec & last_msg_time();
 };
 
 #endif

@@ -2,36 +2,17 @@ cmake_minimum_required(VERSION 3.5)
 project(liblgproxy_common LANGUAGES C CXX)
 
 include(CommonDirectories.cmake)
+include(Submodules.cmake)
 
 add_definitions(-DLP_LOG_USE_COLOR)
 
-# Check if submodules have been initialized
-find_package(Git QUIET)
-message(STATUS "Checking submodules")
-if(GIT_FOUND AND EXISTS "${PROJECT_TOP}/.git")
-    option(GIT_SUBMODULE "Check submodules before build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Fetching submodules")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init repos/LookingGlass repos/netfr
-                        WORKING_DIRECTORY ${PROJECT_TOP}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-    endif()
-endif()
-
-if(NOT EXISTS "${PROJECT_TOP}/repos")
+if(NOT EXISTS "${LGPROXY_TOP}/repos")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
-add_compile_options(
-    "-Wall"
-    "-Wextra"
-    "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
-)
 
 set(SOURCES
+    src/lp_metadata.cpp
     src/lp_config.cpp
     src/lp_mem.cpp
 )
@@ -51,16 +32,24 @@ target_link_libraries(lgproxy_common
 
 target_include_directories(lgproxy_common
     PUBLIC
+        "${LG_TOP}"
         include
     PRIVATE
         src
+)
+
+target_compile_options(
+    lgproxy_common PRIVATE
+    "-Wall"
+    "-Wextra"
+    "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
 )
 
 # Get Looking Glass version
 
 execute_process(
     COMMAND sh -c "git submodule | grep -i LookingGlass | awk -F'[()]' '{print $2}'"
-    WORKING_DIRECTORY "${PROJECT_TOP}"
+    WORKING_DIRECTORY "${LGPROXY_TOP}"
     OUTPUT_VARIABLE LG_GIT_REV
     ERROR_QUIET
 )
@@ -83,21 +72,23 @@ ${BUILD_VERSION_COMMENT}\n\
 static const char * LG_BUILD_VERSION = \"${LGPROXY_LG_GIT_VER}\";"
 )
 
-if(EXISTS "include/lg_build_version.h")
-	file(READ include/lg_build_version.h LG_BUILD_VERSION_)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/lg_build_version.h")
+	file(READ 
+         "${CMAKE_CURRENT_SOURCE_DIR}/include/lg_build_version.h" 
+         LG_BUILD_VERSION_)
 else()
 	set(LG_BUILD_VERSION_ "")
 endif()
 
 if (NOT "${BUILD_VERSION}" STREQUAL "${LG_BUILD_VERSION_}")
-	file(WRITE include/lg_build_version.h "${BUILD_VERSION}\n")
+	file(WRITE include/lg_build_version.h "${BUILD_VERSION}")
 endif()
 
 # Get LGProxy version
 
 execute_process(
     COMMAND sh -c "git rev-parse --short HEAD"
-    WORKING_DIRECTORY "${PROJECT_TOP}"
+    WORKING_DIRECTORY "${LGPROXY_TOP}"
     OUTPUT_VARIABLE LP_GIT_REV
     ERROR_QUIET
 )
@@ -114,8 +105,10 @@ ${BUILD_VERSION_COMMENT}\n\
 static const char * LP_BUILD_VERSION = \"${PROXY_GIT_VER}\";"
 )
 
-if(EXISTS "include/lp_build_version.h")
-	file(READ include/lp_build_version.h LP_BUILD_VERSION_)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/lp_build_version.h")
+	file(READ 
+         "${CMAKE_CURRENT_SOURCE_DIR}/include/lp_build_version.h"
+         LP_BUILD_VERSION_)
 else()
 	set(LP_BUILD_VERSION_ "")
 endif()

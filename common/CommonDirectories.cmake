@@ -1,15 +1,15 @@
-get_filename_component(PROJECT_TOP 
+get_filename_component(LGPROXY_TOP 
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     ABSOLUTE
 )
 
 get_filename_component(NETFR_TOP
-    "${PROJECT_TOP}/repos/netfr"
+    "${LGPROXY_TOP}/repos/netfr"
     ABSOLUTE
 )
 
 get_filename_component(LG_TOP      
-    "${PROJECT_TOP}/repos/LookingGlass" 
+    "${LGPROXY_TOP}/repos/LookingGlass" 
     ABSOLUTE
 )
 
@@ -43,6 +43,6 @@ add_subdirectory(
 )
 
 add_subdirectory(
-    "${PROJECT_TOP}/log"
+    "${LGPROXY_TOP}/log"
     "${CMAKE_BINARY_DIR}/libs/lgproxy_log"
 )

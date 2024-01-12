@@ -42,6 +42,8 @@ public:
   uint16_t     frame_port;
   int64_t      timeout;
   int64_t      interval;
+  bool         once;
+  bool         profiler;
 
   lp_source_opts(int argc, char ** argv);
   ~lp_source_opts();

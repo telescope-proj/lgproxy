@@ -8,15 +8,6 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-extern "C" {
-#include "common/KVMFR.h"
-#include "lgmp/client.h"
-#include "lgmp/host.h"
-#include "lgmp/lgmp.h"
-}
-
-#include "lp_log.h"
-
 #define POINTER_SHAPE_BUFFERS 3
 #define MAX_POINTER_SIZE (512 * 512 * 4 + sizeof(KVMFRCursor))
 #define MAX_POINTER_SIZE_ALIGN                                                 \
