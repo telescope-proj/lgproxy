@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+// Telescope Project
+// Looking Glass Proxy (LGProxy)
+// Copyright (c) 2022 - 2024, Telescope Project Developers
 
 #include "lp_config.h"
 #include "lg_build_version.h"
