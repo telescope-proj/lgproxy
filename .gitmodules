@@ -6,5 +6,4 @@
 	url = https://github.com/gnif/LGMP.git
 [submodule "repos/LookingGlass"]
 	path = repos/LookingGlass
-	url = https://github.com/telescope-proj/LookingGlass.git
-	branch = client-dxtc
+	url = https://github.com/gnif/LookingGlass
