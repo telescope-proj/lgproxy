@@ -1,5 +1,5 @@
 /*
-    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
 
     Telescope Project  
     Looking Glass Proxy   
@@ -82,7 +82,7 @@ int lpClientInitSession(PLPContext ctx)
     for (int retry = 0; retry < 20; retry++)
     {
         status = lgmpClientSessionInit(ctx->lp_host.lgmp_client, &udataSize, 
-                                       (uint8_t **) &udata);
+                                       (uint8_t **) &udata, NULL);
         lp__log_trace("lgmpClientSessionInit: %s", lgmpStatusString(status));
 
         switch (status)
@@ -257,11 +257,8 @@ int lpGetFrame(PLPContext ctx, KVMFRFrame ** out, FrameBuffer ** fb)
     }
     
     if (frame)
-    {
-        lp__log_trace("------------ Frame Received ------------");
-        lp__log_trace("Frame size: %d x %d", frame->frameWidth, frame->frameHeight);
-        lp__log_trace("----------------------------------------");
-    }
+        lp__log_trace("Received frame size: %d x %d", 
+                      frame->frameWidth, frame->frameHeight);
     
     frameSerial = frame->frameSerial;
     *out = frame;

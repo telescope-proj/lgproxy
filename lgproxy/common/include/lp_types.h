@@ -1,5 +1,5 @@
 /*
-    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
 
     Telescope Project  
     Looking Glass Proxy   
@@ -180,15 +180,16 @@ typedef struct {
 
 typedef struct {
     /**
-     * @brief       Libfabric Poll Interval default will be set to 1 millisecond
-     * 
+     * @brief Libfabric polling interval in nanoseconds. If this is 0 (default),
+     * then busy waiting will be used. If this is negative, then the program
+     * will use synchronous mode.
      */
-    int                     poll_int;
+    int64_t poll_int;
     /**
-     * @brief       Delete SHM file on exit default will it will not delete the shm file unless specified
-     * 
+     * @brief Delete the shared memory file on program exit. By default, this is
+     * false.
      */
-    bool                    delete_exit;
+    bool delete_exit;
 }LPUserOpts;
 
 typedef enum {

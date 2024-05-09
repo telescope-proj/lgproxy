@@ -1,5 +1,5 @@
 /*
-    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
 
     Telescope Project  
     Looking Glass Proxy   
@@ -24,23 +24,47 @@
 #include "lp_utils.h"
 #include "version.h"
 
-int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg)
+int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg, int timeoutMs)
 {
     struct fi_cq_data_entry de;
     struct fi_cq_err_entry err;
     ssize_t ret;
 
-    ret = trfFabricPollRecv(ctx->lp_client.client_ctx, &de, &err, 0, 0, NULL, 1);
-    if (ret == 0 || ret == -EAGAIN)
-    {
-        return -EAGAIN;
+    struct TRFContext * tc = ctx->lp_client.client_ctx;
+    assert(tc);
+
+    if (timeoutMs > 0) {
+        struct timespec dl;
+        ret = trfGetDeadline(&dl, timeoutMs);
+        if (ret < 0)
+        {
+            lp__log_error("Clock error: %s", strerror(-ret));
+            return ret;
+        }
+        ret = trfFabricPollRecv(ctx->lp_client.client_ctx, &de, &err, 
+                                tc->opts->fab_cq_sync, tc->opts->fab_poll_rate,
+                                &dl, 1);
     }
-    if (ret < 0)
+    else
     {
-        lp__log_error("Unable to poll CQ: %s", fi_strerror(-ret));
-        return ret;
+        ret = trfFabricPollRecv(ctx->lp_client.client_ctx, &de, &err, 0, 0, 
+                                NULL, 1);
     }
-    void *msgmem = trfMemPtr(&ctx->lp_client.client_ctx->xfer.fabric->msg_mem);
+    switch (ret)
+    {
+        case 0:
+        case -EAGAIN:
+            return -EAGAIN;
+        case -ETIMEDOUT:
+            return -ETIMEDOUT;
+        case 1:
+            break;
+        default:
+            lp__log_error("Unable to poll CQ: %s", fi_strerror(-ret));
+            return ret;
+    }
+
+    void * msgmem = trfMemPtr(&ctx->lp_client.client_ctx->xfer.fabric->msg_mem);
     ret = trfMsgUnpack(msg, 
                        trfMsgGetPackedLength(msgmem),
                        trfMsgGetPayload(msgmem));
@@ -50,6 +74,7 @@ int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg)
             strerror(-ret));
         return ret;
     }
+    
     return 0;
 }
 
@@ -61,22 +86,49 @@ uint64_t lpParseMemString(char * data)
     {
         return b;
     }
-    else
+
+    switch (multiplier)
     {
-        switch (multiplier)
-        {
-            case 'K':
-            case 'k':
-                return b * 1024;
-            case 'M':
-            case 'm':
-                return b * 1024 * 1024;
-            case 'G':
-            case 'g':
-                return b * 1024 * 1024 * 1024;
-            default:
-                return 0;
-        }
+        case 'K':
+        case 'k':
+            return b * 1024;
+        case 'M':
+        case 'm':
+            return b * 1024 * 1024;
+        case 'G':
+        case 'g':
+            return b * 1024 * 1024 * 1024;
+        default:
+            return 0;
+    }
+}
+
+int64_t lpParsePollString(char * data)
+{
+    char multiplier = data[strlen(data)-1];
+    int64_t b = atoi(data);
+    if (multiplier >= '0' && multiplier <= '9')
+    {
+        return b * (int64_t) 1000000;
+    }
+    
+    switch (multiplier)
+    {
+        case 's':
+        case 'S':
+            return b * (int64_t) 1000000000;
+        case 'm':
+        case 'M':
+            return b * (int64_t) 1000000;
+        case 'u':
+        case 'U':
+            return b * (int64_t) 1000;
+        case 'n':
+        case 'N':
+            return b;
+        default:
+            lp__log_warn("Invalid polling interval, defaulting to busy wait");
+            return 0;
     }
 }
 
@@ -103,7 +155,7 @@ bool lpShouldTruncate(PLPContext ctx)
 
 int lpSetDefaultOpts(PLPContext ctx)
 {
-    ctx->opts.poll_int = 1;
+    ctx->opts.poll_int = 0;
     ctx->shm = "/dev/shm/looking-glass";
     return 0;
 }

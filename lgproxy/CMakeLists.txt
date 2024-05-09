@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5.0)
 project(lgproxy LANGUAGES C)
 
 get_filename_component(PROJECT_TOP "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
@@ -50,8 +50,8 @@ add_compile_options(
 "-ffast-math"
 "-fdata-sections"
 "-ffunction-sections"
-#"$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
-"-O0;-g3;-ggdb"
+"$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
+# "-O0;-g3;-ggdb"
 ) 
 
 file(COPY "${PROJECT_TOP}/repos/libtrf/libtrf/conf" DESTINATION "./source_build")
@@ -80,14 +80,14 @@ set(SINK
 
 add_executable(source ${SOURCE})
 target_link_libraries(source trf lgmp m lg_common protobuf-c)
-set_property(TARGET source PROPERTY C_STANDARD 99)
+set_property(TARGET source PROPERTY C_STANDARD 11)
 
 set_target_properties(source PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./source_build")
 
 add_executable(sink ${SINK})
 
 target_link_libraries(sink trf lgmp m lg_common protobuf-c)
-set_property(TARGET sink PROPERTY C_STANDARD 99)
+set_property(TARGET sink PROPERTY C_STANDARD 11)
 
 set_target_properties(sink PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./sink_build")       
 

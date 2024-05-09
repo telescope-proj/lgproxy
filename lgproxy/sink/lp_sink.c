@@ -1,5 +1,5 @@
 /*
-    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
 
     Telescope Project  
     Looking Glass Proxy   
@@ -26,21 +26,32 @@
 
 static const char * LP_USAGE_GUIDE_STR =                                \
 "Looking Glass Proxy (LGProxy)\n"                                       \
-"Copyright (c) 2022 Telescope Project Developers\n"                     \
-"Matthew McMullin (@matthewjmc), Tim Dettmar (@beanfacts)\n"            \
+"Copyright (c) 2022 - 2024 Telescope Project Developers\n"              \
+"This software is licensed under GPL 2.0 (or later)\n"                  \
+"Maintainer: Tim Dettmar (@beanfacts)\n"                                \
 "\n"                                                                    \
 "Documentation: https://telescope-proj.github.io/lgproxy\n"             \
 "Documentation also contains licenses for third party libraries\n"      \
 "used by this project\n"                                                \
 "\n"                                                                    \
 "Options:\n"                                                            \
-"   -h  Hostname or IP address to connect to\n"                         \
-"   -p  Port or service name to connect to\n"                           \
+"\n"                                                                    \
+"   -h  Hostname or IP address to listen on\n"                          \
+"\n"                                                                    \
+"   -p  Port or service name to listen on\n"                            \
+"\n"                                                                    \
 "   -f  Shared memory or KVMFR file to use\n"                           \
-"   -s  Size of the shared memory file - not required unless\n"         \
-"       the file has not been created\n"                                \
+"\n"                                                                    \
+"   -s  Size of the shared memory file\n"                               \
+"       This must be specified if the file is backed by a DMABUF\n"     \
+"       region (/dev/kvmfr*), or if the file does not exist,\n"         \
+"       in which case it will be created with the specified size\n"     \
+"\n"                                                                    \
 "   -d  Delete the shared memory file on exit\n"                        \
-"   -r  Polling interval in milliseconds\n"                             \
+"\n"                                                                    \
+"   -r  Polling interval (default unit: ms, default value: 0)\n"        \
+"       [Experimental] use -1 for sync mode\n"                          \
+"       [Experimental] use n/u/m/s for nano/micro/milli/whole seconds, respectively\n" \
 ;
 
 volatile int8_t flag = 0;
@@ -95,8 +106,8 @@ int main(int argc, char ** argv)
                 ctx->opts.delete_exit = true;
                 break;
             case 'r':
-                lp__log_info("Poll Interval: %s", optarg);
-                ctx->opts.poll_int = atoi(optarg);
+                lp__log_info("Requested polling interval: %s", optarg);
+                ctx->opts.poll_int = lpParsePollString(optarg);
                 break;
             default:
             case '?':
@@ -229,8 +240,20 @@ int main(int argc, char ** argv)
     
 
     // Set Polling Interval
-    ctx->lp_client.client_ctx->opts->fab_poll_rate = ctx->opts.poll_int;
-    ctx->lp_client.sub_channel->opts->fab_poll_rate = ctx->opts.poll_int;
+    struct TRFContext * cc  = ctx->lp_client.client_ctx;
+    if (ctx->opts.poll_int < 0)
+    {
+        cc->opts->fab_cq_sync   = 1;
+        cc->opts->fab_poll_rate = 0;
+    }
+    else
+    {
+        cc->opts->fab_cq_sync   = 0;
+        cc->opts->fab_poll_rate = ctx->opts.poll_int;
+    }
+
+    struct TRFContext * subc  = ctx->lp_client.sub_channel;
+    subc->opts->fab_poll_rate = ctx->opts.poll_int;
 
     #define timespecdiff(_start, _end) \
     (((_end).tv_sec - (_start).tv_sec) * 1000000000 + \
@@ -244,13 +267,11 @@ int main(int argc, char ** argv)
 
     displays->mem.ptr = ctx->ram;
     if (ctx->dma_buf)
-    {
-        lp__log_warn("DMABUF support in LibTRF and LGProxy is highly unstable!");
-        lp__log_warn("Use of /dev/shm regions is recommended at this time.");
-    }
+        lp__log_warn("DMABUF in LGProxy is experimental!");
+
     ctx->mem_state = LP_MEM_REGISTERED_PERM;
     lp__log_info("Registering memory buffer");
-    ret = trfRegDisplayCustom(ctx->lp_client.client_ctx, displays, 
+    ret = trfRegDisplayCustom(cc, displays, 
                     ctx->ram_size, 0, FI_WRITE | FI_REMOTE_WRITE);
     if (ret < 0)
     {
@@ -258,7 +279,6 @@ int main(int argc, char ** argv)
                     fi_strerror(abs(ret)));
         return -1;
     }
-
 
     while (1)
     {
@@ -368,10 +388,16 @@ int main(int argc, char ** argv)
                 return -1;
             }
         
-            ret = lpPollMsg(ctx, &msg);
+            // We cannot use an infinite timeout, since we need to keep the LGMP
+            // session alive
+            if (cc->opts->fab_cq_sync)
+                ret = lpPollMsg(ctx, &msg, 100);
+            else
+                ret = lpPollMsg(ctx, &msg, 0);
+
             if (ret == -EAGAIN)
             {
-                trfSleep(ctx->lp_client.client_ctx->opts->fab_poll_rate);
+                trfNanoSleep(cc->opts->fab_poll_rate);
                 repeatframe = true;
                 continue;
             }

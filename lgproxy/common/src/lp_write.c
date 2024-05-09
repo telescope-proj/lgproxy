@@ -1,5 +1,5 @@
 /*
-    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
 
     Telescope Project  
     Looking Glass Proxy   
@@ -53,7 +53,7 @@ static bool appendData(KVMFRUserData * dst, const void * src, const size_t size)
   return true;
 }
 
-static bool newKVMFRData(KVMFRUserData * dst)
+static bool newKVMFRData(KVMFRUserData * dst, const char * osName)
 {
   {
     KVMFR kvmfr =
@@ -101,10 +101,11 @@ static bool newKVMFRData(KVMFRUserData * dst)
       .os = KVMFR_OS_OTHER
     };
 
-    const char * osName = "MS DOS Executive 6.22";
+    int osNameLen = 1;
     if (!osName)
       osName = "";
-    const int osNameLen = strlen(osName) + 1;
+    else
+      osNameLen = strlen(osName) + 1;
 
     KVMFRRecord record =
     {
@@ -142,8 +143,13 @@ int lpInitHost(PLPContext ctx, PTRFDisplay display, bool initShm)
     
     lp__log_debug("Creating KVMFR data...");
 
+    char osNameStr[128];
+    osNameStr[127] = 0;
+    snprintf(osNameStr, sizeof(osNameStr) - 1, 
+             "Telescope LGProxy Relay %s", LP_BUILD_VERSION);
+
     KVMFRUserData udata = { 0 };
-    if (!newKVMFRData(&udata))
+    if (!newKVMFRData(&udata, osNameStr))
     {
         lp__log_error("KVMFR data init failed!");
         return -EINVAL;
@@ -276,7 +282,7 @@ int lpSignalFrameDone(PLPContext ctx, PTRFDisplay disp)
     if (!ctx || !disp)
         return -EINVAL;
 
-    FrameBuffer * fb = trfGetFBPtr(disp) - FrameBufferStructSize;
+    FrameBuffer * fb = trfGetFBPtr(disp) - sizeof(struct stFrameBuffer);
     framebuffer_set_write_ptr(fb, trfGetDisplayBytes(disp));
     return 0;
 }
@@ -328,30 +334,35 @@ int lpRequestFrame(PLPContext ctx, PTRFDisplay disp)
 
     uint8_t comp = trfTextureIsCompressed(disp->format);
     
-
     fi->rotation         = FRAME_ROT_0;
     fi->frameSerial      = disp->frame_cntr;
     fi->formatVer        = 1;
     fi->damageRectsCount = 0;
     fi->type             = lpTrftoLGFormat(disp->format);
-    fi->frameHeight      = disp->height;
-    fi->screenHeight     = disp->height;
-    fi->offset           = trf__GetPageSize() - FrameBufferStructSize;
+    fi->offset           = trf__GetPageSize() - sizeof(struct stFrameBuffer);
     fi->stride           = !comp ? disp->width : 0;
     fi->pitch            = !comp ? 
                            trfGetTextureBytes(disp->width, 1, disp->format)
                            : trfGetTextureBytes(disp->width, 
                                     disp->height, disp->format);
+    
+    // Note: this is a quick fix to get some functionality in B7 working in
+    // the legacy codebase. This will be refactored in the future.
+
+    fi->dataWidth        = disp->width;
     fi->frameWidth       = disp->width;
     fi->screenWidth      = disp->width;
-    fi->flags            = 0;
 
+    fi->dataHeight       = disp->height;
+    fi->frameHeight      = disp->height;
+    fi->screenHeight     = disp->height;
+    fi->flags            = 0;
 
     lp__log_trace("Display size received: %d x %d", fi->frameWidth, fi->frameHeight);
     lp__log_trace("Display Type: %d", lpTrftoLGFormat(disp->format));
 
     disp->fb_offset = ((uint8_t *) fi - (uint8_t *) ctx->ram) + fi->offset
-                       + FrameBufferStructSize;
+                       + sizeof(struct stFrameBuffer);
     
     FrameBuffer * fb = (FrameBuffer *) (((uint8_t *) fi) + fi->offset);
     framebuffer_prepare(fb);
@@ -575,13 +586,15 @@ void * lpCursorThread(void * arg)
         struct fi_cq_data_entry de;
         struct fi_cq_err_entry err;
 
-        ret = trfFabricPollRecv(sc, &de, &err, 0, 0, &dl, 1);
+        ret = trfFabricPollRecv(sc, &de, &err, sc->opts->fab_cq_sync, 
+                                sc->opts->fab_poll_rate, &dl, 1);
         switch (ret)
         {
             case -FI_ETIMEDOUT:
             case -FI_EAGAIN:
             case 0:
-                trfSleep(sc->opts->fab_poll_rate);
+                if (!sc->opts->fab_cq_sync && sc->opts->fab_poll_rate > 0)
+                    trfNanoSleep(sc->opts->fab_poll_rate);
                 if (trf__HasPassed(CLOCK_MONOTONIC, &dl))
                 {
                     ret = -ETIMEDOUT;

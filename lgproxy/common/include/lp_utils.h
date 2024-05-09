@@ -1,5 +1,5 @@
 /*
-    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
 
     Telescope Project  
     Looking Glass Proxy   
@@ -36,9 +36,10 @@
  * 
  * @param ctx   Context to use.
  * @param msg   Message pointer to be set when a message has been received.
+ * @param timeoutMs Optional timeout for the message in milliseconds.
  * @return      0 on success, negative error code on failure.
  */
-int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg);
+int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg, int timeoutMs);
 
 /**
  * @brief Parse bytes neede from string passed in to arguments
@@ -47,6 +48,8 @@ int lpPollMsg(PLPContext ctx, TrfMsg__MessageWrapper ** msg);
  * @return              size in bytes, -1 if invalid data 
  */
 uint64_t lpParseMemString(char * data);
+
+int64_t lpParsePollString(char * data);
 
 /**
  * @brief Check if the SHM File needs to be truncated 

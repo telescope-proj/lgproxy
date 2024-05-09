@@ -1,5 +1,5 @@
 /*
-    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
 
     Telescope Project  
     Looking Glass Proxy   
@@ -23,22 +23,34 @@
 */
 #include "lp_source.h"
 #include "version.h"
+#include "module/kvmfr.h"
 
 static const char * LP_USAGE_GUIDE_STR =                                \
 "Looking Glass Proxy (LGProxy)\n"                                       \
-"Copyright (c) 2022 Telescope Project Developers\n"                     \
-"Matthew McMullin (@matthewjmc), Tim Dettmar (@beanfacts)\n"            \
+"Copyright (c) 2022 - 2024 Telescope Project Developers\n"              \
+"This software is licensed under GPL 2.0 (or later)\n"                  \
+"Maintainer: Tim Dettmar (@beanfacts)\n"                                \
 "\n"                                                                    \
 "Documentation: https://telescope-proj.github.io/lgproxy\n"             \
 "Documentation also contains licenses for third party libraries\n"      \
 "used by this project\n"                                                \
 "\n"                                                                    \
 "Options:\n"                                                            \
+"\n"                                                                    \
 "   -h  Hostname or IP address to listen on\n"                          \
+"\n"                                                                    \
 "   -p  Port or service name to listen on\n"                            \
+"\n"                                                                    \
 "   -f  Shared memory or KVMFR file to use\n"                           \
-"   -s  Size of the shared memory file\n";
-
+"\n"                                                                    \
+"   -s  Size of the shared memory file\n"                               \
+"       This must be specified if the file is backed by a DMABUF\n"     \
+"       region (/dev/kvmfr*)\n"                                         \
+"\n"                                                                    \
+"   -r  Polling interval (default unit: ms, default value: 0)\n"        \
+"       [Experimental] use -1 for sync mode\n"                          \
+"       [Experimental] use n/u/m/s for nano/micro/milli/whole seconds, respectively\n" \
+;
 
 volatile int8_t flag = 0;
 
@@ -86,8 +98,8 @@ int main(int argc, char ** argv)
                 ctx->ram_size = lpParseMemString(optarg);
                 break;
             case 'r':
-                lp__log_info("Poll Interval: %s", optarg);
-                ctx->opts.poll_int = atoi(optarg);
+                lp__log_info("Requested polling interval: %s", optarg);
+                ctx->opts.poll_int = lpParsePollString(optarg);
                 break;
             default:
             case '?':
@@ -182,8 +194,7 @@ int lpHandleClientReq(PLPContext ctx)
         lp__log_error("Does it exist and have you the appropriate permissions been set?");
         goto destroy_ctx;
     }
-
-    if(fileStat.st_size)
+    if (fileStat.st_size)
     {
         ctx->ram_size = fileStat.st_size;
     }
@@ -340,7 +351,18 @@ int lpHandleClientReq(PLPContext ctx)
     }
 
     // Set Polling Interval
-    ctx->lp_host.client_ctx->opts->fab_poll_rate = ctx->opts.poll_int;
+    struct TRFContext * cc  = ctx->lp_host.client_ctx;
+    if (ctx->opts.poll_int < 0)
+    {
+        cc->opts->fab_cq_sync   = 1;
+        cc->opts->fab_poll_rate = 0;
+    }
+    else
+    {
+        cc->opts->fab_cq_sync   = 0;
+        cc->opts->fab_poll_rate = ctx->opts.poll_int;
+    }
+
 
     while (1)
     {
