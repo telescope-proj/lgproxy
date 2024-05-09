@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Utilities &mdash; Telescope Looking Glass Proxy  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,12 +31,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -61,7 +68,19 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Function Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lp_source.html">Server Side Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lp_sink.html">Client Side Functions</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Utilities</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv49lpPollMsg10PLPContextPP22TrfMsg__MessageWrapperi"><code class="docutils literal notranslate"><span class="pre">lpPollMsg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv416lpParseMemStringPc"><code class="docutils literal notranslate"><span class="pre">lpParseMemString()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv417lpParsePollStringPc"><code class="docutils literal notranslate"><span class="pre">lpParsePollString()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv416lpShouldTruncate10PLPContext"><code class="docutils literal notranslate"><span class="pre">lpShouldTruncate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv415lpSetLPLogLevelv"><code class="docutils literal notranslate"><span class="pre">lpSetLPLogLevel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv416lpSetTRFLogLevelv"><code class="docutils literal notranslate"><span class="pre">lpSetTRFLogLevel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv416lpSetDefaultOpts10PLPContext"><code class="docutils literal notranslate"><span class="pre">lpSetDefaultOpts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv421lpCalcFrameSizeNeeded11PTRFDisplay"><code class="docutils literal notranslate"><span class="pre">lpCalcFrameSizeNeeded()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv416lpSendDisconnect11PTRFContext"><code class="docutils literal notranslate"><span class="pre">lpSendDisconnect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv413lpSendVersion11PTRFContext"><code class="docutils literal notranslate"><span class="pre">lpSendVersion()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="lp_types.html">Type Definitions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lp_trf.html">LibTRF Wrapper Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lp_convert.html">Conversion Functions</a></li>
@@ -86,9 +105,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="index.html">Function Documentation</a> &raquo;</li>
-      <li>Utilities</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Function Documentation</a></li>
+      <li class="breadcrumb-item active">Utilities</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/api/lp_utils.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -99,21 +118,22 @@
            <div itemprop="articleBody">
              
   <section id="utilities">
-<h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline"></a></h1>
+<h1>Utilities<a class="headerlink" href="#utilities" title="Link to this heading"></a></h1>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
 <dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv49lpPollMsg10PLPContextPP22TrfMsg__MessageWrapper">
-<span id="_CPPv39lpPollMsg10PLPContextPP22TrfMsg__MessageWrapper"></span><span id="_CPPv29lpPollMsg10PLPContextPP22TrfMsg__MessageWrapper"></span><span id="lpPollMsg__PLPContext.TrfMsg__MessageWrapperPP"></span><span class="target" id="lp__utils_8h_1ae2f1e3fbf0e249ce1c0df7861adb5100"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpPollMsg</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">TrfMsg__MessageWrapper</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">msg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv49lpPollMsg10PLPContextPP22TrfMsg__MessageWrapper" title="Permalink to this definition"></a><br /></dt>
+<dt class="sig sig-object cpp" id="_CPPv49lpPollMsg10PLPContextPP22TrfMsg__MessageWrapperi">
+<span id="_CPPv39lpPollMsg10PLPContextPP22TrfMsg__MessageWrapperi"></span><span id="_CPPv29lpPollMsg10PLPContextPP22TrfMsg__MessageWrapperi"></span><span id="lpPollMsg__PLPContext.TrfMsg__MessageWrapperPP.i"></span><span class="target" id="lp__utils_8h_1aec480a86dc8ccc6dac98840ccae7a994"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpPollMsg</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">TrfMsg__MessageWrapper</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">msg</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timeoutMs</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv49lpPollMsg10PLPContextPP22TrfMsg__MessageWrapperi" title="Link to this definition"></a><br /></dt>
 <dd><p>Poll for a message, decoding it if the message has been received. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ctx</strong> – Context to use. </p></li>
 <li><p><strong>msg</strong> – Message pointer to be set when a message has been received. </p></li>
+<li><p><strong>timeoutMs</strong> – Optional timeout for the message in milliseconds. </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>0 on success, negative error code on failure. </p>
 </dd>
 </dl>
@@ -121,27 +141,32 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416lpParseMemStringPc">
-<span id="_CPPv316lpParseMemStringPc"></span><span id="_CPPv216lpParseMemStringPc"></span><span id="lpParseMemString__cP"></span><span class="target" id="lp__utils_8h_1ac55b85388ad64a059f762b74885012d7"></span><span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpParseMemString</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpParseMemStringPc" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv316lpParseMemStringPc"></span><span id="_CPPv216lpParseMemStringPc"></span><span id="lpParseMemString__cP"></span><span class="target" id="lp__utils_8h_1ac55b85388ad64a059f762b74885012d7"></span><span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpParseMemString</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpParseMemStringPc" title="Link to this definition"></a><br /></dt>
 <dd><p>Parse bytes neede from string passed in to arguments. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – String containing memory amount (e.g. 1048576 or 128m) </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>size in bytes, -1 if invalid data </p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv417lpParsePollStringPc">
+<span id="_CPPv317lpParsePollStringPc"></span><span id="_CPPv217lpParsePollStringPc"></span><span id="lpParsePollString__cP"></span><span class="target" id="lp__utils_8h_1a3cd059e8548a778a0c16439f67cb5512"></span><span class="n"><span class="pre">int64_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpParsePollString</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417lpParsePollStringPc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416lpShouldTruncate10PLPContext">
-<span id="_CPPv316lpShouldTruncate10PLPContext"></span><span id="_CPPv216lpShouldTruncate10PLPContext"></span><span id="lpShouldTruncate__PLPContext"></span><span class="target" id="lp__utils_8h_1aea9bc6b7110d9d90591f3b35cf0306ab"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpShouldTruncate</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpShouldTruncate10PLPContext" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv316lpShouldTruncate10PLPContext"></span><span id="_CPPv216lpShouldTruncate10PLPContext"></span><span id="lpShouldTruncate__PLPContext"></span><span class="target" id="lp__utils_8h_1aea9bc6b7110d9d90591f3b35cf0306ab"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpShouldTruncate</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpShouldTruncate10PLPContext" title="Link to this definition"></a><br /></dt>
 <dd><p>Check if the SHM File needs to be truncated. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>shmFile</strong> – Path to shm file </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>true if shm file needs to be truncated, false if not </p>
 </dd>
 </dl>
@@ -149,25 +174,25 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv415lpSetLPLogLevelv">
-<span id="_CPPv315lpSetLPLogLevelv"></span><span id="_CPPv215lpSetLPLogLevelv"></span><span id="lpSetLPLogLevel"></span><span class="target" id="lp__utils_8h_1a287180cf71c8e0867dd94bc705c79de3"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSetLPLogLevel</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv415lpSetLPLogLevelv" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv315lpSetLPLogLevelv"></span><span id="_CPPv215lpSetLPLogLevelv"></span><span id="lpSetLPLogLevel"></span><span class="target" id="lp__utils_8h_1a287180cf71c8e0867dd94bc705c79de3"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSetLPLogLevel</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv415lpSetLPLogLevelv" title="Link to this definition"></a><br /></dt>
 <dd><p>Set Looking Glass Proxy logging level. </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416lpSetTRFLogLevelv">
-<span id="_CPPv316lpSetTRFLogLevelv"></span><span id="_CPPv216lpSetTRFLogLevelv"></span><span id="lpSetTRFLogLevel"></span><span class="target" id="lp__utils_8h_1a9d4e5625ed9a25716ee70f663c6f81f3"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSetTRFLogLevel</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpSetTRFLogLevelv" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv316lpSetTRFLogLevelv"></span><span id="_CPPv216lpSetTRFLogLevelv"></span><span id="lpSetTRFLogLevel"></span><span class="target" id="lp__utils_8h_1a9d4e5625ed9a25716ee70f663c6f81f3"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSetTRFLogLevel</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpSetTRFLogLevelv" title="Link to this definition"></a><br /></dt>
 <dd><p>Set Libtrf logging level. </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416lpSetDefaultOpts10PLPContext">
-<span id="_CPPv316lpSetDefaultOpts10PLPContext"></span><span id="_CPPv216lpSetDefaultOpts10PLPContext"></span><span id="lpSetDefaultOpts__PLPContext"></span><span class="target" id="lp__utils_8h_1acdebb9a443f38fdbc252654338e6306d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSetDefaultOpts</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpSetDefaultOpts10PLPContext" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv316lpSetDefaultOpts10PLPContext"></span><span id="_CPPv216lpSetDefaultOpts10PLPContext"></span><span id="lpSetDefaultOpts__PLPContext"></span><span class="target" id="lp__utils_8h_1acdebb9a443f38fdbc252654338e6306d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSetDefaultOpts</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpSetDefaultOpts10PLPContext" title="Link to this definition"></a><br /></dt>
 <dd><p>Set Default Options. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ctx</strong> – Context to use </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>0 on success, negative error code on failure </p>
 </dd>
 </dl>
@@ -175,13 +200,13 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv421lpCalcFrameSizeNeeded11PTRFDisplay">
-<span id="_CPPv321lpCalcFrameSizeNeeded11PTRFDisplay"></span><span id="_CPPv221lpCalcFrameSizeNeeded11PTRFDisplay"></span><span id="lpCalcFrameSizeNeeded__PTRFDisplay"></span><span class="target" id="lp__utils_8h_1a900209badcad3443eac3eb9d586d3c8f"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpCalcFrameSizeNeeded</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PTRFDisplay</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">display</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv421lpCalcFrameSizeNeeded11PTRFDisplay" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv321lpCalcFrameSizeNeeded11PTRFDisplay"></span><span id="_CPPv221lpCalcFrameSizeNeeded11PTRFDisplay"></span><span id="lpCalcFrameSizeNeeded__PTRFDisplay"></span><span class="target" id="lp__utils_8h_1a900209badcad3443eac3eb9d586d3c8f"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpCalcFrameSizeNeeded</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PTRFDisplay</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">display</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv421lpCalcFrameSizeNeeded11PTRFDisplay" title="Link to this definition"></a><br /></dt>
 <dd><p>Calculate the size needed for shared memory file. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>display</strong> – Display metadata from Libtrf </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>size of the display needed </p>
 </dd>
 </dl>
@@ -189,13 +214,13 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416lpSendDisconnect11PTRFContext">
-<span id="_CPPv316lpSendDisconnect11PTRFContext"></span><span id="_CPPv216lpSendDisconnect11PTRFContext"></span><span id="lpSendDisconnect__PTRFContext"></span><span class="target" id="lp__utils_8h_1a97c077d6e0044ad25ab1363c1831d6c4"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSendDisconnect</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PTRFContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpSendDisconnect11PTRFContext" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv316lpSendDisconnect11PTRFContext"></span><span id="_CPPv216lpSendDisconnect11PTRFContext"></span><span id="lpSendDisconnect__PTRFContext"></span><span class="target" id="lp__utils_8h_1a97c077d6e0044ad25ab1363c1831d6c4"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSendDisconnect</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PTRFContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpSendDisconnect11PTRFContext" title="Link to this definition"></a><br /></dt>
 <dd><p>Send disconnect message to clients. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ctx</strong> – Context containing fabric info to send disconnect on </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>0 on success, negative error code on failure </p>
 </dd>
 </dl>
@@ -203,13 +228,13 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv413lpSendVersion11PTRFContext">
-<span id="_CPPv313lpSendVersion11PTRFContext"></span><span id="_CPPv213lpSendVersion11PTRFContext"></span><span id="lpSendVersion__PTRFContext"></span><span class="target" id="lp__utils_8h_1ab59d824a9d0df8ca00192f4987eaa0ef"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSendVersion</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PTRFContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv413lpSendVersion11PTRFContext" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv313lpSendVersion11PTRFContext"></span><span id="_CPPv213lpSendVersion11PTRFContext"></span><span id="lpSendVersion__PTRFContext"></span><span class="target" id="lp__utils_8h_1ab59d824a9d0df8ca00192f4987eaa0ef"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpSendVersion</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PTRFContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv413lpSendVersion11PTRFContext" title="Link to this definition"></a><br /></dt>
 <dd><p>Send API version to peer. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ctx</strong> – Context to send connection on </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>0 on success, negative error code on failure </p>
 </dd>
 </dl>

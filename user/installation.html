@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Installing Dependencies &mdash; Telescope Looking Glass Proxy  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,12 +31,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -88,8 +95,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Installing Dependencies</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installing Dependencies</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/user/installation.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -100,7 +107,7 @@
            <div itemprop="articleBody">
              
   <section id="installing-dependencies">
-<span id="installation"></span><h1>Installing Dependencies<a class="headerlink" href="#installing-dependencies" title="Permalink to this headline"></a></h1>
+<span id="installation"></span><h1>Installing Dependencies<a class="headerlink" href="#installing-dependencies" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Ensure the dependencies are installed on both the host and client side.
@@ -108,7 +115,7 @@ This document only covers dependencies for <strong>LGProxy</strong>. For Looking
 please refer to the <a class="reference external" href="https://looking-glass.io/docs/">Looking Glass Documentation</a>.</p>
 </div>
 <section id="build-dependencies">
-<h2>Build Dependencies<a class="headerlink" href="#build-dependencies" title="Permalink to this headline"></a></h2>
+<h2>Build Dependencies<a class="headerlink" href="#build-dependencies" title="Link to this heading"></a></h2>
 <p>If you are using a distribution not covered here, e.g. Arch, please
 search for the following packages in your package manager, <strong>including the
 development headers!</strong></p>
@@ -121,9 +128,9 @@ development headers!</strong></p>
 </ul>
 </section>
 <section id="fedora-and-derivatives">
-<h2>Fedora and derivatives<a class="headerlink" href="#fedora-and-derivatives" title="Permalink to this headline"></a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dnf install -y libfabric libfabric-devel <span class="se">\</span>
-protobuf-c-compiler protobuf-c-devel gcc cmake git
+<h2>Fedora and derivatives<a class="headerlink" href="#fedora-and-derivatives" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libfabric<span class="w"> </span>libfabric-devel<span class="w"> </span><span class="se">\</span>
+protobuf-c-compiler<span class="w"> </span>protobuf-c-devel<span class="w"> </span>gcc<span class="w"> </span>cmake<span class="w"> </span>git
 </pre></div>
 </div>
 <div class="admonition note">
@@ -134,34 +141,34 @@ repositories.</p>
 </div>
 <p>To enable RDMA transports, you will need to install the RDMA core libraries.
 This may be done using the following commands:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dnf install -y rdma-core
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>rdma-core
 </pre></div>
 </div>
 <p>Diagnostic tools for RDMA can also be installed using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dnf install -y perftest infiniband-diags ibstat
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>perftest<span class="w"> </span>infiniband-diags<span class="w"> </span>ibstat
 </pre></div>
 </div>
 </section>
 <section id="ubuntu-debian">
-<h2>Ubuntu &amp; Debian<a class="headerlink" href="#ubuntu-debian" title="Permalink to this headline"></a></h2>
+<h2>Ubuntu &amp; Debian<a class="headerlink" href="#ubuntu-debian" title="Link to this heading"></a></h2>
 <section id="all-versions">
-<h3>All Versions<a class="headerlink" href="#all-versions" title="Permalink to this headline"></a></h3>
+<h3>All Versions<a class="headerlink" href="#all-versions" title="Link to this heading"></a></h3>
 <p>Run the following commands to install the core dependencies:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y protobuf-c-compiler libprotobuf-c-dev <span class="se">\</span>
-autogen libtool cmake gcc make build-essential git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>protobuf-c-compiler<span class="w"> </span>libprotobuf-c-dev<span class="w"> </span><span class="se">\</span>
+autogen<span class="w"> </span>libtool<span class="w"> </span>cmake<span class="w"> </span>gcc<span class="w"> </span>make<span class="w"> </span>build-essential<span class="w"> </span>git
 </pre></div>
 </div>
 <p>To enable RDMA transports:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y rdma-core
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>rdma-core
 </pre></div>
 </div>
 <p>Diagnostic tools for RDMA can also be installed using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y perftest infiniband-diags ibstat
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>perftest<span class="w"> </span>infiniband-diags<span class="w"> </span>ibstat
 </pre></div>
 </div>
 </section>
 <section id="ubuntu-20-04-debian-10-and-older">
-<h3>Ubuntu 20.04, Debian 10 and older<a class="headerlink" href="#ubuntu-20-04-debian-10-and-older" title="Permalink to this headline"></a></h3>
+<h3>Ubuntu 20.04, Debian 10 and older<a class="headerlink" href="#ubuntu-20-04-debian-10-and-older" title="Link to this heading"></a></h3>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>If you are using Ubuntu 20.04 or lower, you will need to compile
@@ -169,12 +176,12 @@ autogen libtool cmake gcc make build-essential git
 The version in the package manager is over three years out of date.</p>
 </div>
 <p>Compile Libfabric from source using the following commands:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/ofiwg/libfabric.git
-<span class="nb">cd</span> libfabric/
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ofiwg/libfabric.git
+<span class="nb">cd</span><span class="w"> </span>libfabric/
 ./autogen.sh
 ./configure
-make -j <span class="k">$(</span>nproc<span class="k">)</span>
-sudo make install
+make<span class="w"> </span>-j<span class="w"> </span><span class="k">$(</span>nproc<span class="k">)</span>
+sudo<span class="w"> </span>make<span class="w"> </span>install
 </pre></div>
 </div>
 <div class="admonition note">
@@ -184,10 +191,10 @@ Libfabric from your system.</p>
 </div>
 </section>
 <section id="ubuntu-21-10-debian-11-and-newer">
-<h3>Ubuntu 21.10, Debian 11 and newer<a class="headerlink" href="#ubuntu-21-10-debian-11-and-newer" title="Permalink to this headline"></a></h3>
+<h3>Ubuntu 21.10, Debian 11 and newer<a class="headerlink" href="#ubuntu-21-10-debian-11-and-newer" title="Link to this heading"></a></h3>
 <p>A supported version of Libfabric may be installed from the package manager
 directly.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo apt install -y libfabric-bin libfabric-dev libfabric1
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libfabric-bin<span class="w"> </span>libfabric-dev<span class="w"> </span>libfabric1
 </pre></div>
 </div>
 <div class="admonition note">

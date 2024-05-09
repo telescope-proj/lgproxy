@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>System Requirements &mdash; Telescope Looking Glass Proxy  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,12 +31,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -94,8 +101,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>System Requirements</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">System Requirements</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/user/requirements.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -106,7 +113,7 @@
            <div itemprop="articleBody">
              
   <section id="system-requirements">
-<span id="requirements"></span><h1>System Requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline"></a></h1>
+<span id="requirements"></span><h1>System Requirements<a class="headerlink" href="#system-requirements" title="Link to this heading"></a></h1>
 <p>While LGProxy does not <strong>require</strong> any special hardware, the use of RDMA capable
 hardware is recommended. Additionally, system and network configuration may be
 required for optimal performance. In particular, the locked memory limit must be
@@ -114,13 +121,13 @@ increased when using RDMA as a transport.</p>
 <p>Configuration steps, as well as a listing of RDMA capable hardware, may be found
 in the <a class="reference external" href="https://telescope-proj.github.io/libtrf/index.html">LibTRF documentation</a>.</p>
 <section id="recommended-specifications">
-<h2>Recommended Specifications<a class="headerlink" href="#recommended-specifications" title="Permalink to this headline"></a></h2>
+<h2>Recommended Specifications<a class="headerlink" href="#recommended-specifications" title="Link to this heading"></a></h2>
 <p>The requirements depend on whether you are using DMABUF and whether the
 transport type is accelerated.</p>
 <section id="client">
-<h3>Client<a class="headerlink" href="#client" title="Permalink to this headline"></a></h3>
+<h3>Client<a class="headerlink" href="#client" title="Link to this heading"></a></h3>
 <section id="using-dmabuf-rdma-best-case">
-<h4>Using DMABUF &amp; RDMA (best case)<a class="headerlink" href="#using-dmabuf-rdma-best-case" title="Permalink to this headline"></a></h4>
+<h4>Using DMABUF &amp; RDMA (best case)<a class="headerlink" href="#using-dmabuf-rdma-best-case" title="Link to this heading"></a></h4>
 <ul class="simple">
 <li><p>CPU: At least a modern dual core processor is recommended.</p></li>
 <li><p>GPU: Follow Looking Glass recommendations. NVIDIA GPUs do not support DMABUF with
@@ -130,7 +137,7 @@ Looking Glass.</p></li>
 </ul>
 </section>
 <section id="no-dmabuf-tcp-worst-case">
-<h4>No DMABUF &amp; TCP (worst case)<a class="headerlink" href="#no-dmabuf-tcp-worst-case" title="Permalink to this headline"></a></h4>
+<h4>No DMABUF &amp; TCP (worst case)<a class="headerlink" href="#no-dmabuf-tcp-worst-case" title="Link to this heading"></a></h4>
 <ul class="simple">
 <li><p>CPU: One core per 200 Mpix/s pixel rate + two cores for Looking Glass</p></li>
 <li><p>GPU: Follow Looking Glass recommendations.</p></li>
@@ -140,15 +147,15 @@ Looking Glass.</p></li>
 </section>
 </section>
 <section id="host">
-<h3>Host<a class="headerlink" href="#host" title="Permalink to this headline"></a></h3>
+<h3>Host<a class="headerlink" href="#host" title="Link to this heading"></a></h3>
 <section id="uncompressed-using-rdma-best-case">
-<h4>Uncompressed, using RDMA (best case)<a class="headerlink" href="#uncompressed-using-rdma-best-case" title="Permalink to this headline"></a></h4>
+<h4>Uncompressed, using RDMA (best case)<a class="headerlink" href="#uncompressed-using-rdma-best-case" title="Link to this heading"></a></h4>
 <p>There are no additional recommendations aside from your NIC having enough
 bandwidth and supporting RDMA, if your PC is already capable of running Looking
 Glass.</p>
 </section>
 <section id="compressed-using-tcp-worst-case">
-<h4>Compressed, using TCP (worst case)<a class="headerlink" href="#compressed-using-tcp-worst-case" title="Permalink to this headline"></a></h4>
+<h4>Compressed, using TCP (worst case)<a class="headerlink" href="#compressed-using-tcp-worst-case" title="Link to this heading"></a></h4>
 <p>One additional core should be available to the VM guest, for real-time
 compression. The recommendation for one additional core per 200 Mpix/s also
 applies.</p>
@@ -163,7 +170,7 @@ compression currently requires our custom <a class="reference external" href="ht
 </section>
 </section>
 <section id="bandwidth-calculator">
-<h2>Bandwidth Calculator<a class="headerlink" href="#bandwidth-calculator" title="Permalink to this headline"></a></h2>
+<h2>Bandwidth Calculator<a class="headerlink" href="#bandwidth-calculator" title="Link to this heading"></a></h2>
 <p>You may use the below bandwidth calculator to determine bandwidth requirements
 for your chosen video streaming quality.</p>
 <div class="admonition note">
@@ -329,7 +336,8 @@ safety margin, you should add around 10% to the result as overhead.</p>
     </table>
   </body>
 </div>
-</html></section>
+</html>
+</section>
 </section>
 
 

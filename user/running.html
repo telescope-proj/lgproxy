@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Running The Application &mdash; Telescope Looking Glass Proxy  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,12 +31,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -87,8 +94,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Running The Application</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Running The Application</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/user/running.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -99,14 +106,14 @@
            <div itemprop="articleBody">
              
   <section id="running-the-application">
-<span id="running"></span><h1>Running The Application<a class="headerlink" href="#running-the-application" title="Permalink to this headline"></a></h1>
+<span id="running"></span><h1>Running The Application<a class="headerlink" href="#running-the-application" title="Link to this heading"></a></h1>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Use of DMABUF with LGProxy (i.e., the KVMFR module) works, but has not been
 extensively tested.</p>
 </div>
 <section id="sink">
-<h2>Sink<a class="headerlink" href="#sink" title="Permalink to this headline"></a></h2>
+<h2>Sink<a class="headerlink" href="#sink" title="Link to this heading"></a></h2>
 <p><strong>Usage Guide</strong></p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Looking Glass Proxy (LGProxy)
 Copyright (c) 2022 Telescope Project Developers
@@ -145,7 +152,7 @@ usage!</p>
 </div>
 </section>
 <section id="source">
-<h2>Source<a class="headerlink" href="#source" title="Permalink to this headline"></a></h2>
+<h2>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h2>
 <p><strong>Usage Guide</strong></p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Looking Glass Proxy (LGProxy)
 Copyright (c) 2022 Telescope Project Developers
@@ -169,10 +176,10 @@ the shared memory file is not specified, it defaults to
 <code class="docutils literal notranslate"><span class="pre">dev/shm/looking-glass</span></code>.</p>
 </section>
 <section id="setting-the-log-level">
-<h2>Setting the log level<a class="headerlink" href="#setting-the-log-level" title="Permalink to this headline"></a></h2>
+<h2>Setting the log level<a class="headerlink" href="#setting-the-log-level" title="Link to this heading"></a></h2>
 <p>The log level may be set for specific components of LGProxy:</p>
 <section id="lgproxy-libtrf">
-<h3>LGProxy &amp; LibTRF<a class="headerlink" href="#lgproxy-libtrf" title="Permalink to this headline"></a></h3>
+<h3>LGProxy &amp; LibTRF<a class="headerlink" href="#lgproxy-libtrf" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>Values</dt><dd><ul class="simple">
 <li><p>1 (Trace)</p></li>
@@ -188,7 +195,7 @@ the shared memory file is not specified, it defaults to
 <p>Set the LibTRF log level with the environment variable: <strong>TRF_LOG_LEVEL=VALUE</strong></p>
 </section>
 <section id="libfabric">
-<h3>Libfabric<a class="headerlink" href="#libfabric" title="Permalink to this headline"></a></h3>
+<h3>Libfabric<a class="headerlink" href="#libfabric" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>Values</dt><dd><ul class="simple">
 <li><p>warn</p></li>

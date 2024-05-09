@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Server Side Functions &mdash; Telescope Looking Glass Proxy  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,12 +31,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/telescope-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -59,7 +66,15 @@
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Function Documentation</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Server Side Functions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Server Side Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv417lpHandleClientReq10PLPContext"><code class="docutils literal notranslate"><span class="pre">lpHandleClientReq()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv417lpHandleCursorPosPv"><code class="docutils literal notranslate"><span class="pre">lpHandleCursorPos()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv416lpInitLgmpClient10PLPContext"><code class="docutils literal notranslate"><span class="pre">lpInitLgmpClient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv419lpClientInitSession10PLPContext"><code class="docutils literal notranslate"><span class="pre">lpClientInitSession()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv410lpGetFrame10PLPContextPP10KVMFRFramePP11FrameBuffer"><code class="docutils literal notranslate"><span class="pre">lpGetFrame()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv411lpgetCursor10PLPContextPP11KVMFRCursorP8uint32_tP8uint32_t"><code class="docutils literal notranslate"><span class="pre">lpgetCursor()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="lp_sink.html">Client Side Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lp_utils.html">Utilities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lp_types.html">Type Definitions</a></li>
@@ -86,9 +101,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="index.html">Function Documentation</a> &raquo;</li>
-      <li>Server Side Functions</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Function Documentation</a></li>
+      <li class="breadcrumb-item active">Server Side Functions</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/api/lp_source.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -99,15 +114,15 @@
            <div itemprop="articleBody">
              
   <section id="server-side-functions">
-<h1>Server Side Functions<a class="headerlink" href="#server-side-functions" title="Permalink to this headline"></a></h1>
+<h1>Server Side Functions<a class="headerlink" href="#server-side-functions" title="Link to this heading"></a></h1>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv417lpHandleClientReq10PLPContext">
-<span id="_CPPv317lpHandleClientReq10PLPContext"></span><span id="_CPPv217lpHandleClientReq10PLPContext"></span><span id="lpHandleClientReq__PLPContext"></span><span class="target" id="lp__source_8h_1a022824c99b4eab7bbb3eddd1af2f26d5"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpHandleClientReq</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417lpHandleClientReq10PLPContext" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv317lpHandleClientReq10PLPContext"></span><span id="_CPPv217lpHandleClientReq10PLPContext"></span><span id="lpHandleClientReq__PLPContext"></span><span class="target" id="lp__source_8h_1a022824c99b4eab7bbb3eddd1af2f26d5"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpHandleClientReq</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417lpHandleClientReq10PLPContext" title="Link to this definition"></a><br /></dt>
 <dd><p>This Function will handle all client side requests (e.g. Frames data, Cursor data) </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ctx</strong> – Context containing the TRFContext for client connections </p>
 </dd>
 </dl>
@@ -115,10 +130,10 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv417lpHandleCursorPosPv">
-<span id="_CPPv317lpHandleCursorPosPv"></span><span id="_CPPv217lpHandleCursorPosPv"></span><span id="lpHandleCursorPos__voidP"></span><span class="target" id="lp__source_8h_1a9b4163cf2cb411f0d8a86ce04e597226"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">lpHandleCursorPos</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">arg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417lpHandleCursorPosPv" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv317lpHandleCursorPosPv"></span><span id="_CPPv217lpHandleCursorPosPv"></span><span id="lpHandleCursorPos__voidP"></span><span class="target" id="lp__source_8h_1a9b4163cf2cb411f0d8a86ce04e597226"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">lpHandleCursorPos</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">arg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417lpHandleCursorPosPv" title="Link to this definition"></a><br /></dt>
 <dd><p>Get the current cursor position and update the client side. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>arg</strong> – PTRFContext containing connection details </p>
 </dd>
 </dl>
@@ -129,12 +144,12 @@
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416lpInitLgmpClient10PLPContext">
-<span id="_CPPv316lpInitLgmpClient10PLPContext"></span><span id="_CPPv216lpInitLgmpClient10PLPContext"></span><span id="lpInitLgmpClient__PLPContext"></span><span class="target" id="lp__retrieve_8h_1a110648943f16af2e0e91fb39e6fcd716"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpInitLgmpClient</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpInitLgmpClient10PLPContext" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv316lpInitLgmpClient10PLPContext"></span><span id="_CPPv216lpInitLgmpClient10PLPContext"></span><span id="lpInitLgmpClient__PLPContext"></span><span class="target" id="lp__retrieve_8h_1a110648943f16af2e0e91fb39e6fcd716"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpInitLgmpClient</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416lpInitLgmpClient10PLPContext" title="Link to this definition"></a><br /></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ctx</strong> – Context to use </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>0 on success, negative error code on error </p>
 </dd>
 </dl>
@@ -142,13 +157,13 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv419lpClientInitSession10PLPContext">
-<span id="_CPPv319lpClientInitSession10PLPContext"></span><span id="_CPPv219lpClientInitSession10PLPContext"></span><span id="lpClientInitSession__PLPContext"></span><span class="target" id="lp__retrieve_8h_1aeb04dad9146bc9e9debc716f5d447c9b"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpClientInitSession</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419lpClientInitSession10PLPContext" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv319lpClientInitSession10PLPContext"></span><span id="_CPPv219lpClientInitSession10PLPContext"></span><span id="lpClientInitSession__PLPContext"></span><span class="target" id="lp__retrieve_8h_1aeb04dad9146bc9e9debc716f5d447c9b"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpClientInitSession</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419lpClientInitSession10PLPContext" title="Link to this definition"></a><br /></dt>
 <dd><p>Inittialize LGMP Client Session. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ctx</strong> – Context to use </p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>0 on success, negative error code on error </p>
 </dd>
 </dl>
@@ -156,16 +171,16 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv410lpGetFrame10PLPContextPP10KVMFRFramePP11FrameBuffer">
-<span id="_CPPv310lpGetFrame10PLPContextPP10KVMFRFramePP11FrameBuffer"></span><span id="_CPPv210lpGetFrame10PLPContextPP10KVMFRFramePP11FrameBuffer"></span><span id="lpGetFrame__PLPContext.KVMFRFramePP.FrameBufferPP"></span><span class="target" id="lp__retrieve_8h_1af837805e5add5aa61cabed249b270029"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpGetFrame</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">KVMFRFrame</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">out</span></span>, <span class="n"><span class="pre">FrameBuffer</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">fb</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv410lpGetFrame10PLPContextPP10KVMFRFramePP11FrameBuffer" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv310lpGetFrame10PLPContextPP10KVMFRFramePP11FrameBuffer"></span><span id="_CPPv210lpGetFrame10PLPContextPP10KVMFRFramePP11FrameBuffer"></span><span id="lpGetFrame__PLPContext.KVMFRFramePP.FrameBufferPP"></span><span class="target" id="lp__retrieve_8h_1af837805e5add5aa61cabed249b270029"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpGetFrame</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">KVMFRFrame</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">out</span></span>, <span class="n"><span class="pre">FrameBuffer</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">fb</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv410lpGetFrame10PLPContextPP10KVMFRFramePP11FrameBuffer" title="Link to this definition"></a><br /></dt>
 <dd><p>Get Frame from shared memory. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ctx</strong> – Context to use </p></li>
 <li><p><strong>out</strong> – Frame retrieved from LookingGlass </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>0 on success, negative error code on error </p>
 </dd>
 </dl>
@@ -173,16 +188,16 @@
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv411lpgetCursor10PLPContextPP11KVMFRCursorP8uint32_tP8uint32_t">
-<span id="_CPPv311lpgetCursor10PLPContextPP11KVMFRCursorP8uint32_tP8uint32_t"></span><span id="_CPPv211lpgetCursor10PLPContextPP11KVMFRCursorP8uint32_tP8uint32_t"></span><span id="lpgetCursor__PLPContext.KVMFRCursorPP.uint32_tP.uint32_tP"></span><span class="target" id="lp__retrieve_8h_1ae0206f0e2bdd95e7081e1d035dba3ecd"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpgetCursor</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">KVMFRCursor</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">out</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">size</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">flags</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv411lpgetCursor10PLPContextPP11KVMFRCursorP8uint32_tP8uint32_t" title="Permalink to this definition"></a><br /></dt>
+<span id="_CPPv311lpgetCursor10PLPContextPP11KVMFRCursorP8uint32_tP8uint32_t"></span><span id="_CPPv211lpgetCursor10PLPContextPP11KVMFRCursorP8uint32_tP8uint32_t"></span><span id="lpgetCursor__PLPContext.KVMFRCursorPP.uint32_tP.uint32_tP"></span><span class="target" id="lp__retrieve_8h_1ae0206f0e2bdd95e7081e1d035dba3ecd"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lpgetCursor</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PLPContext</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ctx</span></span>, <span class="n"><span class="pre">KVMFRCursor</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">out</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">size</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">flags</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv411lpgetCursor10PLPContextPP11KVMFRCursorP8uint32_tP8uint32_t" title="Link to this definition"></a><br /></dt>
 <dd><p>Get the Cursor object. </p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ctx</strong> – Context to use </p></li>
 <li><p><strong>out</strong> – Cursor from Looking Glass Host if there is no change in cursor postion it out will be set to NULL </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>0 on success, negative error code on failure </p>
 </dd>
 </dl>
