@@ -1,22 +1,20 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(lgproxy LANGUAGES C)
 
-get_filename_component(PROJECT_TOP "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
+include(CheckCCompilerFlag)
+include(FeatureSummary)
 
-add_definitions(-DLP_LOG_USE_COLOR)
-
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx")
+get_filename_component(LGPROXY_TOP "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
 
 # Check if submodules have been initialized
 find_package(Git QUIET)
-message(STATUS "Checking Submodules")
-if(GIT_FOUND AND EXISTS "${PROJECT_TOP}/.git")
+message(STATUS "Checking submodules")
+if(GIT_FOUND AND EXISTS "${LGPROXY_TOP}/.git")
     option(GIT_SUBMODULE "Check submodules before build" ON)
     if(GIT_SUBMODULE)
-        message(STATUS "Fetching Libtrf")
+        message(STATUS "Fetching submodules")
         execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init repos/LookingGlass repos/LGMP repos/libtrf
-                        WORKING_DIRECTORY ${PROJECT_TOP}
+                        WORKING_DIRECTORY ${LGPROXY_TOP}
                         RESULT_VARIABLE GIT_SUBMOD_RESULT)
         if(NOT GIT_SUBMOD_RESULT EQUAL "0")
             message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
@@ -24,23 +22,29 @@ if(GIT_FOUND AND EXISTS "${PROJECT_TOP}/.git")
     endif()
 endif()
 
-if(NOT EXISTS "${PROJECT_TOP}/repos")
+if(NOT EXISTS "${LGPROXY_TOP}/repos")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
+get_filename_component(REPOS_TOP "${LGPROXY_TOP}/repos" ABSOLUTE)
+get_filename_component(LG_TOP "${REPOS_TOP}/LookingGlass" ABSOLUTE)
+list(APPEND CMAKE_MODULE_PATH "${LG_TOP}/cmake")
+add_definitions(-DLP_LOG_USE_COLOR)
+include(OptimizeForNative)
+
 include_directories(
     "${PROJECT_SOURCE_DIR}/include"
-    "${PROJECT_TOP}/repos/LGMP/lgmp/include"
-    "${PROJECT_TOP}/repos/libtrf/libtrf/include"
-    "${PROJECT_TOP}/repos/LookingGlass"
-    "${PROJECT_TOP}/repos/LookingGlass/common/include"
+    "${REPOS_TOP}/LGMP/lgmp/include"
+    "${REPOS_TOP}/libtrf/libtrf/include"
+    "${REPOS_TOP}/LookingGlass"
+    "${REPOS_TOP}/LookingGlass/common/include"
 )
 
-add_subdirectory("${PROJECT_TOP}/repos/LGMP/lgmp" 
+add_subdirectory("${REPOS_TOP}/LGMP/lgmp" 
                 "${CMAKE_BINARY_DIR}/libs/lgmp")
-add_subdirectory("${PROJECT_TOP}/repos/libtrf/libtrf" 
+add_subdirectory("${REPOS_TOP}/libtrf/libtrf" 
                 "${CMAKE_BINARY_DIR}/libs/libtrf")
-add_subdirectory("${PROJECT_TOP}/repos/LookingGlass/common"
+add_subdirectory("${REPOS_TOP}/LookingGlass/common"
                 "${CMAKE_BINARY_DIR}/libs/LookingGlass/common")   
 
 add_compile_options(
@@ -54,8 +58,8 @@ add_compile_options(
 # "-O0;-g3;-ggdb"
 ) 
 
-file(COPY "${PROJECT_TOP}/repos/libtrf/libtrf/conf" DESTINATION "./source_build")
-file(COPY "${PROJECT_TOP}/repos/libtrf/libtrf/conf" DESTINATION "./sink_build")
+file(COPY "${REPOS_TOP}/libtrf/libtrf/conf" DESTINATION "./source_build")
+file(COPY "${REPOS_TOP}/libtrf/libtrf/conf" DESTINATION "./sink_build")
 
 set(LP_COMMON
     common/src/lp_log.c
@@ -92,23 +96,23 @@ set_property(TARGET sink PROPERTY C_STANDARD 11)
 set_target_properties(sink PROPERTIES RUNTIME_OUTPUT_DIRECTORY "./sink_build")       
 
 target_include_directories(sink PUBLIC
-                            "${PROJECT_TOP}/sink"
-                            "${PROJECT_TOP}/repos/lgmp/lgmp"
-                            "${PROJECT_TOP}/repos/libtrf/libtrf"
-                            "${PROJECT_TOP}/repos/LookingGlass/common/include"
-                            "${PROJECT_TOP}/lgproxy/common/include")
+                            "${LGPROXY_TOP}/sink"
+                            "${LGPROXY_TOP}/repos/lgmp/lgmp"
+                            "${LGPROXY_TOP}/repos/libtrf/libtrf"
+                            "${LGPROXY_TOP}/repos/LookingGlass/common/include"
+                            "${LGPROXY_TOP}/lgproxy/common/include")
 target_include_directories(source PUBLIC 
-                            "${PROJECT_TOP}/source"
-                            "${PROJECT_TOP}/repos/lgmp/lgmp"
-                            "${PROJECT_TOP}/repos/libtrf/libtrf"
-                            "${PROJECT_TOP}/repos/LookingGlass/common/include"
-                            "${PROJECT_TOP}/lgproxy/common/include")
+                            "${LGPROXY_TOP}/source"
+                            "${LGPROXY_TOP}/repos/lgmp/lgmp"
+                            "${LGPROXY_TOP}/repos/libtrf/libtrf"
+                            "${LGPROXY_TOP}/repos/LookingGlass/common/include"
+                            "${LGPROXY_TOP}/lgproxy/common/include")
 
 
 # Get Looking Glass version
 execute_process(
     COMMAND sh -c "git submodule | grep -i LookingGlass | awk -F'[()]' '{print $2}'"
-    WORKING_DIRECTORY "${PROJECT_TOP}"
+    WORKING_DIRECTORY "${LGPROXY_TOP}"
     OUTPUT_VARIABLE LG_GIT_REV
     ERROR_QUIET
 )
@@ -138,7 +142,7 @@ endif()
 # Get LG Proxy version
 execute_process(
     COMMAND sh -c "git rev-parse --short HEAD"
-    WORKING_DIRECTORY "${PROJECT_TOP}"
+    WORKING_DIRECTORY "${LGPROXY_TOP}"
     OUTPUT_VARIABLE LP_GIT_REV
     ERROR_QUIET
 )
@@ -164,3 +168,5 @@ endif()
 if (NOT "${BUILD_VERSION}" STREQUAL "${LP_BUILD_VERSION_}")
 	file(APPEND common/include/version.h "${BUILD_VERSION}")
 endif()
+
+feature_summary(WHAT ENABLED_FEATURES DISABLED_FEATURES)
